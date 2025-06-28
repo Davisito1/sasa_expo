@@ -1,0 +1,89 @@
+ body {
+      background-color: #f1eded;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .welcome-container {
+      background-color: #fff;
+      padding: 50px;
+      border-radius: 20px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .welcome-text {
+      max-width: 50%;
+    }
+
+    .welcome-text h1 {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .welcome-text p {
+      margin: 20px 0;
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    .btn-sasa {
+      background-color: #800000;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-right: 10px;
+      border-radius: 20px;
+      font-weight: bold;
+      transition: 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-sasa:hover {
+      background-color: #a00000;
+    }
+
+    .btn-outline-sasa {
+      background-color: transparent;
+      color: #800000;
+      border: 2px solid #800000;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      transition: 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-outline-sasa:hover {
+      background-color: #800000;
+      color: #fff;
+    }
+
+    .welcome-image img {
+      width: 300px;
+    }
+
+    @media (max-width: 768px) {
+      .welcome-container {
+        flex-direction: column;
+        text-align: center;
+      }
+      .welcome-text, .welcome-image {
+        max-width: 100%;
+      }
+      .welcome-image img {
+        width: 200px;
+        margin-top: 20px;
+      }
+    }
+  

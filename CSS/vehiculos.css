@@ -1,0 +1,110 @@
+    body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 40px auto;
+            max-width: 900px;
+            background-color: #fff;
+        }
+        .btn-add {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 10px;
+            padding: 10px 20px;
+            border: none;
+        }
+        .btn-add:hover {
+            background-color: #bb2d3b;
+        }
+        table {
+            margin-top: 20px;
+        }
+        table th {
+            background-color: #e9ecef;
+        }
+        table td, table th {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .action-icon {
+            cursor: pointer;
+            margin: 0 5px;
+            color: #0d6efd;
+            transition: transform 0.2s;
+        }
+        .action-icon:hover {
+            transform: scale(1.2);
+            color: #084298;
+        }
+
+    /* Sidebar */
+    #sidebar {
+      width: 80px; transition: width 0.3s ease; overflow: hidden;
+      height: 100vh; background-color: #fff; position: fixed; left: 0; top: 0;
+      z-index: 1000; border-right: 1px solid #dee2e6;
+    }
+    #sidebar:hover { width: 250px; }
+    #sidebar ul { padding-left: 0; list-style: none; margin-top: 20px; }
+    #sidebar ul li {
+      padding: 15px; display: flex; align-items: center; cursor: pointer; transition: background 0.3s ease;
+    }
+    #sidebar ul li:hover { background-color: #f0f0f0; }
+    #sidebar ul li i { font-size: 24px; color: #990000; width: 30px; }
+    #sidebar ul li span { display: none; white-space: nowrap; margin-left: 10px; }
+    #sidebar:hover ul li span { display: inline; }
+
+    .topbar {
+      background-color: #c41717; height: 60px; width: 100%;
+      position: fixed; left: 0; top: 0; z-index: 999;
+      padding-left: 80px; display: flex; align-items: center; justify-content: space-between;
+    }
+    #sidebar:hover ~ .topbar { padding-left: 250px; }
+
+    .search-bar {
+      background-color: #5c0a0a; border-radius: 5px; padding: 5px 10px;
+      display: flex; align-items: center; width: 300px; color: white;
+    }
+    .search-bar input {
+      border: none; background: none; outline: none; color: white; width: 100%;
+    }
+    .topbar-right {
+      display: flex; align-items: center; margin-right: 20px; color: white; gap: 20px;
+    }
+
+    .content {
+      margin-top: 80px; margin-left: 100px; transition: margin-left 0.3s ease;
+    }
+    #sidebar:hover ~ .content { margin-left: 270px; }
+
+    table { width: 100%; background: white; border-collapse: collapse; }
+    table th, table td {
+      border: 1px solid #dee2e6; padding: 12px; text-align: left;
+    }
+    table th { background-color: #f8f9fa; }
+
+    .btn-primary { background-color: #1d6fa5; border: none; }
+    .btn-primary:hover { background-color: #155d85; }
+
+    .acciones i {
+      cursor: pointer; margin-right: 10px; color: #1d6fa5; transition: color 0.3s ease;
+    }
+    .acciones i:hover { color: #0d4e73; }
+
+    dialog {
+      border: none; border-radius: 8px; padding: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+    dialog form input {
+      width: 100%; margin: 10px 0; padding: 8px;
+      border: 1px solid #ced4da; border-radius: 5px;
+    }
+    dialog button {
+      margin-top: 10px; padding: 8px 16px; border: none;
+      border-radius: 5px; cursor: pointer;
+    }
+    dialog button[type="submit"] { background-color: #1d6fa5; color: white; }
+    dialog button[type="submit"]:hover { background-color: #155d85; }
+    dialog button[type="button"] { background-color: #6c757d; color: white; }
+    dialog button[type="button"]:hover { background-color: #5a6268; }
