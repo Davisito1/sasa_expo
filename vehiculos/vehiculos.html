@@ -4,15 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehículos</title>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   
-  <!-- Estilos -->
   <link rel="stylesheet" href="../CSS/dashboard.css" />
   <link rel="stylesheet" href="../CSS/vehiculos.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
-  <!-- Sidebar -->
+
+
   <div id="sidebar">
     <div class="logo">
       <img src="../IMG/logo sasa.jpg" alt="SASA" />
@@ -30,7 +32,6 @@
     </ul>
   </div>
 
-  <!-- Topbar -->
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
@@ -48,7 +49,6 @@
     </div>
   </div>
 
-  <!-- Contenido principal -->
   <div class="content">
     <!-- Botón + buscador -->
     <div class="d-flex justify-content-between align-items-center mb-4 px-4">
@@ -70,45 +70,52 @@
             <th>Marca</th>
             <th>Modelo</th>
             <th>Año</th>
+            <th>Placa</th>
+            <th>VIN</th>
+            <th>Cliente</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="tablaVehiculos">
-          <!-- Contenido dinámico -->
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Modal Agregar Vehículo -->
-  <dialog id="mdAgregarVehiculo" class="p-4 rounded shadow">
-    <h3 class="text-center">Agregar Vehículo</h3>
-    <form id="frmAgregarVehiculo" class="d-flex flex-column gap-3">
-      <input type="text" id="txtMarca" placeholder="Marca" required class="form-control" />
-      <input type="text" id="txtModelo" placeholder="Modelo" required class="form-control" />
-      <input type="number" id="txtAnio" placeholder="Año" required class="form-control" />
-      <div class="d-flex justify-content-between mt-3">
-        <button type="submit" class="btn btn-danger">Guardar</button>
-        <button type="button" onclick="cerrarModalAgregar()" class="btn btn-secondary">Cerrar</button>
-      </div>
-    </form>
-  </dialog>
+ <!--  Agregar Vehículo -->
+<dialog id="mdAgregarVehiculo" class="p-4 rounded shadow">
+  <h3 class="text-center">Agregar Vehículo</h3>
+  <form id="frmAgregarVehiculo" class="d-flex flex-column gap-3">
+    <input type="text" id="txtMarca" placeholder="Marca" required class="form-control" />
+    <input type="text" id="txtModelo" placeholder="Modelo" required class="form-control" />
+    <input type="number" id="txtAnio" placeholder="Año" required class="form-control" />
+    <input type="text" id="txtPlaca" placeholder="Placa (P123-456)" required class="form-control" />
+    <input type="text" id="txtVIN" placeholder="VIN" required class="form-control" />
+    <input type="text" id="txtCliente" placeholder="Cliente" required class="form-control" />
+    <div class="d-flex justify-content-between mt-3">
+      <button type="submit" class="btn btn-danger">Guardar</button>
+      <button type="button" onclick="cerrarModalAgregar()" class="btn btn-secondary">Cerrar</button>
+    </div>
+  </form>
+</dialog>
 
-  <!-- Modal Editar Vehículo -->
-  <dialog id="mdEditarVehiculo" class="p-4 rounded shadow">
-    <h3 class="text-center">Editar Vehículo</h3>
-    <form id="frmEditarVehiculo" class="d-flex flex-column gap-3">
-      <input type="hidden" id="txtIdEditarVehiculo" />
-      <input type="text" id="txtMarcaEditar" placeholder="Marca" required class="form-control" />
-      <input type="text" id="txtModeloEditar" placeholder="Modelo" required class="form-control" />
-      <input type="number" id="txtAnioEditar" placeholder="Año" required class="form-control" />
-      <div class="d-flex justify-content-between mt-3">
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <button type="button" onclick="cerrarModalEditar()" class="btn btn-secondary">Cerrar</button>
-      </div>
-    </form>
-  </dialog>
-
+<!-- Modal Editar Vehículo -->
+<dialog id="mdEditarVehiculo" class="p-4 rounded shadow">
+  <h3 class="text-center">Editar Vehículo</h3>
+  <form id="frmEditarVehiculo" class="d-flex flex-column gap-3">
+    <input type="hidden" id="txtIdEditarVehiculo" />
+    <input type="text" id="txtMarcaEditar" placeholder="Marca" required class="form-control" />
+    <input type="text" id="txtModeloEditar" placeholder="Modelo" required class="form-control" />
+    <input type="number" id="txtAnioEditar" placeholder="Año" required class="form-control" />
+    <input type="text" id="txtPlacaEditar" placeholder="Placa (P123-456)" required class="form-control" />
+    <input type="text" id="txtVINEditar" placeholder="VIN" required class="form-control" />
+    <input type="text" id="txtClienteEditar" placeholder="Cliente" required class="form-control" />
+    <div class="d-flex justify-content-between mt-3">
+      <button type="submit" class="btn btn-primary">Actualizar</button>
+      <button type="button" onclick="cerrarModalEditar()" class="btn btn-secondary">Cerrar</button>
+    </div>
+  </form>
+</dialog>
   <!-- Script -->
   <script src="../JS/vehiculos.js"></script>
 </body>
