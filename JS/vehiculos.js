@@ -217,7 +217,7 @@ async function eliminarVehiculo(id) {
     showCancelButton: true,
     confirmButtonText: 'Sí, eliminar',
     cancelButtonText: 'Cancelar'
-  });
+  }); 
 
   if (result.isConfirmed) {
     try {
