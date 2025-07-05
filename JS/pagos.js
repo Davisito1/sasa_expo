@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.appendChild(tr);
       });
     } catch (error) {
-      alert("No se pudieron cargar los pagos.");
+      Swal.fire('Error', 'No se pudieron cargar los pagos.', 'error');
     }
   }
 
@@ -56,10 +56,34 @@ document.addEventListener('DOMContentLoaded', () => {
       metodo: formNuevoPago.metodo.value,
       factura: formNuevoPago.factura.value
     };
+
     if (!datos.fecha || !datos.monto || !datos.metodo || !datos.factura) {
       alert("Todos los campos son obligatorios.");
       return;
     }
+
+    // Validar monto
+    if (isNaN(datos.monto) || parseFloat(datos.monto) <= 0) {
+      alert("El monto debe ser un número mayor a cero.");
+      return;
+    }
+
+    // Validar fecha dentro de los últimos 6 meses
+    const fechaIngresada = new Date(datos.fecha);
+    const hoy = new Date();
+    const seisMesesAtras = new Date();
+    seisMesesAtras.setMonth(seisMesesAtras.getMonth() - 6);
+
+    if (fechaIngresada > hoy) {
+      alert("La fecha no puede ser futura.");
+      return;
+    }
+
+    if (fechaIngresada < seisMesesAtras) {
+      alert("La fecha no puede ser mayor a 6 meses atrás.");
+      return;
+    }
+
     try {
       if (idEditando) {
         await fetch(`${API_URL}/${idEditando}`, {
@@ -67,19 +91,21 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(datos)
         });
+        Swal.fire('Pago actualizado', 'El pago fue actualizado correctamente.', 'success');
       } else {
         await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(datos)
         });
+        Swal.fire('Pago agregado', 'El nuevo pago ha sido registrado.', 'success');
       }
       idEditando = null;
       formNuevoPago.reset();
       modalPago.close();
       cargarPagos();
     } catch (error) {
-      alert("Error al guardar el pago.");
+      Swal.fire('Error', 'Error al guardar el pago.', 'error');
     }
   });
 
@@ -96,19 +122,31 @@ document.addEventListener('DOMContentLoaded', () => {
         formNuevoPago.factura.value = data.factura;
         modalPago.showModal();
       } catch (error) {
-        alert("Error al cargar el pago.");
+        Swal.fire('Error', 'No se pudo cargar el pago.', 'error');
       }
     }
+
     if (e.target.classList.contains('eliminar')) {
       const id = e.target.dataset.id;
-      if (confirm("¿Desea eliminar este pago?")) {
-        try {
-          await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-          cargarPagos();
-        } catch (error) {
-          alert("Error al eliminar el pago.");
+
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: 'Esta acción eliminará el pago permanentemente.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+            Swal.fire('Eliminado', 'El pago fue eliminado correctamente.', 'success');
+            cargarPagos();
+          } catch (error) {
+            Swal.fire('Error', 'No se pudo eliminar el pago.', 'error');
+          }
         }
-      }
+      });
     }
   });
 
