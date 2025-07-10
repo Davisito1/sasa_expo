@@ -1,0 +1,111 @@
+/* Estilos básicos para el diálogo */
+dialog {
+    border: none;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+dialog form input {
+    width: 100%;
+    margin: 10px 0;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+dialog button {
+    margin-top: 10px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+dialog button[type="submit"] {
+    background-color: #1d6fa5;
+    color: white;
+}
+
+dialog button[type="submit"]:hover {
+    background-color: #155d85;
+}
+
+dialog button[type="button"] {
+    background-color: #6c757d;
+    color: white;
+}
+
+dialog button[type="button"]:hover {
+    background-color: #5a6268;
+}
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+    dialog {
+        padding: 15px;
+        width: 90%; /* Ajusta el tamaño del diálogo en pantallas pequeñas */
+        max-width: 400px; /* Limita el ancho máximo */
+    }
+
+    dialog form input {
+        padding: 12px; /* Mayor padding en los inputs */
+    }
+
+    dialog button {
+        padding: 12px 20px; /* Mayor padding para botones */
+    }
+
+    dialog button[type="submit"] {
+        background-color: #1d6fa5;
+        color: white;
+    }
+
+    dialog button[type="submit"]:hover {
+        background-color: #155d85;
+    }
+
+    dialog button[type="button"] {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    dialog button[type="button"]:hover {
+        background-color: #5a6268;
+    }
+}
+
+/* Responsive para pantallas aún más pequeñas */
+@media (max-width: 480px) {
+    dialog {
+        width: 95%; /* Ajusta el tamaño para pantallas más pequeñas */
+        max-width: 350px;
+        padding: 10px;
+    }
+
+    dialog form input {
+        padding: 10px;
+    }
+
+    dialog button {
+        padding: 10px 16px;
+    }
+
+    dialog button[type="submit"] {
+        background-color: #1d6fa5;
+        color: white;
+    }
+
+    dialog button[type="submit"]:hover {
+        background-color: #155d85;
+    }
+
+    dialog button[type="button"] {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    dialog button[type="button"]:hover {
+        background-color: #5a6268;
+    }
+}
