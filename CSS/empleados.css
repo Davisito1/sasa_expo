@@ -14,3 +14,54 @@ dialog form input {
     dialog button[type="submit"]:hover { background-color: #155d85; }
     dialog button[type="button"] { background-color: #6c757d; color: white; }
     dialog button[type="button"]:hover { background-color: #5a6268; }
+
+    /* Botones de acción en tabla */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  font-size: 1rem;
+  border-radius: 6px;
+  background-color: white;
+  border: 1.5px solid #ced4da;
+  color: #333;
+  cursor: pointer;
+  transition: 0.3s ease;
+  margin: 0 3px;
+}
+
+.icon-btn i {
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.icon-btn:hover {
+  background-color: #e7f1ff;
+  border-color: #1d6fa5;
+  color: #1d6fa5;
+}
+
+/* Botón editar - azul */
+.icon-btn.btn-primary {
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+
+.icon-btn.btn-primary:hover {
+  background-color: #cfe2ff;
+  border-color: #084298;
+  color: #084298;
+}
+
+/* Botón eliminar - rojo */
+.icon-btn.btn-danger {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.icon-btn.btn-danger:hover {
+  background-color: #f8d7da;
+  border-color: #842029;
+  color: #842029;
+}

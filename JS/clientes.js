@@ -81,13 +81,18 @@ function mostrarClientes(lista) {
         <td>${c.Fechadenacimiento}</td>
         <td>${c.Genero}</td>
         <td>
-          <button class="btn btn-sm btn-primary" onclick="cargarParaEditar(${c.id})">Editar</button>
-          <button class="btn btn-sm btn-danger" onclick="eliminarCliente(${c.id})">Eliminar</button>
+          <button class="btn btn-sm icon-btn btn-primary" onclick="cargarParaEditar(${c.id})">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+          <button class="btn btn-sm icon-btn btn-danger" onclick="eliminarCliente(${c.id})">
+            <i class="bi bi-trash"></i>
+          </button>
         </td>
       </tr>
     `;
   });
 }
+
 
 // Cargar clientes
 async function cargarClientes() {

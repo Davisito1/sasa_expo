@@ -45,19 +45,19 @@ function validarEstado(estado) {
 
 function validarFormulario(m) {
   if (!validarTextoVehiculo(m.Vehiculo)) {
-    alert( "El campo Vehículo debe tener entre 2 y 30 caracteres.");
+    Swal.fire("Error", "El campo Vehículo debe tener entre 2 y 30 caracteres.", "warning");
     return false;
   }
   if (!validarDescripcion(m.Descripcion)) {
-    alert("La descripción debe tener entre 5 y 100 caracteres.");
+    Swal.fire("Error", "La descripción debe tener entre 5 y 100 caracteres.", "warning");
     return false;
   }
   if (!validarFecha(m.Fecha)) {
-    alert("La fecha debe ser válida y no puede ser futura.");
+    Swal.fire("Error", "La fecha debe ser válida y no puede ser futura.", "warning");
     return false;
   }
   if (!validarEstado(m.Estado)) {
-    alert("El estado debe ser: Pendiente, En Proceso o Completado.");
+    Swal.fire("Error", "El estado debe ser: Pendiente, En Proceso o Completado.", "warning");
     return false;
   }
   return true;
@@ -75,8 +75,12 @@ function mostrarMantenimientos(lista) {
         <td>${mantenimiento.Fecha}</td>
         <td>${mantenimiento.Estado}</td>
         <td>
-          <button class="btn btn-sm btn-primary" onclick="cargarParaEditarMantenimiento(${mantenimiento.id})">Editar</button>
-          <button class="btn btn-sm btn-danger" onclick="eliminarMantenimiento(${mantenimiento.id})">Eliminar</button>
+          <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="cargarParaEditarMantenimiento(${mantenimiento.id})" title='Editar'>
+            <i class="bi bi-pencil-square"></i>
+          </button>
+          <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarMantenimiento(${mantenimiento.id})" title='Eliminar'>
+            <i class="bi bi-trash"></i>
+          </button>
         </td>
       </tr>
     `;

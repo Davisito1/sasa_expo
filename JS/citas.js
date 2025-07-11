@@ -1,4 +1,4 @@
-const API_URL = "https://retoolapi.dev/K3dg6S/citas"; // API de citas
+const API_URL = "https://retoolapi.dev/K3dg6S/citas";
 
 const tabla = document.getElementById("tablaCitas");
 const frmAgregar = document.getElementById("frmAgregarCita");
@@ -6,266 +6,227 @@ const frmEditar = document.getElementById("frmEditarCita");
 const modalAgregar = document.getElementById("mdAgregarCita");
 const modalEditar = document.getElementById("mdEditarCita");
 
-// Establecer la fecha mínima para los campos de fecha (hoy)
-document.addEventListener("DOMContentLoaded", function () {
-    const fechaHoy = new Date();
-    const anio = fechaHoy.getFullYear();
-    const mes = String(fechaHoy.getMonth() + 1).padStart(2, '0'); // Mes empieza desde 0
-    const dia = String(fechaHoy.getDate()).padStart(2, '0'); // Asegurarse de que tenga 2 dígitos
+document.addEventListener("DOMContentLoaded", () => {
+  const fechaHoy = new Date().toISOString().split("T")[0];
+  document.getElementById("fechaCita").min = fechaHoy;
+  document.getElementById("editarFechaCita").min = fechaHoy;
 
-    const fechaHoyFormateada = `${anio}-${mes}-${dia}`;
-
-    // Establecer la fecha mínima para los campos de fecha de agregar y editar
-    document.getElementById("fechaCita").setAttribute("min", fechaHoyFormateada);
-    document.getElementById("editarFechaCita").setAttribute("min", fechaHoyFormateada);
-
-    // Llamamos a la función para obtener las citas al cargar la página
-    ObtenerCitas();
+  ObtenerCitas();
 });
 
 function abrirModalAgregar() {
-    modalAgregar.showModal();
+  modalAgregar.showModal();
 }
 
 function cerrarModalAgregar() {
-    modalAgregar.close();
-    frmAgregar.reset();
-    document.getElementById("errorCliente").textContent = ""; // Limpiar mensajes de error
-    document.getElementById("errorFecha").textContent = "";
+  modalAgregar.close();
+  frmAgregar.reset();
+  limpiarErrores();
 }
 
 function abrirModalEditar() {
-    modalEditar.showModal();
+  modalEditar.showModal();
 }
 
 function cerrarModalEditar() {
-    modalEditar.close();
-    frmEditar.reset();
-    document.getElementById("errorCliente").textContent = ""; // Limpiar mensajes de error
-    document.getElementById("errorFecha").textContent = "";
+  modalEditar.close();
+  frmEditar.reset();
+  limpiarErrores();
+}
+
+function limpiarErrores() {
+  ["errorCliente", "errorFecha", "errorClienteEditar", "errorFechaEditar"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = "none";
+      el.textContent = "";
+    }
+  });
 }
 
 async function ObtenerCitas() {
-    try {
-        const res = await fetch(API_URL);
-        const data = await res.json();
-        MostrarCitas(data);
-    } catch (e) {
-        console.error("Error al cargar Citas:", e);
-        Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "No se pudieron cargar las citas"
-        });
-    }
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("Error al obtener citas");
+    const data = await res.json();
+    MostrarCitas(data);
+  } catch (e) {
+    console.error(e);
+    Swal.fire("Error", "No se pudieron cargar las citas.", "error");
+  }
 }
 
 function MostrarCitas(datos) {
-    tabla.innerHTML = "";
-    datos.forEach(cita => {
-        tabla.innerHTML += `
-        <tr>
-            <td>${cita.id}</td> <!-- Aquí va el ID de la cita -->
-            <td>${cita.cliente}</td> <!-- Aquí va el nombre del cliente -->
-            <td>${cita.fecha}</td>   <!-- Aquí va la fecha de la cita -->
-            <td>${cita.hora}</td>    <!-- Aquí va la hora de la cita -->
-            <td>${cita.estado}</td>  <!-- Aquí va el estado de la cita -->
-            <td>
-                <button class="btn btn-sm btn-primary" onclick="CargarParaEditar(${cita.id})">Editar</button>
-                <button class="btn btn-sm btn-danger" onclick="EliminarCita(${cita.id})">Eliminar</button>
-            </td>
-        </tr>
-        `;
-    });
+  tabla.innerHTML = datos
+    .map(
+      (cita) => `
+    <tr>
+      <td>${cita.id}</td>
+      <td>${cita.cliente}</td>
+      <td>${cita.fecha}</td>
+      <td>${cita.hora}</td>
+      <td>${cita.estado}</td>
+      <td>
+        <button class="btn btn-sm icon-btn btn-primary" title="Editar" onclick="CargarParaEditar(${cita.id})">
+          <i class="bi bi-pencil-square"></i>
+        </button>
+        <button class="btn btn-sm icon-btn btn-danger" title="Eliminar" onclick="EliminarCita(${cita.id})">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>
+    </tr>
+  `
+    )
+    .join("");
+}
+
+function validarCliente(cliente, errorId) {
+  const regexNombre = /^[A-Za-z\s]+$/;
+  const errorEl = document.getElementById(errorId);
+  if (!regexNombre.test(cliente.trim())) {
+    errorEl.style.display = "block";
+    errorEl.textContent = "El nombre del cliente solo puede contener letras y espacios.";
+    return false;
+  }
+  errorEl.style.display = "none";
+  errorEl.textContent = "";
+  return true;
+}
+
+function validarFecha(fecha, errorId) {
+  const errorEl = document.getElementById(errorId);
+  if (!fecha) {
+    errorEl.style.display = "block";
+    errorEl.textContent = "La fecha es obligatoria.";
+    return false;
+  }
+  const fechaSeleccionada = new Date(fecha);
+  const fechaHoy = new Date();
+  fechaHoy.setHours(0, 0, 0, 0);
+  if (fechaSeleccionada < fechaHoy) {
+    errorEl.style.display = "block";
+    errorEl.textContent = "La fecha no puede ser anterior a la fecha de hoy.";
+    return false;
+  }
+  errorEl.style.display = "none";
+  errorEl.textContent = "";
+  return true;
 }
 
 frmAgregar.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const cita = {
-        cliente: document.getElementById("txtCliente").value.trim(),
-        fecha: document.getElementById("fechaCita").value,
-        hora: document.getElementById("horaCita").value,
-        estado: document.getElementById("selectEstado").value
-    };
+  const cliente = document.getElementById("txtCliente").value;
+  const fecha = document.getElementById("fechaCita").value;
+  const hora = document.getElementById("horaCita").value;
+  const estado = document.getElementById("selectEstado").value;
 
-    // Validación de campos
-    let valido = true;
-    
-    // Validación Cliente: Solo letras y espacios
-    const regexNombre = /^[A-Za-z\s]+$/;
-    if (!regexNombre.test(cita.cliente)) {
-        document.getElementById("errorCliente").textContent = "El nombre del cliente solo puede contener letras y espacios.";
-        valido = false;
-    } else {
-        document.getElementById("errorCliente").textContent = "";
-    }
+  if (!validarCliente(cliente, "errorCliente") || !validarFecha(fecha, "errorFecha")) {
+    return;
+  }
 
-    // Validación de la fecha
-    if (!cita.fecha) {
-        document.getElementById("errorFecha").textContent = "La fecha es obligatoria.";
-        valido = false;
-    } else {
-        document.getElementById("errorFecha").textContent = "";
-    }
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cliente, fecha, hora, estado }),
+    });
 
-    // Si los campos no son válidos, no continuar
-    if (!valido) return;
+    if (!res.ok) throw new Error("Error al agregar cita");
 
-    // Validación de la fecha no puede ser anterior a la actual
-    const fechaSeleccionada = new Date(cita.fecha);
-    const fechaHoy = new Date();
-    if (fechaSeleccionada < fechaHoy) {
-        document.getElementById("errorFecha").textContent = "La fecha no puede ser anterior a la fecha de hoy.";
-        return;
-    }
+    cerrarModalAgregar();
+    ObtenerCitas();
 
-    try {
-        const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-type": "application/json" },
-            body: JSON.stringify(cita),
-        });
-
-        cerrarModalAgregar();
-        ObtenerCitas();
-        Swal.fire({
-            icon: 'success',
-            title: 'Cita Agregada',
-            text: 'La cita se agregó correctamente.',
-            timer: 1800,
-            showConfirmButton: false
-        });
-    } catch (e) {
-        console.error("Error al agregar cita:", e);
-        Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "No se pudo agregar la cita."
-        });
-    }
+    Swal.fire("Agregado", "La cita se agregó correctamente.", "success");
+  } catch (e) {
+    console.error(e);
+    Swal.fire("Error", "No se pudo agregar la cita.", "error");
+  }
 });
 
 async function CargarParaEditar(id) {
-    try {
-        const res = await fetch(`${API_URL}/${id}`);
-        const data = await res.json();
+  try {
+    const res = await fetch(`${API_URL}/${id}`);
+    if (!res.ok) throw new Error("Error al cargar cita");
+    const data = await res.json();
 
-        document.getElementById("txtIdCita").value = data.id;
-        document.getElementById("txtEditarCliente").value = data.cliente; 
-        document.getElementById("editarFechaCita").value = data.fecha;
-        document.getElementById("editarHoraCita").value = data.hora;
-        document.getElementById("selectEditarEstado").value = data.estado;
+    document.getElementById("txtIdCita").value = data.id;
+    document.getElementById("txtEditarCliente").value = data.cliente;
+    document.getElementById("editarFechaCita").value = data.fecha;
+    document.getElementById("editarHoraCita").value = data.hora;
+    document.getElementById("selectEditarEstado").value = data.estado;
 
-        abrirModalEditar();
-    } catch (e) {
-        console.error("Error al cargar cita para editar:", e);
-        Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "No se pudo cargar la cita."
-        });
-    }
+    abrirModalEditar();
+  } catch (e) {
+    console.error(e);
+    Swal.fire("Error", "No se pudo cargar la cita.", "error");
+  }
 }
 
 frmEditar.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("txtIdCita").value;
-    const cita = {
-        cliente: document.getElementById("txtEditarCliente").value.trim(),
-        fecha: document.getElementById("editarFechaCita").value,
-        hora: document.getElementById("editarHoraCita").value,
-        estado: document.getElementById("selectEditarEstado").value
-    };
+  e.preventDefault();
 
-    // Validación de campos
-    let valido = true;
-    
-    // Validación Cliente: Solo letras y espacios
-    const regexNombre = /^[A-Za-z\s]+$/;
-    if (!regexNombre.test(cita.cliente)) {
-        document.getElementById("errorCliente").textContent = "El nombre del cliente solo puede contener letras y espacios.";
-        valido = false;
-    } else {
-        document.getElementById("errorCliente").textContent = "";
-    }
+  const id = document.getElementById("txtIdCita").value;
+  const cliente = document.getElementById("txtEditarCliente").value;
+  const fecha = document.getElementById("editarFechaCita").value;
+  const hora = document.getElementById("editarHoraCita").value;
+  const estado = document.getElementById("selectEditarEstado").value;
 
-    // Validación de la fecha
-    if (!cita.fecha) {
-        document.getElementById("errorFecha").textContent = "La fecha es obligatoria.";
-        valido = false;
-    } else {
-        document.getElementById("errorFecha").textContent = "";
-    }
+  if (!validarCliente(cliente, "errorClienteEditar") || !validarFecha(fecha, "errorFechaEditar")) {
+    return;
+  }
 
-    // Si los campos no son válidos, no continuar
-    if (!valido) return;
+  try {
+    const res = await fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cliente, fecha, hora, estado }),
+    });
 
-    // Validación de la fecha no puede ser anterior a la actual
-    const fechaSeleccionada = new Date(cita.fecha);
-    const fechaHoy = new Date();
-    if (fechaSeleccionada < fechaHoy) {
-        document.getElementById("errorFecha").textContent = "La fecha no puede ser anterior a la fecha de hoy.";
-        return;
-    }
+    if (!res.ok) throw new Error("Error al actualizar cita");
 
-    try {
-        const res = await fetch(`${API_URL}/${id}`, {
-            method: "PUT",
-            headers: { "Content-type": "application/json" },
-            body: JSON.stringify(cita),
-        });
+    cerrarModalEditar();
+    ObtenerCitas();
 
-        cerrarModalEditar();
-        ObtenerCitas();
-        Swal.fire({
-            icon: 'success',
-            title: 'Cita Actualizada',
-            text: 'La cita se actualizó correctamente.',
-            timer: 1800,
-            showConfirmButton: false
-        });
-    } catch (e) {
-        console.error("Error al actualizar cita:", e);
-        Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "No se pudo actualizar la cita."
-        });
-    }
+    Swal.fire("Actualizado", "La cita se actualizó correctamente.", "success");
+  } catch (e) {
+    console.error(e);
+    Swal.fire("Error", "No se pudo actualizar la cita.", "error");
+  }
 });
 
 async function EliminarCita(id) {
-    const result = await Swal.fire({
-        title: '¿Deseas eliminar esta cita?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    });
+  const result = await Swal.fire({
+    title: "¿Deseas eliminar esta cita?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
+  });
 
-    if (result.isConfirmed) {
-        try {
-            await fetch(`${API_URL}/${id}`, {
-                method: "DELETE"
-            });
-            ObtenerCitas();
-        } catch (e) {
-            console.error("Error al eliminar cita:", e);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "No se pudo eliminar la cita."
-            });
-        }
+  if (result.isConfirmed) {
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Error al eliminar cita");
+
+      ObtenerCitas();
+
+      Swal.fire("Eliminado", "La cita fue eliminada correctamente.", "success");
+    } catch (e) {
+      console.error(e);
+      Swal.fire("Error", "No se pudo eliminar la cita.", "error");
     }
+  }
 }
 
 function BuscarCita() {
-    const texto = document.getElementById("buscar").value.toLowerCase()
-    const filas = tabla.getElementsByTagName("tr")
-    Array.from(filas).forEach((fila) => {
-        const contenido = fila.textContent.toLowerCase()
-        fila.style.display = contenido.includes(texto) ? "" : "none"
-    })
+  const texto = document.getElementById("buscar").value.toLowerCase();
+  const filas = tabla.getElementsByTagName("tr");
+  Array.from(filas).forEach((fila) => {
+    const contenido = fila.textContent.toLowerCase();
+    fila.style.display = contenido.includes(texto) ? "" : "none";
+  });
 }
