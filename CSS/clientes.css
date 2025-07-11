@@ -1,110 +1,298 @@
-    body {
-            background-color: #f8f9fa;
-        }
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin: 40px auto;
-            max-width: 900px;
-            background-color: #fff;
-        }
-        .btn-add {
-            background-color: #dc3545;
-            color: white;
-            border-radius: 10px;
-            padding: 10px 20px;
-            border: none;
-        }
-        .btn-add:hover {
-            background-color: #bb2d3b;
-        }
-        table {
-            margin-top: 20px;
-        }
-        table th {
-            background-color: #e9ecef;
-        }
-        table td, table th {
-            text-align: center;
-            vertical-align: middle;
-        }
-        .action-icon {
-            cursor: pointer;
-            margin: 0 5px;
-            color: #0d6efd;
-            transition: transform 0.2s;
-        }
-        .action-icon:hover {
-            transform: scale(1.2);
-            color: #084298;
-        }
+/* Contenedor principal */
+.content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  margin: 30px auto;
+  max-width: 900px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 
-    /* Sidebar */
-    #sidebar {
-      width: 80px; transition: width 0.3s ease; overflow: hidden;
-      height: 100vh; background-color: #fff; position: fixed; left: 0; top: 0;
-      z-index: 1000; border-right: 1px solid #dee2e6;
-    }
-    #sidebar:hover { width: 250px; }
-    #sidebar ul { padding-left: 0; list-style: none; margin-top: 20px; }
-    #sidebar ul li {
-      padding: 15px; display: flex; align-items: center; cursor: pointer; transition: background 0.3s ease;
-    }
-    #sidebar ul li:hover { background-color: #f0f0f0; }
-    #sidebar ul li i { font-size: 24px; color: #990000; width: 30px; }
-    #sidebar ul li span { display: none; white-space: nowrap; margin-left: 10px; }
-    #sidebar:hover ul li span { display: inline; }
+/* Título */
+.content h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-    .topbar {
-      background-color: #c41717; height: 60px; width: 100%;
-      position: fixed; left: 0; top: 0; z-index: 999;
-      padding-left: 80px; display: flex; align-items: center; justify-content: space-between;
-    }
-    #sidebar:hover ~ .topbar { padding-left: 250px; }
+/* Botón principal */
+.btn-add {
+  background-color: #0056b3;
+  color: white;
+  border-radius: 4px;
+  padding: 8px 15px;
+  border: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 
-    .search-bar {
-      background-color: #5c0a0a; border-radius: 5px; padding: 5px 10px;
-      display: flex; align-items: center; width: 300px; color: white;
-    }
-    .search-bar input {
-      border: none; background: none; outline: none; color: white; width: 100%;
-    }
-    .topbar-right {
-      display: flex; align-items: center; margin-right: 20px; color: white; gap: 20px;
-    }
+.btn-add:hover {
+  background-color: #004494;
+  transform: translateY(-1px);
+}
 
-    .content {
-      margin-top: 80px; margin-left: 100px; transition: margin-left 0.3s ease;
-    }
-    #sidebar:hover ~ .content { margin-left: 270px; }
+/* Tabla */
+.table-responsive {
+  border-radius: 10px;
+  overflow-x: auto;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 0.5rem;
+}
 
-    table { width: 100%; background: white; border-collapse: collapse; }
-    table th, table td {
-      border: 1px solid #dee2e6; padding: 12px; text-align: left;
-    }
-    table th { background-color: #f8f9fa; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
 
-    .btn-primary { background-color: #1d6fa5; border: none; }
-    .btn-primary:hover { background-color: #155d85; }
+.table thead {
+  background-color: #f0f0f0;
+}
 
-    .acciones i {
-      cursor: pointer; margin-right: 10px; color: #1d6fa5; transition: color 0.3s ease;
-    }
-    .acciones i:hover { color: #0d4e73; }
+.table thead th {
+  text-align: center;
+  padding: 12px 15px;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #ddd;
+}
 
-    dialog {
-      border: none; border-radius: 8px; padding: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.3);
-    }
-    dialog form input {
-      width: 100%; margin: 10px 0; padding: 8px;
-      border: 1px solid #ced4da; border-radius: 5px;
-    }
-    dialog button {
-      margin-top: 10px; padding: 8px 16px; border: none;
-      border-radius: 5px; cursor: pointer;
-    }
-    dialog button[type="submit"] { background-color: #1d6fa5; color: white; }
-    dialog button[type="submit"]:hover { background-color: #155d85; }
-    dialog button[type="button"] { background-color: #6c757d; color: white; }
-    dialog button[type="button"]:hover { background-color: #5a6268; }
+.table tbody td {
+  text-align: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Estado de las citas */
+.estado-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.estado-pendiente {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.estado-confirmado {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.estado-cancelado {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Acciones */
+.acciones {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-action {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #ced4da;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  font-size: 1rem;
+}
+
+.btn-action:hover {
+  background-color: #e7f1ff;
+  border-color: #1d6fa5;
+  color: #1d6fa5;
+}
+
+.btn-action.edit {
+  border-color: #0d6efd;
+  color: #0d6efd;
+}
+
+.btn-action.edit:hover {
+  background-color: #cfe2ff;
+  border-color: #084298;
+  color: #084298;
+}
+
+.btn-action.delete {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.btn-action.delete:hover {
+  background-color: #f8d7da;
+  border-color: #842029;
+  color: #842029;
+}
+
+/* Fechas inválidas */
+.fecha-invalida {
+  color: #dc3545;
+  font-style: italic;
+}
+
+/* Búsqueda */
+.search-container {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.search-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 200px;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #0056b3;
+  box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.1);
+}
+
+/* Modales (dialog) */
+dialog {
+  width: 350px;
+  max-width: 90%;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 20px 25px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  background-color: white;
+}
+
+dialog h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-align: center;
+  color: #0056b3;
+}
+
+/* Formulario modal - 2 columnas */
+dialog form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 15px;
+}
+
+dialog input[type="text"],
+dialog input[type="date"],
+dialog input[type="email"],
+dialog select {
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Botones en modal */
+dialog button[type="submit"] {
+  grid-column: 1 / -1;
+  background-color: #0056b3;
+  color: white;
+  padding: 10px 0;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  margin-top: 10px;
+}
+dialog button[type="submit"]:hover {
+  background-color: #004494;
+}
+
+dialog button[type="button"] {
+  grid-column: 1 / -1;
+  background-color: #6c757d;
+  color: white;
+  padding: 10px 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  margin-top: 10px;
+}
+dialog button[type="button"]:hover {
+  background-color: #5a6268;
+}
+
+/* Botones con iconos */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  background-color: white !important;
+  border: 1.5px solid #ced4da !important;
+  color: #333 !important;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.icon-btn i {
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.icon-btn:hover {
+  background-color: #e7f1ff !important;
+  border-color: #1d6fa5 !important;
+  color: #1d6fa5 !important;
+}
+
+.btn-primary.icon-btn {
+  color: #0d6efd !important;
+  border-color: #0d6efd !important;
+}
+.btn-primary.icon-btn:hover {
+  background-color: #cfe2ff !important;
+  color: #084298 !important;
+  border-color: #084298 !important;
+}
+
+.btn-danger.icon-btn {
+  color: #dc3545 !important;
+  border-color: #dc3545 !important;
+}
+.btn-danger.icon-btn:hover {
+  background-color: #f8d7da !important;
+  color: #842029 !important;
+  border-color: #842029 !important;
+}

@@ -21,30 +21,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  async function cargarPagos() {
-    try {
-      const res = await fetch(API_URL);
-      const pagos = await res.json();
-      tbody.innerHTML = "";
-      pagos.forEach(pago => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${pago.id}</td>
-          <td>${new Date(pago.fecha).toLocaleDateString('es-ES')}</td>
-          <td>${parseFloat(pago.monto).toFixed(2).replace('.', ',')}</td>
-          <td>${pago.metodo}</td>
-          <td>${pago.factura}</td>
-          <td>
-            <i class="fas fa-pencil-alt editar" data-id="${pago.id}"></i>
-            <i class="fas fa-trash eliminar" data-id="${pago.id}"></i>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    } catch (error) {
-      Swal.fire('Error', 'No se pudieron cargar los pagos.', 'error');
-    }
+ async function cargarPagos() {
+  try {
+    const res = await fetch(API_URL);
+    const pagos = await res.json();
+    tbody.innerHTML = "";
+    pagos.forEach(pago => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${pago.id}</td>
+        <td>${new Date(pago.fecha).toLocaleDateString('es-ES')}</td>
+        <td>${parseFloat(pago.monto).toFixed(2).replace('.', ',')}</td>
+        <td>${pago.metodo}</td>
+        <td>${pago.factura}</td>
+        <td>
+      <button class="btn btn-sm btn-primary me-2 icon-btn editar" data-id="${pago.id}" title="Editar">
+  <i class="bi bi-pencil-square"></i>
+</button>
+<button class="btn btn-sm btn-danger icon-btn eliminar" data-id="${pago.id}" title="Eliminar">
+  <i class="bi bi-trash"></i>
+</button>
+
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    Swal.fire('Error', 'No se pudieron cargar los pagos.', 'error');
   }
+}
 
   cargarPagos();
 
@@ -109,46 +114,50 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  tbody.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('editar')) {
-      const id = e.target.dataset.id;
-      try {
-        const res = await fetch(`${API_URL}/${id}`);
-        const data = await res.json();
-        idEditando = id;
-        formNuevoPago.fecha.value = data.fecha;
-        formNuevoPago.monto.value = data.monto;
-        formNuevoPago.metodo.value = data.metodo;
-        formNuevoPago.factura.value = data.factura;
-        modalPago.showModal();
-      } catch (error) {
-        Swal.fire('Error', 'No se pudo cargar el pago.', 'error');
-      }
+tbody.addEventListener('click', async (e) => {
+  const btnEditar = e.target.closest('.editar');
+  if (btnEditar) {
+    const id = btnEditar.dataset.id;
+    try {
+      const res = await fetch(`${API_URL}/${id}`);
+      const data = await res.json();
+      idEditando = id;
+      formNuevoPago.fecha.value = data.fecha;
+      formNuevoPago.monto.value = data.monto;
+      formNuevoPago.metodo.value = data.metodo;
+      formNuevoPago.factura.value = data.factura;
+      modalPago.showModal();
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo cargar el pago.', 'error');
     }
+    return; // evita que siga al siguiente if
+  }
 
-    if (e.target.classList.contains('eliminar')) {
-      const id = e.target.dataset.id;
+  const btnEliminar = e.target.closest('.eliminar');
+  if (btnEliminar) {
+    const id = btnEliminar.dataset.id;
 
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: 'Esta acción eliminará el pago permanentemente.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          try {
-            await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-            Swal.fire('Eliminado', 'El pago fue eliminado correctamente.', 'success');
-            cargarPagos();
-          } catch (error) {
-            Swal.fire('Error', 'No se pudo eliminar el pago.', 'error');
-          }
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción eliminará el pago permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+          Swal.fire('Eliminado', 'El pago fue eliminado correctamente.', 'success');
+          cargarPagos();
+        } catch (error) {
+          Swal.fire('Error', 'No se pudo eliminar el pago.', 'error');
         }
-      });
-    }
-  });
+      }
+    });
+  }
+});
+
 
   if (inputBuscar) {
     inputBuscar.addEventListener('input', () => {

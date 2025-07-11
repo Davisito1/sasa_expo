@@ -1,3 +1,4 @@
+/* Estilo para contenedor general */
 .pagos-container {
   background-color: white;
   padding: 30px;
@@ -20,7 +21,7 @@
 }
 
 .btn-nuevo {
-  background-color: #0056b3 !important;  /* Azul Bootstrap */
+  background-color: #0056b3 !important;
   color: white !important;
   padding: 8px 15px;
   border: none;
@@ -31,40 +32,86 @@
 .btn-nuevo:hover {
   background-color: #004494 !important;
 }
+
 .search-input {
   padding: 6px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
-.tabla-pagos {
+/* Tabla general */
+.tabla-pagos,
+.table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.tabla-pagos thead {
+.tabla-pagos thead,
+.table thead {
   background-color: #f0f0f0;
 }
 
 .tabla-pagos th,
-.tabla-pagos td {
+.tabla-pagos td,
+.table th,
+.table td {
   text-align: center;
   padding: 12px;
   border-bottom: 1px solid #ddd;
 }
 
-.tabla-pagos i {
+.tabla-pagos td:last-child,
+.table td:last-child {
+  white-space: nowrap;
+}
+
+/* Botones de acción consistentes en todos los módulos */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  font-size: 1rem;
+  border-radius: 6px;
+  background-color: white !important;
+  border: 1.5px solid #ced4da !important;
+  color: #333 !important;
   cursor: pointer;
-  margin: 0 5px;
-  color: #333;
-  transition: color 0.2s;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-.tabla-pagos i:hover {
-  color: #b60000;
+.icon-btn i {
+  font-size: 1.1rem;
+  pointer-events: none;
 }
 
-/* Modal adaptado */
+.icon-btn:hover {
+  background-color: #e7f1ff !important;
+  border-color: #1d6fa5 !important;
+  color: #1d6fa5 !important;
+}
+
+.btn-primary.icon-btn {
+  color: #0d6efd !important;
+  border-color: #0d6efd !important;
+}
+.btn-primary.icon-btn:hover {
+  background-color: #cfe2ff !important;
+  color: #084298 !important;
+  border-color: #084298 !important;
+}
+
+.btn-danger.icon-btn {
+  color: #dc3545 !important;
+  border-color: #dc3545 !important;
+}
+.btn-danger.icon-btn:hover {
+  background-color: #f8d7da !important;
+  color: #842029 !important;
+  border-color: #842029 !important;
+}
+
+/* Modal unificado */
 dialog {
   width: 350px;
   max-width: 90%;
@@ -75,26 +122,21 @@ dialog {
   background-color: white;
 }
 
-dialog h2 {
+dialog h2,
+dialog h3 {
   font-size: 20px;
   margin-bottom: 15px;
   font-weight: bold;
+  text-align: center;
 }
 
 dialog form {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 15px;
+  grid-template-columns: 1fr;
+  gap: 12px;
 }
 
-dialog label {
-  font-size: 14px;
-  margin-bottom: 4px;
-  display: block;
-}
-
-dialog input[type="date"],
-dialog input[type="number"],
+dialog input,
 dialog select {
   width: 100%;
   padding: 7px 8px;
@@ -104,7 +146,6 @@ dialog select {
 }
 
 dialog button[type="submit"] {
-  grid-column: 1 / -1;
   background-color: #0056b3;
   color: white;
   padding: 10px 0;
