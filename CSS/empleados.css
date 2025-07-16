@@ -65,3 +65,18 @@ dialog form input {
   border-color: #842029;
   color: #842029;
 }
+/* Botón de nueva factura */
+.btn-add {
+    background-color: #0056b3;
+    color: white;
+    border-radius: 10px;
+    padding: 10px 20px;
+    border: none;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}

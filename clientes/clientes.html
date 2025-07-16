@@ -1,26 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="stylesheet" href="../CSS/clientes.css" />
-  <link rel="stylesheet" href="../CSS/dashboard.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
   <title>Clientes</title>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+  <!-- Estilos -->
+  <link rel="stylesheet" href="../CSS/clientes.css" />
+  <link rel="stylesheet" href="../CSS/dashboard.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-  <div id="sidebar">
-    <!-- Logo corregido -->
-    <div class="logo">
-      <img src="../IMG/logo sasa.jpg" alt="SASA" />
-    </div>
 
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="logo"><img src="../IMG/logo sasa.jpg" alt="SASA" /></div>
     <ul>
       <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
@@ -34,31 +31,29 @@
     </ul>
   </div>
 
+  <!-- Topbar -->
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
-      <input type="text" placeholder="Buscar..." />
+      <input type="text" placeholder="Buscar..." onkeyup="buscarClientes()" id="buscar" />
     </div>
     <div class="topbar-right">
-      <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>      
+      <a href="#"><i class="fas fa-bell fa-lg"></i></a>
       <span class="ms-2">Usuario</span>
-      <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg"  id="userIcon"></i></a> 
-      <div class="user-menu" id="userMenu">
-        <a href="#">Perfil <i class="fas fa-id-badge float-end"></i></a>
-        <a href="#">Configuración <i class="fas fa-cog float-end"></i></a>
-        <a href="#" id="logoutBtn">Cerrar sesión <i class="fas fa-sign-out-alt float-end"></i></a>
-      </div>
+      <a href="#"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
     </div>
   </div>
 
+  <!-- Contenido -->
   <div class="content">
-    <div class="d-flex justify-content-start align-items-center mb-4 px-4">
-      <button class="btn btn-danger d-flex align-items-center" onclick="abrirModalAgregar()">
-        <i class="fas fa-plus me-2"></i> Añadir Clientes
+    <h2 class="text-center mb-4">Clientes</h2>
+
+    <div class="d-flex justify-content-start px-4 mb-3">
+      <button class="btn btn-primary d-flex align-items-center gap-2" onclick="abrirModalAgregar()">
+        <i class="bi bi-plus-lg"></i> Añadir Clientes
       </button>
     </div>
 
-    <!-- Tabla de mantenimiento -->
     <div class="table-responsive px-4">
       <table class="table table-striped table-hover shadow-sm rounded">
         <thead>
@@ -68,46 +63,41 @@
             <th>Apellidos</th>
             <th>DUI</th>
             <th>Fecha de nacimiento</th>
-            <th>Genero</th>
+            <th>Género</th>
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tablaClientes">
-        </tbody>
+        <tbody id="tablaClientes"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Agregar Clientes -->
-  <dialog id="mdAgregarClientes" class="p-4 rounded shadow">
-    <h3 class="text-center">Agregar Mantenimiento</h3>
-    <form id="frmAgregarClientes" class="d-flex flex-column gap-3">
-      <input type="text" id="txtNombres" placeholder="Nombres" required class="form-control" />
-      <input type="text" id="txtApellidos" placeholder="Apellidos" required class="form-control" />
-      <input type="text" id="txtDUI" placeholder="DUI" required class="form-control" />
-      <input type="date" id="txtFecha" placeholder="Fecha  de nacimiento (19/05/95)" required class="form-control" />
-      <input type="text" id="txtGenero" placeholder="Genero" required class="form-control" />
-      <div class="d-flex justify-content-between mt-3">
-        <button type="submit" class="btn btn-danger">Guardar</button>
-        <button type="button" onclick="cerrarModalAgregar()" class="btn btn-secondary">Cerrar</button>
-      </div>
+  <!-- Modal Agregar -->
+  <dialog id="mdAgregarClientes">
+    <h3>Agregar Cliente</h3>
+    <form id="frmAgregarClientes">
+      <input type="text" id="txtNombres" placeholder="Nombres" required />
+      <input type="text" id="txtApellidos" placeholder="Apellidos" required />
+      <input type="text" id="txtDUI" placeholder="DUI" required />
+      <input type="date" id="txtFecha" required />
+      <input type="text" id="txtGenero" placeholder="Género" required />
+      <button type="submit">Guardar</button>
+      <button type="button" onclick="cerrarModalAgregar()">Cerrar</button>
     </form>
   </dialog>
 
-  <!-- Modal Editar Clientes -->
-  <dialog id="mdEditarClientes" class="p-4 rounded shadow">
-    <h3 class="text-center">Editar Clientes</h3>
-    <form id="frmEditarClientes" class="d-flex flex-column gap-3">
+  <!-- Modal Editar -->
+  <dialog id="mdEditarClientes">
+    <h3>Editar Cliente</h3>
+    <form id="frmEditarClientes">
       <input type="hidden" id="txtIdEditarClientes" />
-      <input type="text" id="txtNombreEditar" placeholder="Nombres" required class="form-control" />
-      <input type="text" id="txtApellidoEditar" placeholder="Apellidos" required class="form-control" />
-      <input type="text" id="txtDUIEditar" placeholder="DUI" required class="form-control" />
-      <input type="date" id="txtFechaEditar" placeholder="Fecha de nacimiento (19/05/95)" required class="form-control" />
-      <input type="text" id="txtGeneroEditar" placeholder="Genero" required class="form-control" />
-      <div class="d-flex justify-content-between mt-3">
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <button type="button" onclick="cerrarModalEditar()" class="btn btn-secondary">Cerrar</button>
-      </div>
+      <input type="text" id="txtNombreEditar" placeholder="Nombres" required />
+      <input type="text" id="txtApellidoEditar" placeholder="Apellidos" required />
+      <input type="text" id="txtDUIEditar" placeholder="DUI" required />
+      <input type="date" id="txtFechaEditar" required />
+      <input type="text" id="txtGeneroEditar" placeholder="Género" required />
+      <button type="submit">Actualizar</button>
+      <button type="button" onclick="cerrarModalEditar()">Cerrar</button>
     </form>
   </dialog>
 

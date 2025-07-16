@@ -36,7 +36,13 @@ body {
 }
 
 #sidebar ul li:hover {
-  background-color: #f1f1f1;
+  background-color: #C91A1A;
+  color: white;
+}
+
+#sidebar ul li:hover i,
+#sidebar ul li:hover span {
+  color: white;
 }
 
 #sidebar ul li i {
@@ -45,6 +51,7 @@ body {
   width: 30px;
   min-width: 30px;
   text-align: center;
+  transition: color 0.2s ease;
 }
 
 #sidebar ul li span {
@@ -212,4 +219,43 @@ body {
 #sidebar:hover .logo img {
   max-height: 70px;
   transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #sidebar {
+    width: 60px;
+  }
+
+  #sidebar:hover {
+    width: 200px;
+  }
+
+  .topbar {
+    padding-left: 60px;
+  }
+
+  #sidebar:hover ~ .topbar {
+    padding-left: 200px;
+  }
+
+  .content {
+    margin-left: 80px;
+  }
+
+  #sidebar:hover ~ .content {
+    margin-left: 220px;
+  }
+
+  .search-bar {
+    width: 180px;
+  }
+
+  .card h3 {
+    font-size: 24px;
+  }
+
+  .card {
+    height: auto;
+  }
 }
