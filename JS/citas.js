@@ -57,9 +57,7 @@ async function ObtenerCitas() {
 }
 
 function MostrarCitas(datos) {
-  tabla.innerHTML = datos
-    .map(
-      (cita) => `
+  tabla.innerHTML = datos.map(cita => `
     <tr>
       <td>${cita.id}</td>
       <td>${cita.cliente}</td>
@@ -75,43 +73,48 @@ function MostrarCitas(datos) {
         </button>
       </td>
     </tr>
-  `
-    )
-    .join("");
+  `).join("");
 }
 
 function validarCliente(cliente, errorId) {
-  const regexNombre = /^[A-Za-z\s]+$/;
+  const regexNombre = /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]+$/;
   const errorEl = document.getElementById(errorId);
   if (!regexNombre.test(cliente.trim())) {
     errorEl.style.display = "block";
-    errorEl.textContent = "El nombre del cliente solo puede contener letras y espacios.";
+    errorEl.textContent = "El nombre solo puede contener letras y espacios.";
     return false;
   }
   errorEl.style.display = "none";
-  errorEl.textContent = "";
   return true;
 }
 
 function validarFecha(fecha, errorId) {
   const errorEl = document.getElementById(errorId);
+
   if (!fecha) {
     errorEl.style.display = "block";
     errorEl.textContent = "La fecha es obligatoria.";
     return false;
   }
-  const fechaSeleccionada = new Date(fecha);
-  const fechaHoy = new Date();
-  fechaHoy.setHours(0, 0, 0, 0);
-  if (fechaSeleccionada < fechaHoy) {
+
+  // Convertir a Date correctamente si viene en formato DD/MM/YYYY
+  let [anio, mes, dia] = fecha.split("-");
+  const fechaSeleccionada = new Date(anio, mes - 1, dia);
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  fechaSeleccionada.setHours(0, 0, 0, 0);
+
+  if (fechaSeleccionada < hoy) {
     errorEl.style.display = "block";
-    errorEl.textContent = "La fecha no puede ser anterior a la fecha de hoy.";
+    errorEl.textContent = "La fecha no puede ser anterior al día de hoy.";
     return false;
   }
+
   errorEl.style.display = "none";
-  errorEl.textContent = "";
   return true;
 }
+
 
 frmAgregar.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -121,9 +124,7 @@ frmAgregar.addEventListener("submit", async (e) => {
   const hora = document.getElementById("horaCita").value;
   const estado = document.getElementById("selectEstado").value;
 
-  if (!validarCliente(cliente, "errorCliente") || !validarFecha(fecha, "errorFecha")) {
-    return;
-  }
+  if (!validarCliente(cliente, "errorCliente") || !validarFecha(fecha, "errorFecha")) return;
 
   try {
     const res = await fetch(API_URL, {
@@ -136,7 +137,6 @@ frmAgregar.addEventListener("submit", async (e) => {
 
     cerrarModalAgregar();
     ObtenerCitas();
-
     Swal.fire("Agregado", "La cita se agregó correctamente.", "success");
   } catch (e) {
     console.error(e);
@@ -172,9 +172,7 @@ frmEditar.addEventListener("submit", async (e) => {
   const hora = document.getElementById("editarHoraCita").value;
   const estado = document.getElementById("selectEditarEstado").value;
 
-  if (!validarCliente(cliente, "errorClienteEditar") || !validarFecha(fecha, "errorFechaEditar")) {
-    return;
-  }
+  if (!validarCliente(cliente, "errorClienteEditar") || !validarFecha(fecha, "errorFechaEditar")) return;
 
   try {
     const res = await fetch(`${API_URL}/${id}`, {
@@ -187,7 +185,6 @@ frmEditar.addEventListener("submit", async (e) => {
 
     cerrarModalEditar();
     ObtenerCitas();
-
     Swal.fire("Actualizado", "La cita se actualizó correctamente.", "success");
   } catch (e) {
     console.error(e);
@@ -206,14 +203,10 @@ async function EliminarCita(id) {
 
   if (result.isConfirmed) {
     try {
-      const res = await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-      });
-
+      const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Error al eliminar cita");
 
       ObtenerCitas();
-
       Swal.fire("Eliminado", "La cita fue eliminada correctamente.", "success");
     } catch (e) {
       console.error(e);
