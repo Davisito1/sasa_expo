@@ -1,122 +1,99 @@
-const apiVehiculos = 'https://retoolapi.dev/1nB30q/data';
-const apiClientes = 'https://retoolapi.dev/PifxKy/data';
-const apiEmpleados = 'https://retoolapi.dev/mm42wr/empleados';
-const apiCitas = 'https://retoolapi.dev/K3dg6S/citas';
+document.addEventListener("DOMContentLoaded", async () => {
+  const API_VEHICULOS = 'https://retoolapi.dev/1nB30q/data';
+  const API_CITAS = 'https://retoolapi.dev/K3dg6S/citas';
+  const API_HISTORIAL = 'https://retoolapi.dev/80QQcT/HistorialAPI';
+  const API_EMPLEADOS = 'https://retoolapi.dev/FdJGoM/data';
 
-let chart = null;
-
-document.addEventListener("DOMContentLoaded", () => {
-  cargarTotales();
-});
-
-async function cargarTotales() {
-  try {
-    const [vehiculos, clientes, empleados, citas] = await Promise.all([
-      fetch(apiVehiculos).then(res => res.json()),
-      fetch(apiClientes).then(res => res.json()),
-      fetch(apiEmpleados).then(res => res.json()),
-      fetch(apiCitas).then(res => res.json()),
-    ]);
-
-    document.getElementById("vehiculosTotal").textContent = vehiculos.length;
-    document.getElementById("clientesTotal").textContent = clientes.length;
-    document.getElementById("empleadosTotal").textContent = empleados.length;
-    document.getElementById("citasTotal").textContent = citas.length;
-
-    // Guardamos los datos globales
-    window.datosDashboard = { vehiculos, clientes, empleados, citas };
-  } catch (error) {
-    console.error("Error al cargar datos:", error);
-    Swal.fire("Error", "No se pudieron cargar los datos del dashboard.", "error");
+  function mostrarFechaYHora() {
+    const f = new Date();
+    document.getElementById("fechaActual").textContent = f.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById("horaActual").textContent = f.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   }
-}
+  mostrarFechaYHora();
+  setInterval(mostrarFechaYHora, 60000);
 
-// ---------- Gráfica Vehículos por marca ----------
-function mostrarGraficaVehiculos() {
-  const vehiculos = window.datosDashboard?.vehiculos || [];
+  const totalizar = async (url, id) => {
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      document.getElementById(id).textContent = data.length;
+      return data;
+    } catch {
+      document.getElementById(id).textContent = "0";
+      return [];
+    }
+  };
+
+  const vehiculos = await totalizar(API_VEHICULOS, 'vehiculosTotal');
+  const citas = await totalizar(API_CITAS, 'citasTotal');
+  await totalizar(API_HISTORIAL, 'historialTotal');
+  await totalizar(API_EMPLEADOS, 'empleadosTotal');
+
+  // Vehículos por marca
   const marcas = {};
-
   vehiculos.forEach(v => {
-    const marca = (v.Marca || v.marca || "Desconocido").toUpperCase();
+    const marca = (v.marca || 'Otra').trim();
     marcas[marca] = (marcas[marca] || 0) + 1;
   });
 
-  renderizarGrafica(Object.keys(marcas), Object.values(marcas), "Vehículos por marca");
-}
-
-// ---------- Gráfica Clientes por género ----------
-function mostrarGraficaClientes() {
-  const clientes = window.datosDashboard?.clientes || [];
-  const generos = { Masculino: 0, Femenino: 0, Otro: 0 };
-
-  clientes.forEach(c => {
-    const genero = (c.Genero || c.genero || "").toLowerCase();
-    if (genero === "masculino") generos.Masculino++;
-    else if (genero === "femenino") generos.Femenino++;
-    else generos.Otro++;
-  });
-
-  renderizarGrafica(Object.keys(generos), Object.values(generos), "Clientes por género");
-}
-
-// ---------- Ver Citas del día ----------
-function verCitasHoy() {
-  const citas = window.datosDashboard?.citas || [];
-  const hoy = new Date().toISOString().split("T")[0];
-
-  const citasHoy = citas.filter(c => (c.Fecha || c.fecha) === hoy);
-
-  if (citasHoy.length > 0) {
-    const lista = citasHoy.map(c => `<li>${c.Cliente || c.cliente || "Sin nombre"} - ${c.Hora || c.hora}</li>`).join("");
-    Swal.fire({
-      icon: "info",
-      title: "Citas para hoy",
-      html: `<ul>${lista}</ul>`,
-      confirmButtonText: "Cerrar"
-    });
-  } else {
-    Swal.fire({
-      icon: "warning",
-      title: "Sin citas hoy",
-      text: "No hay citas registradas para el día de hoy."
-    });
-  }
-}
-
-// ---------- Renderizar gráfica ----------
-function renderizarGrafica(labels, data, titulo) {
-  const ctx = document.getElementById("chart").getContext("2d");
-
-  if (chart) chart.destroy();
-
-  chart = new Chart(ctx, {
-    type: "pie",
+  new Chart(document.getElementById("graficaVehiculosMarca"), {
+    type: 'pie',
     data: {
-      labels: labels,
+      labels: Object.keys(marcas),
       datasets: [{
-        data: data,
-        backgroundColor: [
-          "#36A2EB",
-          "#FF6384",
-          "#FFCE56",
-          "#4CAF50",
-          "#FF9800",
-          "#9C27B0"
-        ]
+        data: Object.values(marcas),
+        backgroundColor: ['#36a2eb', '#ff6384', '#ffce56', '#4bc0c0', '#9966ff']
       }]
     },
     options: {
       responsive: true,
-      plugins: {
-        title: {
-          display: true,
-          text: titulo,
-          font: { size: 18 }
-        },
-        legend: {
-          position: 'top'
-        }
-      }
+      maintainAspectRatio: true
     }
   });
-}
+
+  // Ingresos mensuales (ficticios)
+  new Chart(document.getElementById("graficaIngresosMensuales"), {
+    type: 'line',
+    data: {
+      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'],
+      datasets: [{
+        label: 'Ingresos ($)',
+        data: [8500, 9200, 10500, 11000, 9600, 12300, 11500],
+        borderColor: '#007bff',
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true
+    }
+  });
+
+  // Botón historial
+  document.getElementById("verHistorialBtn").addEventListener("click", () => {
+    window.location.href = "../historial/historial.html";
+  });
+
+  // Botón citas de hoy
+  window.verCitasHoy = async function () {
+    try {
+      const res = await fetch(API_CITAS);
+      const data = await res.json();
+      const hoy = new Date().toISOString().split('T')[0];
+      const citasHoy = data.filter(c => c.fecha === hoy);
+
+      if (citasHoy.length > 0) {
+        const html = citasHoy.map(c => `
+          <p><strong>Hora:</strong> ${c.hora} - <strong>Estado:</strong> ${c.estado}</p>
+          <p><strong>Descripción:</strong> ${c.descripcion || 'Sin descripción'}</p><hr>
+        `).join('');
+        Swal.fire({ title: 'Citas de hoy', html, icon: 'info' });
+      } else {
+        Swal.fire('Sin citas hoy', 'No hay citas registradas para hoy.', 'warning');
+      }
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo cargar la información de citas.', 'error');
+      console.error(error);
+    }
+  };
+});

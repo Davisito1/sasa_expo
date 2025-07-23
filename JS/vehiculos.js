@@ -1,193 +1,99 @@
-const API_URL = 'https://retoolapi.dev/1nB30q/data';
+document.addEventListener("DOMContentLoaded", async () => {
+  const API_VEHICULOS = 'https://retoolapi.dev/1nB30q/data';
+  const API_CITAS = 'https://retoolapi.dev/K3dg6S/citas';
+  const API_HISTORIAL = 'https://retoolapi.dev/80QQcT/HistorialAPI';
+  const API_EMPLEADOS = 'https://retoolapi.dev/FdJGoM/data';
 
-const tablaVehiculos = document.getElementById("tablaVehiculos");
-const frmAgregar = document.getElementById("frmAgregarVehiculo");
-const frmEditar = document.getElementById("frmEditarVehiculo");
-
-const modalAgregar = document.getElementById("mdAgregarVehiculo");
-const modalEditar = document.getElementById("mdEditarVehiculo");
-
-function abrirModalAgregar() {
-  modalAgregar.showModal();
-}
-function cerrarModalAgregar() {
-  frmAgregar.reset();
-  modalAgregar.close();
-}
-function cerrarModalEditar() {
-  frmEditar.reset();
-  modalEditar.close();
-}
-
-function validarTextoSoloLetras(texto) {
-  return /^[a-zA-Z\s]+$/.test(texto.trim());
-}
-function validarAnio(anio) {
-  const anioNum = Number(anio);
-  const anioActual = new Date().getFullYear() + 1;
-  return /^\d{4}$/.test(anio) && anioNum >= 1900 && anioNum <= anioActual;
-}
-function validarPlaca(placa) {
-  return /^[A-Z0-9-]{5,8}$/i.test(placa.trim());
-}
-function validarVIN(vin) {
-  return /^[A-HJ-NPR-Z0-9]{17}$/i.test(vin.trim());
-}
-
-function mostrarVehiculos(lista) {
-  tablaVehiculos.innerHTML = "";
-  lista.forEach((vehiculo) => {
-    tablaVehiculos.innerHTML += `
-      <tr>
-        <td>${vehiculo.id}</td>
-        <td>${vehiculo.Marca}</td>
-        <td>${vehiculo.Modelo}</td>
-        <td>${vehiculo.Anio}</td>
-        <td>${vehiculo.Placa}</td>
-        <td>${vehiculo.VIN}</td>
-        <td>${vehiculo.Cliente}</td>
-        <td>
-          <button class="btn btn-sm btn-primary me-2 icon-btn editar" data-id="${vehiculo.id}" title="Editar">
-            <i class="bi bi-pencil-square"></i>
-          </button>
-          <button class="btn btn-sm btn-danger icon-btn eliminar" data-id="${vehiculo.id}" title="Eliminar">
-            <i class="bi bi-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-  agregarEventosBotones();
-}
-
-function agregarEventosBotones() {
-  document.querySelectorAll(".editar").forEach(btn => {
-    btn.addEventListener("click", () => cargarParaEditar(btn.dataset.id));
-  });
-  document.querySelectorAll(".eliminar").forEach(btn => {
-    btn.addEventListener("click", () => eliminarVehiculo(btn.dataset.id));
-  });
-}
-
-async function cargarVehiculos() {
-  try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    mostrarVehiculos(data);
-  } catch (error) {
-    console.error("Error al cargar vehículos:", error);
-    Swal.fire("Error", "No se pudieron cargar los vehículos.", "error");
+  function mostrarFechaYHora() {
+    const f = new Date();
+    document.getElementById("fechaActual").textContent = f.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById("horaActual").textContent = f.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
   }
-}
+  mostrarFechaYHora();
+  setInterval(mostrarFechaYHora, 60000);
 
-function validarFormulario(vehiculo) {
-  if (!validarTextoSoloLetras(vehiculo.Marca)) return alert("Marca inválida."), false;
-  if (!validarAnio(vehiculo.Anio)) return alert("Año inválido."), false;
-  if (!validarPlaca(vehiculo.Placa)) return alert("Placa inválida."), false;
-  if (!validarVIN(vehiculo.VIN)) return alert("VIN inválido."), false;
-  if (!validarTextoSoloLetras(vehiculo.Cliente)) return alert("Cliente inválido."), false;
-  return true;
-}
-
-frmAgregar.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const nuevo = {
-    Marca: txtMarca.value.trim(),
-    Modelo: txtModelo.value.trim(),
-    Anio: txtAnio.value.trim(),
-    Placa: txtPlaca.value.trim(),
-    VIN: txtVIN.value.trim(),
-    Cliente: txtCliente.value.trim()
-  };
-  if (!validarFormulario(nuevo)) return;
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nuevo)
-    });
-    cerrarModalAgregar();
-    cargarVehiculos();
-    Swal.fire("Agregado", "El vehículo fue agregado correctamente.", "success");
-  } catch (error) {
-    console.error("Error al agregar:", error);
-    Swal.fire("Error", "No se pudo agregar el vehículo.", "error");
-  }
-});
-
-async function cargarParaEditar(id) {
-  try {
-    const res = await fetch(`${API_URL}/${id}`);
-    const data = await res.json();
-    txtIdEditarVehiculo.value = data.id;
-    txtMarcaEditar.value = data.Marca;
-    txtModeloEditar.value = data.Modelo;
-    txtAnioEditar.value = data.Anio;
-    txtPlacaEditar.value = data.Placa;
-    txtVINEditar.value = data.VIN;
-    txtClienteEditar.value = data.Cliente;
-    modalEditar.showModal();
-  } catch (error) {
-    console.error("Error al cargar vehículo:", error);
-    Swal.fire("Error", "No se pudo cargar el vehículo.", "error");
-  }
-}
-
-frmEditar.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const id = txtIdEditarVehiculo.value;
-  const editado = {
-    Marca: txtMarcaEditar.value.trim(),
-    Modelo: txtModeloEditar.value.trim(),
-    Anio: txtAnioEditar.value.trim(),
-    Placa: txtPlacaEditar.value.trim(),
-    VIN: txtVINEditar.value.trim(),
-    Cliente: txtClienteEditar.value.trim()
-  };
-  if (!validarFormulario(editado)) return;
-  try {
-    await fetch(`${API_URL}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editado)
-    });
-    cerrarModalEditar();
-    cargarVehiculos();
-    Swal.fire("Actualizado", "El vehículo fue actualizado correctamente.", "success");
-  } catch (error) {
-    console.error("Error al actualizar vehículo:", error);
-    Swal.fire("Error", "No se pudo actualizar el vehículo.", "error");
-  }
-});
-
-async function eliminarVehiculo(id) {
-  const result = await Swal.fire({
-    title: '¿Eliminar vehículo?',
-    text: 'Esta acción no se puede deshacer',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
-  });
-  if (result.isConfirmed) {
+  const totalizar = async (url, id) => {
     try {
-      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      cargarVehiculos();
-      Swal.fire("Eliminado", "El vehículo fue eliminado correctamente.", "success");
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      Swal.fire("Error", "No se pudo eliminar el vehículo.", "error");
+      const res = await fetch(url);
+      const data = await res.json();
+      document.getElementById(id).textContent = data.length;
+      return data;
+    } catch {
+      document.getElementById(id).textContent = "0";
+      return [];
     }
-  }
-}
+  };
 
-function buscarVehiculo() {
-  const texto = document.getElementById("buscar").value.toLowerCase();
-  const filas = tablaVehiculos.getElementsByTagName("tr");
-  Array.from(filas).forEach((fila) => {
-    const contenido = fila.textContent.toLowerCase();
-    fila.style.display = contenido.includes(texto) ? "" : "none";
+  const vehiculos = await totalizar(API_VEHICULOS, 'vehiculosTotal');
+  const citas = await totalizar(API_CITAS, 'citasTotal');
+  await totalizar(API_HISTORIAL, 'historialTotal');
+  await totalizar(API_EMPLEADOS, 'empleadosTotal');
+
+  // Vehículos por marca
+  const marcas = {};
+  vehiculos.forEach(v => {
+    const marca = (v.marca || 'Otra').trim();
+    marcas[marca] = (marcas[marca] || 0) + 1;
   });
-}
 
-document.addEventListener("DOMContentLoaded", cargarVehiculos);
+  new Chart(document.getElementById("graficaVehiculosMarca"), {
+    type: 'pie',
+    data: {
+      labels: Object.keys(marcas),
+      datasets: [{
+        data: Object.values(marcas),
+        backgroundColor: ['#36a2eb', '#ff6384', '#ffce56', '#4bc0c0', '#9966ff']
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true
+    }
+  });
+
+  // Ingresos mensuales (ficticios)
+  new Chart(document.getElementById("graficaIngresosMensuales"), {
+    type: 'line',
+    data: {
+      labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'],
+      datasets: [{
+        label: 'Ingresos ($)',
+        data: [8500, 9200, 10500, 11000, 9600, 12300, 11500],
+        borderColor: '#007bff',
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true
+    }
+  });
+
+  // Botón historial
+  document.getElementById("verHistorialBtn").addEventListener("click", () => {
+    window.location.href = "../historial/historial.html";
+  });
+
+  // Botón citas de hoy
+  window.verCitasHoy = async function () {
+    try {
+      const res = await fetch(API_CITAS);
+      const data = await res.json();
+      const hoy = new Date().toISOString().split('T')[0];
+      const citasHoy = data.filter(c => c.fecha === hoy);
+
+      if (citasHoy.length > 0) {
+        const html = citasHoy.map(c => `
+          <p><strong>Hora:</strong> ${c.hora} - <strong>Estado:</strong> ${c.estado}</p>
+          <p><strong>Descripción:</strong> ${c.descripcion || 'Sin descripción'}</p><hr>
+        `).join('');
+        Swal.fire({ title: 'Citas de hoy', html, icon: 'info' });
+      } else {
+        Swal.fire('Sin citas hoy', 'No hay citas registradas para hoy.', 'warning');
+      }
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo cargar la información de citas.', 'error');
+      console.error(error);
+    }
+  };
+});

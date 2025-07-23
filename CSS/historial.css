@@ -1,0 +1,68 @@
+/* Estilo para contenedor principal */
+.historial-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  margin: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.historial-container h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* Tabla de historial */
+.tabla-historial,
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-historial thead,
+.table thead {
+  background-color: #f0f0f0;
+}
+
+.tabla-historial th,
+.tabla-historial td,
+.table th,
+.table td {
+  text-align: center;
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Buscar input */
+.search-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Acciones (no se usa pero se conserva el estilo por consistencia) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  font-size: 1rem;
+  border-radius: 6px;
+  background-color: white !important;
+  border: 1.5px solid #ced4da !important;
+  color: #333 !important;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.icon-btn i {
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+
+.icon-btn:hover {
+  background-color: #e7f1ff !important;
+  border-color: #1d6fa5 !important;
+  color: #1d6fa5 !important;
+}

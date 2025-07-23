@@ -259,3 +259,10 @@ body {
     height: auto;
   }
 }
+
+canvas {
+  max-width: 100%;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+}
