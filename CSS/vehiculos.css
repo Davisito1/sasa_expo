@@ -90,12 +90,12 @@ table tbody td button.icon-btn {
 /* Iconos dentro de botones */
 table tbody td button.icon-btn i {
     font-size: 1.1rem;
-    pointer-events: none; /* Click pasa al botón */
+    pointer-events: none;
 }
 
 /* Botón editar - azul */
 .icon-btn.btn-primary {
-    color: #0d6efd;
+    color:#0d6efd;
     border-color: #0d6efd;
 }
 
@@ -210,4 +210,129 @@ dialog button[type="button"]:hover {
     border-color: #0056b3;
     outline: none;
     box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+}
+
+/* === NUEVOS ESTILOS PARA PAGINACIÓN Y SELECTOR === */
+
+/* Selector de registros con flecha alineada */
+#registrosPorPagina {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: white;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px 12px;
+    padding: 6px 35px 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#registrosPorPagina:focus {
+    border-color: #0056b3;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+}
+
+/* Contenedor de paginación */
+#paginacion {
+    margin-top: 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Botones de paginación */
+#paginacion button {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: #333;
+}
+
+#paginacion button:hover {
+    background-color: #0056b3;
+    color: white;
+    border-color: #0056b3;
+}
+
+#paginacion button.active {
+    background-color: #0056b3;
+    color: white;
+    border-color: #0056b3;
+    font-weight: 600;
+}
+
+#paginacion button:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 992px) {
+    .card {
+        padding: 20px;
+    }
+
+    .card h2 {
+        font-size: 20px;
+    }
+
+    .btn-add {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+
+    .table thead {
+        display: none; /* Esconde encabezado en pantallas pequeñas */
+    }
+
+    .table tbody td {
+        display: block;
+        text-align: right;
+        padding: 10px;
+        border: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .table tbody td::before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        color: #555;
+    }
+
+    table td:last-child {
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    #registrosPorPagina {
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    #paginacion {
+        justify-content: center;
+    }
 }

@@ -191,3 +191,110 @@ function buscarVehiculo() {
 }
 
 document.addEventListener("DOMContentLoaded", cargarVehiculos);
+
+// === NUEVAS VARIABLES PARA PAGINACIÓN ===
+let vehiculos = [];         // aquí guardamos todos los registros
+let paginaActual = 1;       // número de página
+let registrosPorPagina = 5; // cantidad por defecto
+
+const selectRegistros = document.getElementById("registrosPorPagina");
+const contenedorPaginacion = document.getElementById("paginacion");
+
+// === MODIFICAR mostrarVehiculos PARA PAGINACIÓN ===
+function mostrarVehiculos() {
+  tablaVehiculos.innerHTML = "";
+
+  // Calcular índice inicial y final
+  const inicio = (paginaActual - 1) * registrosPorPagina;
+  const fin = inicio + registrosPorPagina;
+
+  // Obtener registros correspondientes
+  const listaPaginada = vehiculos.slice(inicio, fin);
+
+  // Renderizar filas
+  listaPaginada.forEach((vehiculo) => {
+    tablaVehiculos.innerHTML += `
+      <tr>
+        <td>${vehiculo.id}</td>
+        <td>${vehiculo.Marca}</td>
+        <td>${vehiculo.Modelo}</td>
+        <td>${vehiculo.Anio}</td>
+        <td>${vehiculo.Placa}</td>
+        <td>${vehiculo.VIN}</td>
+        <td>${vehiculo.Cliente}</td>
+        <td>
+          <button class="btn btn-sm btn-primary me-2 icon-btn editar" data-id="${vehiculo.id}" title="Editar">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+          <button class="btn btn-sm btn-danger icon-btn eliminar" data-id="${vehiculo.id}" title="Eliminar">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  agregarEventosBotones();
+  renderizarPaginacion();
+}
+
+// === FUNCIÓN PARA RENDERIZAR BOTONES DE PAGINACIÓN ===
+function renderizarPaginacion() {
+  contenedorPaginacion.innerHTML = "";
+
+  const totalPaginas = Math.ceil(vehiculos.length / registrosPorPagina);
+
+  // Botón anterior
+  const btnAnterior = document.createElement("button");
+  btnAnterior.textContent = "Anterior";
+  btnAnterior.disabled = paginaActual === 1;
+  btnAnterior.addEventListener("click", () => {
+    paginaActual--;
+    mostrarVehiculos();
+  });
+  contenedorPaginacion.appendChild(btnAnterior);
+
+  // Botones numéricos
+  for (let i = 1; i <= totalPaginas; i++) {
+    const btn = document.createElement("button");
+    btn.textContent = i;
+    if (i === paginaActual) btn.classList.add("active");
+    btn.addEventListener("click", () => {
+      paginaActual = i;
+      mostrarVehiculos();
+    });
+    contenedorPaginacion.appendChild(btn);
+  }
+
+  // Botón siguiente
+  const btnSiguiente = document.createElement("button");
+  btnSiguiente.textContent = "Siguiente";
+  btnSiguiente.disabled = paginaActual === totalPaginas;
+  btnSiguiente.addEventListener("click", () => {
+    paginaActual++;
+    mostrarVehiculos();
+  });
+  contenedorPaginacion.appendChild(btnSiguiente);
+}
+
+// === CARGAR VEHÍCULOS Y GUARDAR EN MEMORIA ===
+async function cargarVehiculos() {
+  try {
+    const res = await fetch(API_URL);
+    vehiculos = await res.json(); // ahora se guarda todo en "vehiculos"
+    paginaActual = 1; // reset a la primera página
+    mostrarVehiculos();
+  } catch (error) {
+    console.error("Error al cargar vehículos:", error);
+    Swal.fire("Error", "No se pudieron cargar los vehículos.", "error");
+  }
+}
+
+// === EVENTO: CAMBIO EN SELECTOR DE REGISTROS ===
+if (selectRegistros) {
+  selectRegistros.addEventListener("change", (e) => {
+    registrosPorPagina = parseInt(e.target.value, 10);
+    paginaActual = 1; // resetear a primera página
+    mostrarVehiculos();
+  });
+}

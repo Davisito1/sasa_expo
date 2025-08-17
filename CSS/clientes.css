@@ -1,36 +1,24 @@
-/* ==== Centrado del contenido ==== */
-.content {
-    display: flex;
-    justify-content: center; /* Centra horizontalmente la card */
-    padding: 24px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* Contenedor principal */
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
 .card {
     background-color: white;
     padding: 30px;
     border-radius: 10px;
-    margin: 0 auto; /* Centrado automático */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 1200px; /* Controla que no se pegue a los lados */
+    margin: 30px auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 1200px;
 }
 
-/* Título */
 .card h2 {
     font-size: 24px;
     margin-bottom: 20px;
     font-weight: bold;
 }
 
-/* Encabezado */
 .d-flex.justify-content-between.align-items-center.mb-4 {
     margin-bottom: 20px;
 }
 
-/* Botón de nuevo cliente */
+/* ==================== BOTÓN AGREGAR ==================== */
 .btn-add {
     background-color: #0056b3;
     color: white;
@@ -38,18 +26,25 @@
     padding: 10px 20px;
     border: none;
     font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
     transition: background-color 0.3s ease;
 }
 
-.btn-add:hover {
-    background-color: #bb2d3b;
+.btn-add i {
+    margin-right: 0.5rem;
 }
 
-/* Tabla */
+.btn-add:hover {
+    background-color: #155d85;
+}
+
+/* ==================== TABLA ==================== */
 .table-responsive {
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 .table {
@@ -74,63 +69,63 @@
     border: 1px solid #dee2e6;
 }
 
-/* Botones con íconos para acciones en tabla */
-.icon-btn {
+/* ==================== BOTONES DE ACCIÓN ==================== */
+table tbody td button.icon-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background-color: white;
+    color: #333;
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 10px;
-    font-size: 1rem;
-    border-radius: 6px;
-    background-color: white !important;
-    border: 1.5px solid #ced4da !important;
-    color: #333 !important;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Iconos dentro de los botones */
-.icon-btn i {
+table tbody td button.icon-btn i {
     font-size: 1.1rem;
     pointer-events: none;
 }
 
-/* Hover para botones con íconos */
-.icon-btn:hover {
-    background-color: #e7f1ff !important;
-    border-color: #1d6fa5 !important;
-    color: #1d6fa5 !important;
+/* Botón editar - azul */
+.icon-btn.btn-primary {
+    color: #0d6efd;
+    border-color: #0d6efd;
 }
 
-/* Colores específicos para btn-primary y btn-danger */
-.btn-primary.icon-btn {
-    color: #0d6efd !important;
-    border-color: #0d6efd !important;
-}
-.btn-primary.icon-btn:hover {
-    background-color: #cfe2ff !important;
-    color: #084298 !important;
-    border-color: #084298 !important;
+.icon-btn.btn-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0a58ca;
 }
 
-.btn-danger.icon-btn {
-    color: #dc3545 !important;
-    border-color: #dc3545 !important;
-}
-.btn-danger.icon-btn:hover {
-    background-color: #f8d7da !important;
-    color: #842029 !important;
-    border-color: #842029 !important;
+/* Botón eliminar - rojo */
+.icon-btn.btn-danger {
+    color: #dc3545;
+    border-color: #dc3545;
 }
 
-/* Modal */
+.icon-btn.btn-danger:hover {
+    background-color: #dc3545;
+    color: white;
+    border-color: #b02a37;
+}
+
+/* Mantener botones en línea */
+table td:last-child {
+    white-space: nowrap;
+}
+
+/* ==================== MODAL ==================== */
 dialog {
     width: 350px;
     max-width: 90%;
     border: none;
     border-radius: 10px;
     padding: 20px 25px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
     background-color: white;
 }
 
@@ -153,10 +148,15 @@ dialog select {
     padding: 8px 12px;
     border: 1px solid #ced4da;
     border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
 }
 
-dialog .d-flex.justify-content-between.mt-3 {
-    margin-top: 20px;
+dialog input:focus,
+dialog select:focus {
+    outline: none;
+    border-color: #0056b3;
+    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
 }
 
 dialog button[type="submit"] {
@@ -177,33 +177,111 @@ dialog button[type="submit"]:hover {
 dialog button[type="button"] {
     background-color: #6c757d;
     color: white;
+    padding: 10px 0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
 }
 
 dialog button[type="button"]:hover {
     background-color: #5a6268;
 }
 
-/* Barra de búsqueda */
+/* ==================== BÚSQUEDA ==================== */
 .search-input {
     padding: 8px 12px;
     border: 1px solid #ced4da;
     border-radius: 5px;
     width: 100%;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .content {
-        padding: 16px;
-    }
-    .card {
-        padding: 20px;
-    }
-    .table thead th, .table tbody td {
-        padding: 8px;
-    }
-    .btn-add {
-        width: 100%;
-        justify-content: center;
-    }
+.search-input:focus {
+    border-color: #0056b3;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+}
+
+/* ==================== SELECTOR REGISTROS ==================== */
+#registrosPorPagina {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: white;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px 12px;
+    padding: 6px 35px 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#registrosPorPagina:focus {
+    border-color: #0056b3;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+}
+
+/* ==================== PAGINACIÓN ==================== */
+#paginacion {
+    margin-top: 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#paginacion button {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    color: #333;
+}
+
+#paginacion button:hover {
+    background-color: #0056b3;
+    color: white;
+    border-color: #0056b3;
+}
+
+#paginacion button.btn-primary {
+    background-color: #0056b3;
+    color: white;
+    border-color: #0056b3;
+    font-weight: 600;
+}
+
+#paginacion button:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    border-color: #dee2e6;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 992px) {
+    .card { padding: 20px; }
+    .card h2 { font-size: 20px; }
+    .btn-add { padding: 8px 15px; font-size: 0.9rem; }
+
+    .table thead { display: none; }
+    .table tbody td { display: block; text-align: right; padding: 10px; border: none; border-bottom: 1px solid #dee2e6; }
+    .table tbody td::before { content: attr(data-label); float: left; font-weight: bold; color: #555; }
+    table td:last-child { text-align: center; }
+}
+
+@media (max-width: 576px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 { flex-direction: column; gap: 10px; align-items: stretch; }
+    #registrosPorPagina { width: 100%; }
+    .search-input { width: 100%; }
+    #paginacion { justify-content: center; }
 }
