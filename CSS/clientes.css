@@ -32,13 +32,8 @@
     transition: background-color 0.3s ease;
 }
 
-.btn-add i {
-    margin-right: 0.5rem;
-}
-
-.btn-add:hover {
-    background-color: #155d85;
-}
+.btn-add i { margin-right: 0.5rem; }
+.btn-add:hover { background-color: #155d85; }
 
 /* ==================== TABLA ==================== */
 .table-responsive {
@@ -94,7 +89,6 @@ table tbody td button.icon-btn i {
     color: #0d6efd;
     border-color: #0d6efd;
 }
-
 .icon-btn.btn-primary:hover {
     background-color: #0d6efd;
     color: white;
@@ -106,7 +100,6 @@ table tbody td button.icon-btn i {
     color: #dc3545;
     border-color: #dc3545;
 }
-
 .icon-btn.btn-danger:hover {
     background-color: #dc3545;
     color: white;
@@ -114,9 +107,7 @@ table tbody td button.icon-btn i {
 }
 
 /* Mantener botones en línea */
-table td:last-child {
-    white-space: nowrap;
-}
+table td:last-child { white-space: nowrap; }
 
 /* ==================== MODAL ==================== */
 dialog {
@@ -136,11 +127,7 @@ dialog h2 {
     text-align: center;
 }
 
-dialog form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
+dialog form { display: flex; flex-direction: column; gap: 15px; }
 
 dialog input,
 dialog select {
@@ -169,10 +156,7 @@ dialog button[type="submit"] {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
 }
-
-dialog button[type="submit"]:hover {
-    background-color: #155d85;
-}
+dialog button[type="submit"]:hover { background-color: #155d85; }
 
 dialog button[type="button"] {
     background-color: #6c757d;
@@ -183,10 +167,7 @@ dialog button[type="button"] {
     cursor: pointer;
     transition: background-color 0.2s ease-in-out;
 }
-
-dialog button[type="button"]:hover {
-    background-color: #5a6268;
-}
+dialog button[type="button"]:hover { background-color: #5a6268; }
 
 /* ==================== BÚSQUEDA ==================== */
 .search-input {
@@ -197,7 +178,6 @@ dialog button[type="button"]:hover {
     font-size: 1rem;
     transition: border-color 0.3s ease;
 }
-
 .search-input:focus {
     border-color: #0056b3;
     outline: none;
@@ -221,7 +201,6 @@ dialog button[type="button"]:hover {
     cursor: pointer;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
 #registrosPorPagina:focus {
     border-color: #0056b3;
     outline: none;
@@ -235,7 +214,6 @@ dialog button[type="button"]:hover {
     gap: 8px;
     flex-wrap: wrap;
 }
-
 #paginacion button {
     background-color: white;
     border: 1px solid #dee2e6;
@@ -246,20 +224,17 @@ dialog button[type="button"]:hover {
     transition: all 0.2s ease-in-out;
     color: #333;
 }
-
 #paginacion button:hover {
     background-color: #0056b3;
     color: white;
     border-color: #0056b3;
 }
-
 #paginacion button.btn-primary {
     background-color: #0056b3;
     color: white;
     border-color: #0056b3;
     font-weight: 600;
 }
-
 #paginacion button:disabled {
     background-color: #e9ecef;
     color: #6c757d;
@@ -270,18 +245,47 @@ dialog button[type="button"]:hover {
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 992px) {
     .card { padding: 20px; }
-    .card h2 { font-size: 20px; }
-    .btn-add { padding: 8px 15px; font-size: 0.9rem; }
+    .card h2 { font-size: 20px; text-align: center; }
 
-    .table thead { display: none; }
-    .table tbody td { display: block; text-align: right; padding: 10px; border: none; border-bottom: 1px solid #dee2e6; }
-    .table tbody td::before { content: attr(data-label); float: left; font-weight: bold; color: #555; }
-    table td:last-child { text-align: center; }
+    .btn-add {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        width: auto;          /* ✔ botón ya no se estira */
+        max-width: 250px;     /* límite opcional */
+    }
+
+    /* Tabla con scroll horizontal */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table thead th,
+    .table tbody td {
+        padding: 10px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
 }
 
 @media (max-width: 576px) {
-    .d-flex.justify-content-between.align-items-center.mb-4 { flex-direction: column; gap: 10px; align-items: stretch; }
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
     #registrosPorPagina { width: 100%; }
     .search-input { width: 100%; }
     #paginacion { justify-content: center; }
+
+    dialog {
+        width: 92%;
+        max-width: 400px;
+        padding: 16px;
+    }
+    dialog .d-flex.justify-content-between.mt-3 {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    dialog button { width: 100%; }
 }

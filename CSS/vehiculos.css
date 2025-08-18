@@ -1,3 +1,7 @@
+/* ====== Base útiles ====== */
+* { box-sizing: border-box; }
+img, video { max-width: 100%; height: auto; }
+
 /* Contenedor principal */
 .card {
     background-color: white;
@@ -34,18 +38,14 @@
     transition: background-color 0.3s ease;
 }
 
-.btn-add i {
-    margin-right: 0.5rem;
-}
+.btn-add i { margin-right: 0.5rem; }
 
-.btn-add:hover {
-    background-color: #bb2d3b;
-}
+.btn-add:hover { background-color: #bb2d3b; }
 
 /* Contenedor tabla con sombra y bordes */
 .table-responsive {
     border-radius: 10px;
-    overflow: hidden;
+    overflow: hidden; /* se mantendrá pero agregamos overflow-x en responsive */
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
@@ -94,33 +94,15 @@ table tbody td button.icon-btn i {
 }
 
 /* Botón editar - azul */
-.icon-btn.btn-primary {
-    color:#0d6efd;
-    border-color: #0d6efd;
-}
-
-.icon-btn.btn-primary:hover {
-    background-color: #0d6efd;
-    color: white;
-    border-color: #0a58ca;
-}
+.icon-btn.btn-primary { color:#0d6efd; border-color: #0d6efd; }
+.icon-btn.btn-primary:hover { background-color: #0d6efd; color: white; border-color: #0a58ca; }
 
 /* Botón eliminar - rojo */
-.icon-btn.btn-danger {
-    color: #dc3545;
-    border-color: #dc3545;
-}
-
-.icon-btn.btn-danger:hover {
-    background-color: #dc3545;
-    color: white;
-    border-color: #b02a37;
-}
+.icon-btn.btn-danger { color: #dc3545; border-color: #dc3545; }
+.icon-btn.btn-danger:hover { background-color: #dc3545; color: white; border-color: #b02a37; }
 
 /* Para que la celda de acciones mantenga los botones en línea */
-table td:last-child {
-    white-space: nowrap;
-}
+table td:last-child { white-space: nowrap; }
 
 /* Modal */
 dialog {
@@ -163,9 +145,7 @@ dialog select:focus {
     box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
 }
 
-dialog .d-flex.justify-content-between.mt-3 {
-    margin-top: 20px;
-}
+dialog .d-flex.justify-content-between.mt-3 { margin-top: 20px; }
 
 dialog button[type="submit"] {
     background-color: #1d6fa5;
@@ -178,9 +158,7 @@ dialog button[type="submit"] {
     transition: background-color 0.2s ease-in-out;
 }
 
-dialog button[type="submit"]:hover {
-    background-color: #155d85;
-}
+dialog button[type="submit"]:hover { background-color: #155d85; }
 
 dialog button[type="button"] {
     background-color: #6c757d;
@@ -192,9 +170,7 @@ dialog button[type="button"] {
     transition: background-color 0.2s ease-in-out;
 }
 
-dialog button[type="button"]:hover {
-    background-color: #5a6268;
-}
+dialog button[type="button"]:hover { background-color: #5a6268; }
 
 /* Barra de búsqueda */
 .search-input {
@@ -213,8 +189,6 @@ dialog button[type="button"]:hover {
 }
 
 /* === NUEVOS ESTILOS PARA PAGINACIÓN Y SELECTOR === */
-
-/* Selector de registros con flecha alineada */
 #registrosPorPagina {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -230,6 +204,8 @@ dialog button[type="button"]:hover {
     font-size: 0.95rem;
     cursor: pointer;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    min-width: 110px;
+    width: auto;
 }
 
 #registrosPorPagina:focus {
@@ -278,61 +254,64 @@ dialog button[type="button"]:hover {
     border-color: #dee2e6;
 }
 
-/* ================= RESPONSIVE ================= */
+/* ================= RESPONSIVE CORREGIDO ================= */
 @media (max-width: 992px) {
-    .card {
-        padding: 20px;
-    }
+  .card { padding: 20px; }
 
-    .card h2 {
-        font-size: 20px;
-    }
+  .card h2 {
+    font-size: 20px;
+    text-align: center;
+  }
+.btn-add {
+  width: auto;
+  max-width: 250px; /* se adapta sin ser gigante */
+  margin: 0 auto;   /* centrado */
+}
 
-    .btn-add {
-        padding: 8px 15px;
-        font-size: 0.9rem;
-    }
 
-    .table thead {
-        display: none; /* Esconde encabezado en pantallas pequeñas */
-    }
+  /* Mantener encabezado y permitir scroll horizontal */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
-    .table tbody td {
-        display: block;
-        text-align: right;
-        padding: 10px;
-        border: none;
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    .table tbody td::before {
-        content: attr(data-label);
-        float: left;
-        font-weight: bold;
-        color: #555;
-    }
-
-    table td:last-child {
-        text-align: center;
-    }
+  .table thead th,
+  .table tbody td {
+    padding: 10px;
+    font-size: 0.9rem;
+    white-space: nowrap; /* usamos scroll horizontal en lugar de romper líneas */
+  }
 }
 
 @media (max-width: 576px) {
-    .d-flex.justify-content-between.align-items-center.mb-4 {
-        flex-direction: column;
-        gap: 10px;
-        align-items: stretch;
-    }
+  /* Acciones (botón + selector) apiladas */
+  .d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
 
-    #registrosPorPagina {
-        width: 100%;
-    }
+  #registrosPorPagina { width: 100%; }
 
-    .search-input {
-        width: 100%;
-    }
+  .search-input { width: 100%; }
 
-    #paginacion {
-        justify-content: center;
-    }
+  #paginacion {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Modal casi a pantalla completa y botones apilados */
+  dialog {
+    width: 92%;
+    max-width: 400px;
+    padding: 16px;
+  }
+
+  dialog .d-flex.justify-content-between.mt-3 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  dialog button { width: 100%; }
 }

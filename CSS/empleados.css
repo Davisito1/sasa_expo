@@ -1,67 +1,134 @@
-dialog {
-      border: none; border-radius: 8px; padding: 20px; box-shadow: 0 0 15px rgba(0,0,0,0.3);
-    }
+/* ===== Base / consistencia con Vehículos & Citas ===== */
+* { box-sizing: border-box; }
+img, video { max-width: 100%; height: auto; }
 
-dialog form input {
-      width: 100%; margin: 10px 0; padding: 8px;
-      border: 1px solid #ced4da; border-radius: 5px;
-    }
-    dialog button {
-      margin-top: 10px; padding: 8px 16px; border: none;
-      border-radius: 5px; cursor: pointer;
-    }
-    dialog button[type="submit"] { background-color: #1d6fa5; color: white; }
-    dialog button[type="submit"]:hover { background-color: #155d85; }
-    dialog button[type="button"] { background-color: #6c757d; color: white; }
-    dialog button[type="button"]:hover { background-color: #5a6268; }
+/* Contenedor principal */
+.card{
+  background:#fff; padding:30px; border-radius:10px; margin:30px auto;
+  box-shadow:0 2px 8px rgba(0,0,0,.1); max-width:1200px;
+}
+.card h2{ font-size:24px; font-weight:700; margin-bottom:20px; text-align:center; }
 
-    /* Botones de acción en tabla */
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  font-size: 1rem;
-  border-radius: 6px;
-  background-color: white;
-  border: 1.5px solid #ced4da;
-  color: #333;
-  cursor: pointer;
-  transition: 0.3s ease;
-  margin: 0 3px;
+.d-flex.justify-content-between.align-items-center.mb-4{
+  margin-bottom:20px; gap:12px; flex-wrap:wrap;
 }
 
-.icon-btn i {
-  font-size: 1.1rem;
-  pointer-events: none;
+/* Botón Agregar */
+.btn-add{
+  background:#0056b3; color:#fff; border-radius:10px; padding:10px 20px; border:0;
+  font-weight:500; cursor:pointer; display:inline-flex; align-items:center; gap:.5rem;
+  transition:background .3s ease;
+}
+.btn-add:hover{ background:#155d85; }
+
+/* Tabla */
+.table-responsive{
+  border-radius:10px; overflow:hidden; box-shadow:0 0 10px rgba(0,0,0,.1); background:#fff;
+  padding:8px; /* da ese margen interior como en Vehículos */
+}
+.table{ width:100%; border-collapse:collapse; margin-bottom:0; }
+.table thead th{
+  background:#f8f9fa; border-bottom:2px solid #dee2e6; font-weight:600;
+  text-align:center; vertical-align:middle; padding:12px 15px;
+}
+.table tbody td{
+  vertical-align:middle; padding:12px 15px; text-align:center; border:1px solid #dee2e6;
 }
 
-.icon-btn:hover {
-  background-color: #e7f1ff;
-  border-color: #1d6fa5;
-  color: #1d6fa5;
+/* Acciones (icon buttons) */
+.table td:last-child{ white-space:nowrap; }
+.icon-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:.35rem;
+  padding:6px 10px; font-size:.95rem; border-radius:6px; background:#fff!important;
+  border:1.5px solid #ced4da!important; color:#333!important; cursor:pointer;
+  transition:background .3s,color .3s,border-color .3s;
+}
+.icon-btn i{ font-size:1.05rem; pointer-events:none; }
+.icon-btn:hover{ background:#e7f1ff!important; border-color:#1d6fa5!important; color:#1d6fa5!important; }
+.btn-primary.icon-btn{ color:#0d6efd!important; border-color:#0d6efd!important; }
+.btn-primary.icon-btn:hover{ background:#cfe2ff!important; color:#084298!important; border-color:#084298!important; }
+.btn-danger.icon-btn{ color:#dc3545!important; border-color:#dc3545!important; }
+.btn-danger.icon-btn:hover{ background:#f8d7da!important; color:#842029!important; border-color:#842029!important; }
+
+/* Búsqueda en topbar (fluid) */
+.search-input{
+  padding:8px 12px; border:1px solid #ced4da; border-radius:5px; width:100%; font-size:1rem;
+  transition:border-color .3s ease;
+}
+.search-input:focus{ border-color:#0056b3; outline:0; box-shadow:0 0 5px rgba(0,86,179,.5); }
+
+/* ===== Selector “Mostrar” (registros por página) ===== */
+#registrosPorPagina{
+  -webkit-appearance:none; -moz-appearance:none; appearance:none;
+  background:#fff;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 10px center; background-size:12px 12px;
+  padding:6px 35px 6px 10px; border:1px solid #ced4da; border-radius:6px; font-size:.95rem; cursor:pointer;
+  transition:border-color .3s ease, box-shadow .3s ease;
+  min-width:110px; width:auto;
+}
+#registrosPorPagina:focus{ border-color:#0056b3; outline:0; box-shadow:0 0 5px rgba(0,86,179,.5); }
+
+/* ===== Paginación ===== */
+#paginacion{
+  margin-top:20px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:center;
+}
+#paginacion button{
+  background:#fff; border:1px solid #dee2e6; border-radius:6px; padding:6px 12px; font-size:.9rem;
+  cursor:pointer; transition:all .2s ease-in-out; color:#333;
+}
+#paginacion button:hover{ background:#0056b3; color:#fff; border-color:#0056b3; }
+#paginacion button.btn-primary{ background:#0056b3; color:#fff; border-color:#0056b3; font-weight:600; }
+#paginacion button:disabled{ background:#e9ecef; color:#6c757d; cursor:not-allowed; border-color:#dee2e6; }
+
+/* Dialog / Modal */
+dialog{
+  width:350px; max-width:90%; border:0; border-radius:10px; padding:20px 25px;
+  box-shadow:0 2px 12px rgba(0,0,0,.2); background:#fff;
+}
+dialog h3{ font-size:20px; margin-bottom:15px; font-weight:700; text-align:center; }
+dialog form{ display:flex; flex-direction:column; gap:15px; }
+dialog input, dialog select{
+  width:100%; padding:8px 12px; border:1px solid #ced4da; border-radius:5px; font-size:1rem;
+}
+dialog input:focus, dialog select:focus{ outline:0; border-color:#0056b3; box-shadow:0 0 5px rgba(0,86,179,.5); }
+dialog .d-flex.justify-content-between.mt-3{ display:flex; gap:10px; }
+dialog button{ flex:1; }
+
+/* ===== Responsive ===== */
+@media (max-width: 992px){
+  .card{ padding:20px; }
+  .card h2{ font-size:20px; }
+
+  .btn-add{
+    padding:10px 16px; font-size:.95rem;
+    width:auto; max-width:250px; /* no gigante */
+  }
+
+  .table-responsive{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .table thead th, .table tbody td{
+    padding:10px; font-size:.9rem; white-space:nowrap; /* usa scroll horizontal */
+  }
 }
 
-/* Botón editar - azul */
-.icon-btn.btn-primary {
-  border-color: #0d6efd;
-  color: #0d6efd;
-}
+@media (max-width: 576px){
+  .d-flex.justify-content-between.align-items-center.mb-4{
+    flex-direction:column; align-items:stretch; gap:10px;
+  }
 
-.icon-btn.btn-primary:hover {
-  background-color: #cfe2ff;
-  border-color: #084298;
-  color: #084298;
-}
+  .search-input{ width:100%; }
+  #registrosPorPagina{ width:100%; }
 
-/* Botón eliminar - rojo */
-.icon-btn.btn-danger {
-  border-color: #dc3545;
-  color: #dc3545;
-}
+  /* Oculta columnas menos críticas en móvil pequeño (ajusta si quieres otras) */
+  /* Dirección (7), Correo (9) */
+  .table thead th:nth-child(7),
+  .table tbody td:nth-child(7),
+  .table thead th:nth-child(9),
+  .table tbody td:nth-child(9){
+    display:none;
+  }
 
-.icon-btn.btn-danger:hover {
-  background-color: #f8d7da;
-  border-color: #842029;
-  color: #842029;
+  dialog{ width:92%; max-width:400px; padding:16px; }
+  dialog .d-flex.justify-content-between.mt-3{ flex-direction:column; }
+  dialog button{ width:100%; }
 }
