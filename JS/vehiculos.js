@@ -7,18 +7,19 @@ const frmEditar = document.getElementById("frmEditarVehiculo");
 const modalAgregar = document.getElementById("mdAgregarVehiculo");
 const modalEditar = document.getElementById("mdEditarVehiculo");
 
-function abrirModalAgregar() {
-  modalAgregar.showModal();
-}
-function cerrarModalAgregar() {
-  frmAgregar.reset();
-  modalAgregar.close();
-}
-function cerrarModalEditar() {
-  frmEditar.reset();
-  modalEditar.close();
-}
+// === VARIABLES DE PAGINACIÓN ===
+let vehiculos = [];         // aquí guardamos todos los registros
+let paginaActual = 1;       // número de página actual
+let registrosPorPagina = 5; // por defecto 5
+const selectRegistros = document.getElementById("registrosPorPagina");
+const contenedorPaginacion = document.getElementById("paginacion");
 
+// ==================== MODALES ====================
+function abrirModalAgregar() { modalAgregar.showModal(); }
+function cerrarModalAgregar() { frmAgregar.reset(); modalAgregar.close(); }
+function cerrarModalEditar() { frmEditar.reset(); modalEditar.close(); }
+
+// ==================== VALIDACIONES ====================
 function validarTextoSoloLetras(texto) {
   return /^[a-zA-Z\s]+$/.test(texto.trim());
 }
@@ -33,53 +34,6 @@ function validarPlaca(placa) {
 function validarVIN(vin) {
   return /^[A-HJ-NPR-Z0-9]{17}$/i.test(vin.trim());
 }
-
-function mostrarVehiculos(lista) {
-  tablaVehiculos.innerHTML = "";
-  lista.forEach((vehiculo) => {
-    tablaVehiculos.innerHTML += `
-      <tr>
-        <td>${vehiculo.id}</td>
-        <td>${vehiculo.Marca}</td>
-        <td>${vehiculo.Modelo}</td>
-        <td>${vehiculo.Anio}</td>
-        <td>${vehiculo.Placa}</td>
-        <td>${vehiculo.VIN}</td>
-        <td>${vehiculo.Cliente}</td>
-        <td>
-          <button class="btn btn-sm btn-primary me-2 icon-btn editar" data-id="${vehiculo.id}" title="Editar">
-            <i class="bi bi-pencil-square"></i>
-          </button>
-          <button class="btn btn-sm btn-danger icon-btn eliminar" data-id="${vehiculo.id}" title="Eliminar">
-            <i class="bi bi-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-  agregarEventosBotones();
-}
-
-function agregarEventosBotones() {
-  document.querySelectorAll(".editar").forEach(btn => {
-    btn.addEventListener("click", () => cargarParaEditar(btn.dataset.id));
-  });
-  document.querySelectorAll(".eliminar").forEach(btn => {
-    btn.addEventListener("click", () => eliminarVehiculo(btn.dataset.id));
-  });
-}
-
-async function cargarVehiculos() {
-  try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    mostrarVehiculos(data);
-  } catch (error) {
-    console.error("Error al cargar vehículos:", error);
-    Swal.fire("Error", "No se pudieron cargar los vehículos.", "error");
-  }
-}
-
 function validarFormulario(vehiculo) {
   if (!validarTextoSoloLetras(vehiculo.Marca)) return alert("Marca inválida."), false;
   if (!validarAnio(vehiculo.Anio)) return alert("Año inválido."), false;
@@ -89,6 +43,7 @@ function validarFormulario(vehiculo) {
   return true;
 }
 
+// ==================== CRUD ====================
 frmAgregar.addEventListener("submit", async (e) => {
   e.preventDefault();
   const nuevo = {
@@ -107,7 +62,7 @@ frmAgregar.addEventListener("submit", async (e) => {
       body: JSON.stringify(nuevo)
     });
     cerrarModalAgregar();
-    cargarVehiculos();
+    await cargarVehiculos();
     Swal.fire("Agregado", "El vehículo fue agregado correctamente.", "success");
   } catch (error) {
     console.error("Error al agregar:", error);
@@ -152,7 +107,7 @@ frmEditar.addEventListener("submit", async (e) => {
       body: JSON.stringify(editado)
     });
     cerrarModalEditar();
-    cargarVehiculos();
+    await cargarVehiculos();
     Swal.fire("Actualizado", "El vehículo fue actualizado correctamente.", "success");
   } catch (error) {
     console.error("Error al actualizar vehículo:", error);
@@ -172,7 +127,7 @@ async function eliminarVehiculo(id) {
   if (result.isConfirmed) {
     try {
       await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      cargarVehiculos();
+      await cargarVehiculos();
       Swal.fire("Eliminado", "El vehículo fue eliminado correctamente.", "success");
     } catch (error) {
       console.error("Error al eliminar:", error);
@@ -181,37 +136,14 @@ async function eliminarVehiculo(id) {
   }
 }
 
-function buscarVehiculo() {
-  const texto = document.getElementById("buscar").value.toLowerCase();
-  const filas = tablaVehiculos.getElementsByTagName("tr");
-  Array.from(filas).forEach((fila) => {
-    const contenido = fila.textContent.toLowerCase();
-    fila.style.display = contenido.includes(texto) ? "" : "none";
-  });
-}
-
-document.addEventListener("DOMContentLoaded", cargarVehiculos);
-
-// === NUEVAS VARIABLES PARA PAGINACIÓN ===
-let vehiculos = [];         // aquí guardamos todos los registros
-let paginaActual = 1;       // número de página
-let registrosPorPagina = 5; // cantidad por defecto
-
-const selectRegistros = document.getElementById("registrosPorPagina");
-const contenedorPaginacion = document.getElementById("paginacion");
-
-// === MODIFICAR mostrarVehiculos PARA PAGINACIÓN ===
+// ==================== TABLA + PAGINACIÓN ====================
 function mostrarVehiculos() {
   tablaVehiculos.innerHTML = "";
 
-  // Calcular índice inicial y final
   const inicio = (paginaActual - 1) * registrosPorPagina;
   const fin = inicio + registrosPorPagina;
-
-  // Obtener registros correspondientes
   const listaPaginada = vehiculos.slice(inicio, fin);
 
-  // Renderizar filas
   listaPaginada.forEach((vehiculo) => {
     tablaVehiculos.innerHTML += `
       <tr>
@@ -238,10 +170,17 @@ function mostrarVehiculos() {
   renderizarPaginacion();
 }
 
-// === FUNCIÓN PARA RENDERIZAR BOTONES DE PAGINACIÓN ===
+function agregarEventosBotones() {
+  document.querySelectorAll(".editar").forEach(btn => {
+    btn.addEventListener("click", () => cargarParaEditar(btn.dataset.id));
+  });
+  document.querySelectorAll(".eliminar").forEach(btn => {
+    btn.addEventListener("click", () => eliminarVehiculo(btn.dataset.id));
+  });
+}
+
 function renderizarPaginacion() {
   contenedorPaginacion.innerHTML = "";
-
   const totalPaginas = Math.ceil(vehiculos.length / registrosPorPagina);
 
   // Botón anterior
@@ -277,12 +216,22 @@ function renderizarPaginacion() {
   contenedorPaginacion.appendChild(btnSiguiente);
 }
 
-// === CARGAR VEHÍCULOS Y GUARDAR EN MEMORIA ===
+// ==================== BUSCADOR ====================
+function buscarVehiculo() {
+  const texto = document.getElementById("buscar").value.toLowerCase();
+  const filas = tablaVehiculos.getElementsByTagName("tr");
+  Array.from(filas).forEach((fila) => {
+    const contenido = fila.textContent.toLowerCase();
+    fila.style.display = contenido.includes(texto) ? "" : "none";
+  });
+}
+
+// ==================== INICIALIZAR ====================
 async function cargarVehiculos() {
   try {
     const res = await fetch(API_URL);
-    vehiculos = await res.json(); // ahora se guarda todo en "vehiculos"
-    paginaActual = 1; // reset a la primera página
+    vehiculos = await res.json();
+    paginaActual = 1;
     mostrarVehiculos();
   } catch (error) {
     console.error("Error al cargar vehículos:", error);
@@ -290,11 +239,12 @@ async function cargarVehiculos() {
   }
 }
 
-// === EVENTO: CAMBIO EN SELECTOR DE REGISTROS ===
 if (selectRegistros) {
   selectRegistros.addEventListener("change", (e) => {
     registrosPorPagina = parseInt(e.target.value, 10);
-    paginaActual = 1; // resetear a primera página
+    paginaActual = 1;
     mostrarVehiculos();
   });
 }
+
+document.addEventListener("DOMContentLoaded", cargarVehiculos);

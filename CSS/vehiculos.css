@@ -26,7 +26,7 @@ img, video { max-width: 100%; height: auto; }
 
 /* Botón agregar vehículo */
 .btn-add {
-    background-color: #0056b3;
+    background-color: #0d6efd; /* azul bootstrap */
     color: white;
     border-radius: 10px;
     padding: 10px 20px;
@@ -40,7 +40,7 @@ img, video { max-width: 100%; height: auto; }
 
 .btn-add i { margin-right: 0.5rem; }
 
-.btn-add:hover { background-color: #bb2d3b; }
+.btn-add:hover { background-color: #0b5ed7; } /* azul más oscuro */
 
 /* Contenedor tabla con sombra y bordes */
 .table-responsive {
@@ -262,12 +262,11 @@ dialog button[type="button"]:hover { background-color: #5a6268; }
     font-size: 20px;
     text-align: center;
   }
-.btn-add {
-  width: auto;
-  max-width: 250px; /* se adapta sin ser gigante */
-  margin: 0 auto;   /* centrado */
-}
-
+  .btn-add {
+    width: auto;
+    max-width: 250px; /* se adapta sin ser gigante */
+    margin: 0 auto;   /* centrado */
+  }
 
   /* Mantener encabezado y permitir scroll horizontal */
   .table-responsive {

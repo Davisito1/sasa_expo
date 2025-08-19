@@ -1,143 +1,155 @@
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Vehículos</title>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehículos</title>
 
-      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-      <link rel="stylesheet" href="../CSS/dashboard.css" />
-      <link rel="stylesheet" href="../CSS/vehiculos.css" />
+  <link rel="stylesheet" href="../CSS/dashboard.css" />
+  <link rel="stylesheet" href="../CSS/vehiculos.css" />
 
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    </head>
-    <body>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-      <!-- Sidebar -->
-      <div id="sidebar">
-        <div class="logo">
-          <img src="../IMG/logo sasa.jpg" alt="SASA" />
+  <style>
+    /* 🔹 Encabezado de la tabla en blanco con letras negras */
+    .tabla-encabezado th {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="logo">
+      <img src="../IMG/logo sasa.jpg" alt="SASA" />
+    </div>
+    <ul>
+      <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+      <li><a class="active" href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+      <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
+      <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
+      <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
+      <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
+      <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
+      <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
+    </ul>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar shadow-sm">
+    <div class="search-bar">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        id="buscar"
+        class="search-input form-control"
+        placeholder="Buscar..."
+      />
+    </div>
+    <div class="topbar-right">
+      <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
+      <span class="ms-2">Usuario</span>
+      <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <main class="content">
+    <section class="card">
+      <h2 class="mb-4">Vehículos</h2>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <button id="btnAddVehiculo" class="btn btn-primary">
+          <i class="fas fa-plus me-2"></i> Nuevo Vehículo
+        </button>
+
+        <!-- Selector de cantidad de registros -->
+        <div class="d-flex align-items-center">
+          <label for="registrosPorPagina" class="me-2 fw-semibold">Mostrar:</label>
+          <select id="registrosPorPagina" class="form-select" style="width:auto;">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
         </div>
-        <ul>
-          <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
-          <li><a class="active" href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
-          <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
-          <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
-          <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
-          <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span> Citas</span></a></li>
-          <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
-          <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
-        </ul>
       </div>
 
-      <!-- Topbar -->
-      <div class="topbar shadow-sm">
-        <div class="search-bar">
-          <i class="fas fa-search"></i>
-          <input
-            type="text"
-            id="buscar"
-            class="search-input form-control"
-            placeholder="Buscar..."
-            onkeyup="buscarVehiculo()"
-          />
-        </div>
-        <div class="topbar-right">
-          <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
-          <span class="ms-2">Usuario</span>
-          <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
-        </div>
+      <!-- Tabla de vehículos -->
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="tabla-encabezado">
+            <tr>
+              <th>ID</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th>Año</th>
+              <th>Placa</th>
+              <th>VIN</th>
+              <th>Cliente</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="vehiculosTable">
+            <!-- Datos dinámicos -->
+          </tbody>
+        </table>
       </div>
 
-      <!-- Contenido -->
-      <main class="content">
-        <section class="card">
-          <h2 class="mb-4">Vehículos</h2>
+      <!-- Controles de paginación -->
+      <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2">
+        <!-- Aquí se generan los botones dinámicamente -->
+      </div>
+    </section>
+  </main>
 
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <button class="btn-add" onclick="abrirModalAgregar()">
-              <i class="fas fa-plus me-2"></i> Nuevo Vehículo
-            </button>
-
-            <!-- Selector de cantidad de registros -->
-            <div class="d-flex align-items-center">
-              <label for="registrosPorPagina" class="me-2 fw-semibold">Mostrar:</label>
-              <select id="registrosPorPagina" class="form-select" style="width:auto;">
-                <option value="5">5</option>
-                <option value="10" selected>10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-              </select>
-            </div>
+  <!-- Modal Agregar/Editar Vehículo -->
+  <div class="modal fade" id="vehiculoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="vehiculoForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="vehiculoModalLabel">Agregar Vehículo</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <input type="hidden" id="vehiculoId" name="vehiculoId" />
+            <input type="text" id="marca" name="marca" placeholder="Marca" required class="form-control" />
+            <input type="text" id="modelo" name="modelo" placeholder="Modelo" required class="form-control" />
+            <input type="number" id="anio" name="anio" placeholder="Año" required class="form-control" />
+            <input type="text" id="placa" name="placa" placeholder="Placa" required class="form-control" />
+            <input type="text" id="vin" name="vin" placeholder="VIN (opcional)" class="form-control" />
+            
+            <!-- Cliente -->
+            <select id="idCliente" name="idCliente" required class="form-select">
+              <option value="">Seleccione un Cliente</option>
+            </select>
 
-          <!-- Tabla de vehículos -->
-          <div class="table-responsive">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Marca</th>
-                  <th>Modelo</th>
-                  <th>Año</th>
-                  <th>Placa</th>
-                  <th>VIN</th>
-                  <th>Cliente</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tablaVehiculos">
-                <!-- Datos dinámicos -->
-              </tbody>
-            </table>
+            <!-- Estado -->
+            <select id="idEstado" name="idEstado" required class="form-select">
+              <option value="">Seleccione un Estado</option>
+            </select>
           </div>
-
-          <!-- Controles de paginación -->
-          <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2">
-            <!-- Aquí se generan los botones dinámicamente -->
-          </div>
-        </section>
-      </main>
-
-      <!-- Modal Agregar -->
-      <dialog id="mdAgregarVehiculo">
-        <h2 class="text-center">Agregar Vehículo</h2>
-        <form id="frmAgregarVehiculo" class="d-flex flex-column gap-3">
-          <input type="text" id="txtMarca" placeholder="Marca" required class="form-control" />
-          <input type="text" id="txtModelo" placeholder="Modelo" required class="form-control" />
-          <input type="number" id="txtAnio" placeholder="Año" required class="form-control" />
-          <input type="text" id="txtPlaca" placeholder="Placa (P123-456)" required class="form-control" />
-          <input type="text" id="txtVIN" placeholder="VIN (17 caracteres)" required class="form-control" />
-          <input type="text" id="txtCliente" placeholder="Cliente" required class="form-control" />
-          <div class="d-flex justify-content-between mt-3">
-            <button type="submit" class="btn btn-danger">Guardar</button>
-            <button type="button" class="btn btn-secondary" onclick="cerrarModalAgregar()">Cerrar</button>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           </div>
         </form>
-      </dialog>
+      </div>
+    </div>
+  </div>
 
-      <!-- Modal Editar -->
-      <dialog id="mdEditarVehiculo">
-        <h2 class="text-center">Editar Vehículo</h2>
-        <form id="frmEditarVehiculo" class="d-flex flex-column gap-3">
-          <input type="hidden" id="txtIdEditarVehiculo" />
-          <input type="text" id="txtMarcaEditar" placeholder="Marca" required class="form-control" />
-          <input type="text" id="txtModeloEditar" placeholder="Modelo" required class="form-control" />
-          <input type="number" id="txtAnioEditar" placeholder="Año" required class="form-control" />
-          <input type="text" id="txtPlacaEditar" placeholder="Placa" required class="form-control" />
-          <input type="text" id="txtVINEditar" placeholder="VIN" required class="form-control" />
-          <input type="text" id="txtClienteEditar" placeholder="Cliente" required class="form-control" />
-          <div class="d-flex justify-content-between mt-3">
-            <button type="submit" class="btn btn-primary">Actualizar</button>
-            <button type="button" class="btn btn-secondary" onclick="cerrarModalEditar()">Cerrar</button>
-          </div>
-        </form>
-      </dialog>
-
-      <!-- Script JS -->
-      <script src="../JS/vehiculos.js"></script>
-    </body>
-    </html>
+  <!-- Bootstrap + JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../JS/Controllers/VehiculosController.js"></script>
+</body>
+</html>
