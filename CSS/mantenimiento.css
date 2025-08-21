@@ -87,11 +87,17 @@ dialog form {
 }
 
 dialog input,
-dialog select {
+dialog select,
+dialog textarea {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #ced4da;
     border-radius: 5px;
+}
+
+dialog textarea {
+    resize: vertical;
+    min-height: 90px;
 }
 
 dialog .d-flex.justify-content-between.mt-3 {
@@ -144,22 +150,19 @@ dialog button[type="button"]:hover {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
-/* Iconos dentro de los botones */
 .icon-btn i {
   font-size: 1.1rem;
   pointer-events: none;
 }
 
-/* Hover para botones con íconos */
 .icon-btn:hover {
   background-color: #e7f1ff !important;
   border-color: #1d6fa5 !important;
   color: #1d6fa5 !important;
 }
 
-/* Opcional: colores específicos para btn-primary y btn-danger pero con fondo blanco */
 .btn-primary.icon-btn {
-  color: #0d6efd !important; /* azul bootstrap */
+  color: #0d6efd !important;
   border-color: #0d6efd !important;
 }
 .btn-primary.icon-btn:hover {
@@ -169,7 +172,7 @@ dialog button[type="button"]:hover {
 }
 
 .btn-danger.icon-btn {
-  color: #dc3545 !important; /* rojo bootstrap */
+  color: #dc3545 !important;
   border-color: #dc3545 !important;
 }
 .btn-danger.icon-btn:hover {

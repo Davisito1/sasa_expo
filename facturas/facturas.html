@@ -17,21 +17,18 @@
 </head>
 
 <body>
-
   <!-- Sidebar -->
   <div id="sidebar">
-    <!-- Logo -->
     <div class="logo">
       <img src="../IMG/logo sasa.jpg" alt="SASA" />
     </div>
-
     <ul>
-       <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+      <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
       <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
       <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
-      <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
+      <li><a href="../facturas/facturas.html" class="active"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
       <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
     </ul>
   </div>
@@ -46,7 +43,6 @@
       <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
       <span class="ms-2">Usuario</span>
       <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
-      
       <div class="user-menu" id="userMenu">
         <a href="#">Perfil <i class="fas fa-id-badge float-end"></i></a>
         <a href="#">Configuración <i class="fas fa-cog float-end"></i></a>
@@ -69,18 +65,26 @@
       <!-- Modal Agregar Factura -->
       <dialog id="mdAgregarFactura">
         <h2 class="text-center">Agregar Factura</h2>
-        <form id="frmAgregarFactura" class="d-flex flex-column gap-3">
-          <input type="text" id="txtEmpleadoFactura" placeholder="Empleado" required class="form-control" />
-          <div id="errorEmpleadoFactura" class="text-danger"></div>
+        <form id="frmAgregarFactura" class="d-flex flex-column gap-3" novalidate>
+          <!-- Empleado (select) -->
+          <select id="selEmpleadoAdd" class="form-select" required>
+            <option value="" selected disabled>Seleccione un empleado</option>
+          </select>
+          <div id="errorEmpleadoFactura" class="text-danger small"></div>
 
-          <input type="text" id="txtMantenimientoFactura" placeholder="Mantenimiento" required class="form-control" />
-          <div id="errorMantenimientoFactura" class="text-danger"></div>
+          <!-- Mantenimiento (select) -->
+          <select id="selMantenimientoAdd" class="form-select" required>
+            <option value="" selected disabled>Seleccione un mantenimiento</option>
+          </select>
+          <div id="errorMantenimientoFactura" class="text-danger small"></div>
 
-          <input type="number" id="txtMontoFactura" placeholder="Monto" required class="form-control" min="0.01" step="0.01" />
-          <div id="errorMontoFactura" class="text-danger"></div>
+          <!-- Monto -->
+          <input type="number" id="txtMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
+          <div id="errorMontoFactura" class="text-danger small"></div>
 
+          <!-- Fecha -->
           <input type="date" id="fechaFactura" required class="form-control" />
-          <div id="errorFechaFactura" class="text-danger"></div>
+          <div id="errorFechaFactura" class="text-danger small"></div>
 
           <div class="d-flex justify-content-between mt-3">
             <button type="submit" class="btn btn-primary">Guardar</button>
@@ -88,51 +92,79 @@
           </div>
         </form>
       </dialog>
+<!-- ...encabezado y resto igual... -->
 
-      <!-- Modal Editar Factura -->
-      <dialog id="mdEditarFactura">
-        <h2 class="text-center">Editar Factura</h2>
-        <form id="frmEditarFactura" class="d-flex flex-column gap-3">
-          <input type="hidden" id="txtIdFactura" />
-          <input type="text" id="txtEditarEmpleadoFactura" placeholder="Empleado" required class="form-control" />
-          <div id="errorEmpleadoEditarFactura" class="text-danger"></div>
+<!-- Modal Agregar Factura -->
+<dialog id="mdAgregarFactura">
+  <h2 class="text-center">Agregar Factura</h2>
+  <form id="frmAgregarFactura" class="d-flex flex-column gap-3" novalidate>
+    <!-- Empleado -->
+    <select id="selEmpleadoAdd" class="form-select" required>
+      <option value="" selected disabled>Seleccione un empleado</option>
+    </select>
+    <div id="errorEmpleadoFactura" class="text-danger small"></div>
 
-          <input type="text" id="txtEditarMantenimientoFactura" placeholder="Mantenimiento" required class="form-control" />
-          <div id="errorMantenimientoEditarFactura" class="text-danger"></div>
+    <!-- Mantenimiento (muestra descripción, value=id) -->
+    <select id="selMantenimientoAdd" class="form-select" required>
+      <option value="" selected disabled>Seleccione un mantenimiento</option>
+    </select>
+    <div id="errorMantenimientoFactura" class="text-danger small"></div>
 
-          <input type="number" id="txtEditarMontoFactura" placeholder="Monto" required class="form-control" min="0.01" step="0.01" />
-          <div id="errorMontoEditarFactura" class="text-danger"></div>
+    <input type="number" id="txtMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
+    <input type="date" id="fechaFactura" required class="form-control" />
 
-          <input type="date" id="editarFechaFactura" required class="form-control" />
-          <div id="errorFechaEditarFactura" class="text-danger"></div>
-
-          <div class="d-flex justify-content-between mt-3">
-            <button type="submit" class="btn btn-success">Actualizar</button>
-            <button type="button" onclick="cerrarModalEditar()" class="btn btn-secondary">Cerrar</button>
-          </div>
-        </form>
-      </dialog>
-
-      <!-- Tabla de Facturas -->
-      <div class="table-responsive">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Empleado</th>
-              <th>Mantenimiento</th>
-              <th>Monto</th>
-              <th>Fecha</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tablaFacturas">
-            <!-- JS carga las facturas -->
-          </tbody>
-        </table>
-      </div>
+    <div class="d-flex justify-content-between mt-3">
+      <button type="submit" class="btn btn-primary">Guardar</button>
+      <button type="button" onclick="cerrarModalAgregar()" class="btn btn-secondary">Cerrar</button>
     </div>
-  </div>
+  </form>
+</dialog>
+
+<!-- Modal Editar Factura -->
+<dialog id="mdEditarFactura">
+  <h2 class="text-center">Editar Factura</h2>
+  <form id="frmEditarFactura" class="d-flex flex-column gap-3" novalidate>
+    <input type="hidden" id="txtIdFactura" />
+
+    <select id="selEmpleadoEdit" class="form-select" required>
+      <option value="" selected disabled>Seleccione un empleado</option>
+    </select>
+    <div id="errorEmpleadoEditarFactura" class="text-danger small"></div>
+
+    <!-- Mantenimiento (muestra descripción, value=id) -->
+    <select id="selMantenimientoEdit" class="form-select" required>
+      <option value="" selected disabled>Seleccione un mantenimiento</option>
+    </select>
+    <div id="errorMantenimientoEditarFactura" class="text-danger small"></div>
+
+    <input type="number" id="txtEditarMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
+    <input type="date" id="editarFechaFactura" required class="form-control" />
+
+    <div class="d-flex justify-content-between mt-3">
+      <button type="submit" class="btn btn-success">Actualizar</button>
+      <button type="button" onclick="cerrarModalEditar()" class="btn btn-secondary">Cerrar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Tabla -->
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Empleado</th>
+        <th>Mantenimiento</th> <!-- antes decía ID Mantenimiento -->
+        <th>Monto</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tablaFacturas"></tbody>
+  </table>
+</div>
+
+<!-- ...scripts al final iguales... -->
 
   <!-- JS -->
   <script src="../JS/facturas.js"></script>

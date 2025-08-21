@@ -1,4 +1,6 @@
-const API_URL = 'https://retoolapi.dev/35dv6Q/data';
+// APIs
+const API_URL = 'https://retoolapi.dev/35dv6Q/data'; // Mantenimientos
+const VEHICULOS_API_URL = 'https://retoolapi.dev/4XQf28/anadirvehiculo'; // Vehículos (ajústalo si usas otro)
 
 // Elementos del DOM
 const tablaMantenimiento = document.getElementById("tablaMantenimiento");
@@ -9,88 +11,203 @@ const frmEditar = document.getElementById("frmEditarMantenimiento");
 const modalAgregar = document.getElementById("mdAgregarMantenimiento");
 const modalEditar = document.getElementById("mdEditarMantenimiento");
 
-// Funciones para abrir/cerrar modales
-function abrirModalAgregar() {
-  frmAgregar.reset();
-  modalAgregar.showModal();
+// Selects de vehículos
+const selVehiculo = document.getElementById("selVehiculo");
+const selVehiculoEditar = document.getElementById("selVehiculoEditar");
+
+// Diccionario idVehiculo -> nombre/placa/modelo
+let vehiculosMap = {};
+
+// ---------- Utilidades ----------
+function toISODate(value) {
+  if (!value) return "";
+  try {
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return value;
+    const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+    return iso.split("T")[0];
+  } catch (e) {
+    return value;
+  }
+}
+
+// Extrae el número de un código (ej. "MTTO-0012" -> 12)
+function extraerNumeroCodigo(cod = "") {
+  const m = String(cod).match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// Formatea con prefijo y ceros (13 -> "MTTO-0013")
+function formatearCodigo(n) {
+  return `MTTO-${String(n).padStart(4, "0")}`;
+}
+
+// Genera el siguiente código según el máximo existente
+async function generarCodigoMantenimiento() {
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("No se pudo leer mantenimientos");
+    const lista = await res.json();
+
+    let max = 0;
+    lista.forEach(item => {
+      const n = extraerNumeroCodigo(item.codigoMantenimiento);
+      if (n && n > max) max = n;
+    });
+
+    return formatearCodigo(max + 1 || 1);
+  } catch (e) {
+    console.error("No fue posible calcular el código. Se usará fallback.", e);
+    const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+    return `MTTO-${stamp}`;
+  }
+}
+
+// Limita un input date a hoy o futuro
+function setMinHoy(input) {
+  if (!input) return;
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  input.min = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000).toISOString().split("T")[0];
+}
+
+// ---------- Cargar vehículos ----------
+async function cargarVehiculos() {
+  try {
+    const res = await fetch(VEHICULOS_API_URL);
+    if (!res.ok) throw new Error("No se pudo obtener vehículos");
+    const lista = await res.json();
+
+    vehiculosMap = {};
+    const options = ['<option value="" disabled selected>Seleccione un vehículo</option>'];
+
+    lista.forEach(v => {
+      const id = v.id ?? v.idVehiculo ?? "";
+      const placa = v.placa || v.Placa || "";
+      const modelo = v.modelo || v.Modelo || "";
+      const marca  = v.marca  || v.Marca  || "";
+      const nombre = (placa || modelo || marca)
+        ? `${placa}${placa && (modelo || marca) ? " - " : ""}${marca} ${modelo}`.trim()
+        : `Vehículo #${id}`;
+
+      if (id !== "") {
+        vehiculosMap[id] = nombre;
+        options.push(`<option value="${id}">${nombre}</option>`);
+      }
+    });
+
+    if (selVehiculo) selVehiculo.innerHTML = options.join("");
+    if (selVehiculoEditar) selVehiculoEditar.innerHTML = options.join("");
+  } catch (err) {
+    console.error("Error al cargar vehículos:", err);
+    vehiculosMap = {};
+    if (selVehiculo) selVehiculo.innerHTML = '<option value="" disabled selected>Sin vehículos</option>';
+    if (selVehiculoEditar) selVehiculoEditar.innerHTML = '<option value="" disabled selected>Sin vehículos</option>';
+  }
+}
+
+// ---------- Modales ----------
+async function abrirModalAgregar() {
+  if (frmAgregar) frmAgregar.reset();
+  await cargarVehiculos();
+
+  // Autogenerar código (si el input existe)
+  const inputCodigo = document.getElementById("txtCodigoMantenimiento");
+  if (inputCodigo) {
+    inputCodigo.value = await generarCodigoMantenimiento();
+    inputCodigo.readOnly = true;
+  }
+
+  // Fecha: hoy o futura
+  const inputFecha = document.getElementById("txtFechaRealizacion");
+  setMinHoy(inputFecha);
+
+  if (modalAgregar) modalAgregar.showModal();
 }
 function cerrarModalAgregar() {
-  frmAgregar.reset();
-  modalAgregar.close();
+  if (frmAgregar) frmAgregar.reset();
+  if (modalAgregar) modalAgregar.close();
 }
 function cerrarModalEditar() {
-  frmEditar.reset();
-  modalEditar.close();
+  if (frmEditar) frmEditar.reset();
+  if (modalEditar) modalEditar.close();
 }
 
-// Validaciones
-function validarTextoVehiculo(texto) {
-  return /^[\w\s\-]{2,30}$/.test(texto);
-}
-
+// ---------- Validaciones ----------
 function validarDescripcion(desc) {
-  return desc.length >= 5 && desc.length <= 100;
+  return typeof desc === "string" && desc.trim().length >= 5 && desc.trim().length <= 500;
 }
-
+// Solo HOY o FUTURA
 function validarFecha(fecha) {
-  const fechaIngresada = new Date(fecha);
-  const hoy = new Date();
-  return !isNaN(fechaIngresada) && fechaIngresada <= hoy;
+  const f = new Date(fecha);
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  return !isNaN(f.getTime()) && f >= hoy;
 }
-
-function validarEstado(estado) {
-  const estadosValidos = ["pendiente", "en proceso", "completado"];
-  return estadosValidos.includes(estado.toLowerCase());
+function validarIdVehiculo(id) {
+  return id !== "" && id !== null && id !== undefined;
 }
-
 function validarFormulario(m) {
-  if (!validarTextoVehiculo(m.Vehiculo)) {
-    Swal.fire("Error", "El campo Vehículo debe tener entre 2 y 30 caracteres.", "warning");
+  if (!validarIdVehiculo(m.idVehiculo)) {
+    Swal.fire("Error", "Seleccione un vehículo.", "warning");
     return false;
   }
-  if (!validarDescripcion(m.Descripcion)) {
-    Swal.fire("Error", "La descripción debe tener entre 5 y 100 caracteres.", "warning");
+  if (!m.codigoMantenimiento || m.codigoMantenimiento.trim().length === 0) {
+    Swal.fire("Error", "No se generó el código de mantenimiento.", "warning");
     return false;
   }
-  if (!validarFecha(m.Fecha)) {
-    Swal.fire("Error", "La fecha debe ser válida y no puede ser futura.", "warning");
+  if (!validarDescripcion(m.descripcionTrabajo)) {
+    Swal.fire("Error", "La descripción debe tener entre 5 y 500 caracteres.", "warning");
     return false;
   }
-  if (!validarEstado(m.Estado)) {
-    Swal.fire("Error", "El estado debe ser: Pendiente, En Proceso o Completado.", "warning");
+  if (!validarFecha(m.fechaRealizacion)) {
+    Swal.fire("Error", "La fecha debe ser hoy o futura.", "warning");
     return false;
   }
   return true;
 }
 
-// Mostrar datos en tabla
+// ---------- Render ----------
+function filaHTML(m) {
+  const id = m.id ?? m.idMantenimiento ?? "";
+  const codigo = m.codigoMantenimiento ?? "";
+  const idVehiculo = m.idVehiculo ?? "";
+  const descripcion = m.descripcionTrabajo ?? "";
+  const fecha = toISODate(m.fechaRealizacion);
+
+  const nombreVehiculo = vehiculosMap[idVehiculo] || `Vehículo #${idVehiculo}`;
+
+  return `
+    <tr>
+      <td>${id}</td>
+      <td>${codigo}</td>
+      <td>${nombreVehiculo}</td>
+      <td>${descripcion}</td>
+      <td>${fecha}</td>
+      <td>
+        <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="cargarParaEditarMantenimiento(${id})" title="Editar">
+          <i class="bi bi-pencil-square"></i>
+        </button>
+        <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarMantenimiento(${id})" title="Eliminar">
+          <i class="bi bi-trash"></i>
+        </button>
+      </td>
+    </tr>
+  `;
+}
+
 function mostrarMantenimientos(lista) {
+  if (!tablaMantenimiento) return;
   tablaMantenimiento.innerHTML = "";
-  lista.forEach((mantenimiento) => {
-    tablaMantenimiento.innerHTML += `
-      <tr>
-        <td>${mantenimiento.id}</td>
-        <td>${mantenimiento.Vehiculo}</td>
-        <td>${mantenimiento.Descripcion}</td>
-        <td>${mantenimiento.Fecha}</td>
-        <td>${mantenimiento.Estado}</td>
-        <td>
-          <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="cargarParaEditarMantenimiento(${mantenimiento.id})" title='Editar'>
-            <i class="bi bi-pencil-square"></i>
-          </button>
-          <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarMantenimiento(${mantenimiento.id})" title='Eliminar'>
-            <i class="bi bi-trash"></i>
-          </button>
-        </td>
-      </tr>
-    `;
+  lista.forEach(m => {
+    tablaMantenimiento.innerHTML += filaHTML(m);
   });
 }
 
-// Cargar mantenimientos desde API
+// ---------- CRUD ----------
 async function cargarMantenimiento() {
   try {
     const res = await fetch(API_URL);
+    if (!res.ok) throw new Error("Fetch mantenimientos falló");
     const data = await res.json();
     mostrarMantenimientos(data);
   } catch (error) {
@@ -99,81 +216,103 @@ async function cargarMantenimiento() {
   }
 }
 
-// Agregar mantenimiento
-frmAgregar.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const nuevo = {
-    Vehiculo: document.getElementById("txtVehiculo").value.trim(),
-    Descripcion: document.getElementById("txtDescripcion").value.trim(),
-    Fecha: document.getElementById("txtFecha").value,
-    Estado: document.getElementById("txtEstado").value.trim(),
-  };
+// Agregar
+if (frmAgregar) {
+  frmAgregar.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  if (!validarFormulario(nuevo)) return;
+    // Si por alguna razón quedó vacío, generarlo aquí también
+    let codigo = (document.getElementById("txtCodigoMantenimiento")?.value || "").trim();
+    if (!codigo) {
+      codigo = await generarCodigoMantenimiento();
+      if (document.getElementById("txtCodigoMantenimiento")) {
+        document.getElementById("txtCodigoMantenimiento").value = codigo;
+      }
+    }
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nuevo)
-    });
-    cerrarModalAgregar();
-    cargarMantenimiento();
-    Swal.fire("Agregado", "El mantenimiento fue agregado correctamente.", "success");
-  } catch (error) {
-    console.error("Error al agregar:", error);
-    Swal.fire("Error", "No se pudo agregar el mantenimiento.", "error");
-  }
-});
+    const nuevo = {
+      idVehiculo: Number(document.getElementById("selVehiculo").value),
+      codigoMantenimiento: codigo,
+      descripcionTrabajo: document.getElementById("txtDescripcionTrabajo").value.trim(),
+      fechaRealizacion: document.getElementById("txtFechaRealizacion").value
+    };
 
-// Cargar datos en modal de edición
+    if (!validarFormulario(nuevo)) return;
+
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nuevo)
+      });
+      cerrarModalAgregar();
+      await cargarMantenimiento();
+      Swal.fire("Agregado", "El mantenimiento fue agregado correctamente.", "success");
+    } catch (error) {
+      console.error("Error al agregar:", error);
+      Swal.fire("Error", "No se pudo agregar el mantenimiento.", "error");
+    }
+  });
+}
+
+// Cargar para editar
 async function cargarParaEditarMantenimiento(id) {
   try {
     const res = await fetch(`${API_URL}/${id}`);
+    if (!res.ok) throw new Error("No se encontró mantenimiento");
     const data = await res.json();
 
-    document.getElementById("txtIdEditarMantenimiento").value = data.id;
-    document.getElementById("txtVehiculoEditar").value = data.Vehiculo;
-    document.getElementById("txtDescripcionEditar").value = data.Descripcion;
-    document.getElementById("txtFechaEditar").value = data.Fecha;
-    document.getElementById("txtEstadoEditar").value = data.Estado;
+    await cargarVehiculos();
 
-    modalEditar.showModal();
+    document.getElementById("txtIdEditarMantenimiento").value = data.id ?? data.idMantenimiento ?? "";
+    document.getElementById("selVehiculoEditar").value = (data.idVehiculo ?? "").toString();
+    document.getElementById("txtCodigoMantenimientoEditar").value = data.codigoMantenimiento ?? "";
+    document.getElementById("txtDescripcionTrabajoEditar").value = data.descripcionTrabajo ?? "";
+    document.getElementById("txtFechaRealizacionEditar").value = toISODate(data.fechaRealizacion);
+
+    // Fecha en edición: hoy o futura
+    setMinHoy(document.getElementById("txtFechaRealizacionEditar"));
+
+    if (modalEditar) modalEditar.showModal();
   } catch (error) {
     console.error("Error al cargar mantenimiento:", error);
     Swal.fire("Error", "No se pudo cargar el mantenimiento para editar.", "error");
   }
 }
 
-// Editar mantenimiento
-frmEditar.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const id = document.getElementById("txtIdEditarMantenimiento").value;
-  const editado = {
-    Vehiculo: document.getElementById("txtVehiculoEditar").value.trim(),
-    Descripcion: document.getElementById("txtDescripcionEditar").value.trim(),
-    Fecha: document.getElementById("txtFechaEditar").value,
-    Estado: document.getElementById("txtEstadoEditar").value.trim(),
-  };
+// Editar
+if (frmEditar) {
+  frmEditar.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const id = document.getElementById("txtIdEditarMantenimiento").value;
 
-  if (!validarFormulario(editado)) return;
+    const editado = {
+      idVehiculo: Number(document.getElementById("selVehiculoEditar").value),
+      // código no editable (ya viene del input readonly)
+      codigoMantenimiento: document.getElementById("txtCodigoMantenimientoEditar").value.trim(),
+      descripcionTrabajo: document.getElementById("txtDescripcionTrabajoEditar").value.trim(),
+      fechaRealizacion: document.getElementById("txtFechaRealizacionEditar").value
+    };
 
-  try {
-    await fetch(`${API_URL}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editado)
-    });
-    cerrarModalEditar();
-    cargarMantenimiento();
-    Swal.fire("Actualizado", "El mantenimiento fue actualizado correctamente.", "success");
-  } catch (error) {
-    console.error("Error al actualizar:", error);
-    Swal.fire("Error", "No se pudo actualizar el mantenimiento.", "error");
-  }
-});
+    if (!validarFormulario(editado)) return;
 
-// Eliminar mantenimiento
+    try {
+      await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editado)
+      });
+      cerrarModalEditar();
+      await cargarMantenimiento();
+      Swal.fire("Actualizado", "El mantenimiento fue actualizado correctamente.", "success");
+    } catch (error) {
+      console.error("Error al actualizar:", error);
+      Swal.fire("Error", "No se pudo actualizar el mantenimiento.", "error");
+    }
+  });
+}
+
+// Eliminar
 async function eliminarMantenimiento(id) {
   const result = await Swal.fire({
     title: '¿Eliminar?',
@@ -187,7 +326,7 @@ async function eliminarMantenimiento(id) {
   if (result.isConfirmed) {
     try {
       await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      cargarMantenimiento();
+      await cargarMantenimiento();
       Swal.fire("Eliminado", "El mantenimiento fue eliminado.", "success");
     } catch (error) {
       console.error("Error al eliminar:", error);
@@ -207,4 +346,14 @@ function buscarMantenimiento() {
 }
 
 // Inicializar
-document.addEventListener("DOMContentLoaded", cargarMantenimiento);
+document.addEventListener("DOMContentLoaded", () => {
+  cargarVehiculos().then(() => cargarMantenimiento());
+});
+
+// Exponer funciones globales (para onclick en HTML)
+window.cargarParaEditarMantenimiento = cargarParaEditarMantenimiento;
+window.eliminarMantenimiento = eliminarMantenimiento;
+window.buscarMantenimiento = buscarMantenimiento;
+window.abrirModalAgregar = abrirModalAgregar;
+window.cerrarModalAgregar = cerrarModalAgregar;
+window.cerrarModalEditar = cerrarModalEditar;
