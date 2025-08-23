@@ -3,7 +3,7 @@ import { getVehiculos, createVehiculo, updateVehiculo, deleteVehiculo } from "..
 
 // 🔹 APIs relacionadas
 const CLIENTES_API = "http://localhost:8080/apiCliente";
-const ESTADOS_API  = "http://localhost:8080/apiEstadoVehiculo";
+const ESTADOS_API  = "http://localhost:8080/api/estadoVehiculo";
 
 const tablaVehiculos = document.getElementById("vehiculosTable");
 const vehiculoForm = document.getElementById("vehiculoForm");
@@ -12,6 +12,17 @@ const modalVehiculo = new bootstrap.Modal(document.getElementById("vehiculoModal
 
 let clientesCache = [];
 let estadosCache = [];
+
+// =====================================================
+// 🔹 Helper para normalizar respuestas
+// =====================================================
+function parseResponse(apiResponse) {
+  if (Array.isArray(apiResponse)) return apiResponse;
+  if (apiResponse.data?.content) return apiResponse.data.content;
+  if (apiResponse.content) return apiResponse.content;
+  if (apiResponse.data) return apiResponse.data;
+  return [];
+}
 
 // =====================================================
 // 🔹 Cargar datos iniciales
@@ -46,8 +57,8 @@ vehiculoForm.addEventListener("submit", async (e) => {
     anio: parseInt(document.getElementById("anio").value),
     placa: document.getElementById("placa").value.trim(),
     vin: document.getElementById("vin").value.trim(),
-    idCliente: parseInt(document.getElementById("idCliente").value), // ⚡ debe ser 1
-    idEstado: parseInt(document.getElementById("idEstado").value)    // ⚡ debe ser 2
+    idCliente: parseInt(document.getElementById("idCliente").value),
+    idEstado: parseInt(document.getElementById("idEstado").value)
   };
 
   console.log("Vehículo a enviar:", vehiculo);
@@ -77,12 +88,12 @@ async function loadVehiculos() {
     tablaVehiculos.innerHTML = "";
 
     vehiculos.forEach(v => {
-      const cliente = clientesCache.find(c => c.id === v.idCliente);
-      const estado = estadosCache.find(e => e.id === v.idEstado);
+      const cliente = clientesCache.find(c => (c.id || c.idCliente) === v.idCliente);
+      const estado = estadosCache.find(e => (e.id || e.idEstado) === v.idEstado);
 
       const row = `
         <tr>
-          <td>${v.id}</td>
+          <td>${v.id || v.idVehiculo}</td>
           <td>${v.marca}</td>
           <td>${v.modelo}</td>
           <td>${v.anio}</td>
@@ -91,10 +102,10 @@ async function loadVehiculos() {
           <td>${cliente ? cliente.nombre + " " + cliente.apellido : v.idCliente}</td>
           <td>${estado ? estado.nombreEstado : v.idEstado}</td>
           <td class="text-center">
-            <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editVehiculo(${v.id})">
+            <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editVehiculo(${v.id || v.idVehiculo})">
               <i class="bi bi-pencil-square"></i>
             </button>
-            <button class="btn btn-sm btn-danger icon-btn" onclick="removeVehiculo(${v.id})">
+            <button class="btn btn-sm btn-danger icon-btn" onclick="removeVehiculo(${v.id || v.idVehiculo})">
               <i class="bi bi-trash"></i>
             </button>
           </td>
@@ -114,11 +125,11 @@ async function loadVehiculos() {
 window.editVehiculo = async (id) => {
   try {
     const vehiculos = await getVehiculos();
-    const v = vehiculos.find(veh => veh.id === id);
+    const v = vehiculos.find(veh => (veh.id || veh.idVehiculo) === id);
 
     if (!v) return;
 
-    document.getElementById("vehiculoId").value = v.id;
+    document.getElementById("vehiculoId").value = v.id || v.idVehiculo;
     document.getElementById("marca").value = v.marca;
     document.getElementById("modelo").value = v.modelo;
     document.getElementById("anio").value = v.anio;
@@ -168,9 +179,7 @@ async function cargarClientes() {
     const res = await fetch(`${CLIENTES_API}/consultar?page=0&size=50`);
     const data = await res.json();
 
-    console.log("Respuesta API clientes:", data);
-
-    clientesCache = data.data?.content || [];  
+    clientesCache = parseResponse(data);
     console.log("Clientes cache cargados:", clientesCache);
 
     const selectCliente = document.getElementById("idCliente");
@@ -178,7 +187,7 @@ async function cargarClientes() {
 
     clientesCache.forEach(c => {
       const option = document.createElement("option");
-      option.value = c.id; // ✅ se asegura que mande el ID real
+      option.value = c.id || c.idCliente;
       option.textContent = `${c.nombre} ${c.apellido}`;
       selectCliente.appendChild(option);
     });
@@ -195,9 +204,7 @@ async function cargarEstados() {
     const res = await fetch(`${ESTADOS_API}/consultar?page=0&size=50`);
     const data = await res.json();
 
-    console.log("Respuesta API estados:", data);
-
-    estadosCache = data.content || [];  
+    estadosCache = parseResponse(data);
     console.log("Estados cache cargados:", estadosCache);
 
     const selectEstado = document.getElementById("idEstado");
@@ -205,7 +212,7 @@ async function cargarEstados() {
 
     estadosCache.forEach(e => {
       const option = document.createElement("option");
-      option.value = e.id; // ✅ debe coincidir con IDESTADO real
+      option.value = e.id || e.idEstado;
       option.textContent = e.nombreEstado;
       selectEstado.appendChild(option);
     });
