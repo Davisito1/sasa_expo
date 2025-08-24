@@ -1,39 +1,101 @@
-const API_URL = "http://localhost:8080/apiVehiculo";
+// 🔧 VehiculosServices.js
+// Trabaja contra tu API local de Spring Boot.
+// Es tolerante a diferentes estructuras de respuesta (Page, wrapper "data", lista directa).
 
-// 🔹 Obtener todos los vehículos
-export async function getVehiculos() {
-  const res = await fetch(API_URL);
-  if (!res.ok) throw new Error("Error al obtener vehículos");
-  return await res.json();
+const API_BASE = "http://localhost:8080";
+
+// ——————————————————————————————————————————————
+// Helpers para parsear respuestas con diferentes formas
+// ——————————————————————————————————————————————
+function parseListResponse(json) {
+  // Soporta:
+  // 1) { data: { content: [...] } }
+  // 2) { content: [...] }
+  // 3) { data: [...] }
+  // 4) [...]
+  if (Array.isArray(json)) return json;
+  if (json?.data?.content) return json.data.content;
+  if (json?.content) return json.content;
+  if (json?.data && Array.isArray(json.data)) return json.data;
+  return [];
 }
 
-// 🔹 Crear nuevo vehículo
+async function fetchJson(url, opts = {}) {
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText} - ${text || url}`);
+  }
+  return res.json();
+}
+
+// ——————————————————————————————————————————————
+// Vehículos
+// ——————————————————————————————————————————————
+const VEHICULOS_API = `${API_BASE}/apiVehiculo`;
+
+export async function getVehiculos({ page = 0, size = 500 } = {}) {
+  // Intento 1: endpoint paginado /consultar
+  try {
+    const j = await fetchJson(`${VEHICULOS_API}/consultar?page=${page}&size=${size}`);
+    return parseListResponse(j);
+  } catch {
+    // Intento 2: lista directa en /
+    const j = await fetchJson(`${VEHICULOS_API}`);
+    return parseListResponse(j);
+  }
+}
+
 export async function createVehiculo(vehiculo) {
-  const res = await fetch(API_URL, {
+  const j = await fetchJson(VEHICULOS_API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(vehiculo),
   });
-  if (!res.ok) throw new Error("Error al crear vehículo");
-  return await res.json();
+  return j;
 }
 
-// 🔹 Actualizar vehículo
 export async function updateVehiculo(id, vehiculo) {
-  const res = await fetch(`${API_URL}/${id}`, {
+  const j = await fetchJson(`${VEHICULOS_API}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(vehiculo),
   });
-  if (!res.ok) throw new Error("Error al actualizar vehículo");
-  return await res.json();
+  return j;
 }
 
-// 🔹 Eliminar vehículo
 export async function deleteVehiculo(id) {
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: "DELETE",
-  });
-  if (!res.ok) throw new Error("Error al eliminar vehículo");
+  await fetchJson(`${VEHICULOS_API}/${id}`, { method: "DELETE" });
   return true;
 }
+
+// ——————————————————————————————————————————————
+// Clientes
+// ——————————————————————————————————————————————
+const CLIENTES_API = `${API_BASE}/apiCliente`;
+
+export async function getClientes({ page = 0, size = 200 } = {}) {
+  try {
+    const j = await fetchJson(`${CLIENTES_API}/consultar?page=${page}&size=${size}`);
+    return parseListResponse(j);
+  } catch {
+    const j = await fetchJson(`${CLIENTES_API}`);
+    return parseListResponse(j);
+  }
+}
+
+// ——————————————————————————————————————————————
+// Estados de Vehículo
+// ——————————————————————————————————————————————
+const ESTADOS_API = `${API_BASE}/apiEstadoVehiculo`;
+
+export async function getEstados({ page = 0, size = 200 } = {}) {
+  try {
+    const j = await fetchJson(`${ESTADOS_API}/consultar?page=${page}&size=${size}`);
+    return parseListResponse(j);
+  } catch {
+    const j = await fetchJson(`${ESTADOS_API}`);
+    return parseListResponse(j);
+  }
+}
+

@@ -5,24 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehículos</title>
 
+  <!-- SweetAlert -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+  <!-- Estilos -->
   <link rel="stylesheet" href="../CSS/dashboard.css" />
   <link rel="stylesheet" href="../CSS/vehiculos.css" />
 
+  <!-- Iconos / Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-  <style>
-    /* 🔹 Encabezado de la tabla en blanco con letras negras */
-    .tabla-encabezado th {
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      font-weight: bold;
-      text-align: center;
-    }
-  </style>
 </head>
 <body>
 
@@ -67,8 +60,8 @@
       <h2 class="mb-4">Vehículos</h2>
 
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <button id="btnAddVehiculo" class="btn btn-primary">
-          <i class="fas fa-plus me-2"></i> Nuevo Vehículo
+        <button id="btnAddVehiculo" class="btn-add">
+          <i class="fas fa-plus"></i> Nuevo Vehículo
         </button>
 
         <!-- Selector de cantidad de registros -->
@@ -85,7 +78,7 @@
 
       <!-- Tabla de vehículos -->
       <div class="table-responsive">
-        <table class="table table-bordered table-striped align-middle">
+        <table class="table table-bordered align-middle">
           <thead class="tabla-encabezado">
             <tr>
               <th>ID</th>
@@ -107,41 +100,56 @@
 
       <!-- Controles de paginación -->
       <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2">
-        <!-- Aquí se generan los botones dinámicamente -->
+        <!-- Botones generados dinámicamente -->
       </div>
     </section>
   </main>
 
-  <!-- Modal Agregar/Editar Vehículo -->
+  <!-- Modal Agregar/Editar Vehículo (Bootstrap) -->
   <div class="modal fade" id="vehiculoModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content shadow-lg rounded-4">
         <form id="vehiculoForm">
-          <div class="modal-header">
-            <h5 class="modal-title" id="vehiculoModalLabel">Agregar Vehículo</h5>
+          <div class="modal-header border-0">
+            <h5 class="modal-title fw-bold" id="vehiculoModalLabel">Agregar Vehículo</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
-          <div class="modal-body d-flex flex-column gap-3">
-            <input type="hidden" id="vehiculoId" name="vehiculoId" />
-            <input type="text" id="marca" name="marca" placeholder="Marca" required class="form-control" />
-            <input type="text" id="modelo" name="modelo" placeholder="Modelo" required class="form-control" />
-            <input type="number" id="anio" name="anio" placeholder="Año" required class="form-control" />
-            <input type="text" id="placa" name="placa" placeholder="Placa" required class="form-control" />
-            <input type="text" id="vin" name="vin" placeholder="VIN (opcional)" class="form-control" />
-            
-            <!-- Cliente -->
-            <select id="idCliente" name="idCliente" required class="form-select">
-              <option value="">Seleccione un Cliente</option>
-            </select>
 
-            <!-- Estado -->
-            <select id="idEstado" name="idEstado" required class="form-select">
-              <option value="">Seleccione un Estado</option>
-            </select>
+          <div class="modal-body d-flex flex-column gap-3 px-4">
+            <input type="hidden" id="vehiculoId" name="vehiculoId" />
+
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <input type="text" id="marca" name="marca" placeholder="Marca" required class="form-control form-control-lg" />
+              </div>
+              <div class="col-sm-6">
+                <input type="text" id="modelo" name="modelo" placeholder="Modelo" required class="form-control form-control-lg" />
+              </div>
+              <div class="col-sm-4">
+                <input type="number" id="anio" name="anio" placeholder="Año" required class="form-control" />
+              </div>
+              <div class="col-sm-4">
+                <input type="text" id="placa" name="placa" placeholder="Placa" required class="form-control" />
+              </div>
+              <div class="col-sm-4">
+                <input type="text" id="vin" name="vin" placeholder="VIN (opcional)" class="form-control" />
+              </div>
+              <div class="col-sm-6">
+                <select id="idCliente" name="idCliente" required class="form-select">
+                  <option value="">Seleccione un Cliente</option>
+                </select>
+              </div>
+              <div class="col-sm-6">
+                <select id="idEstado" name="idEstado" required class="form-select">
+                  <option value="">Seleccione un Estado</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-success">Guardar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+          <div class="modal-footer border-0 px-4 pb-4">
+            <button type="submit" class="btn btn-success px-4">Guardar</button>
+            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
           </div>
         </form>
       </div>
@@ -150,6 +158,7 @@
 
   <!-- Bootstrap + JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Tu controlador conserva los mismos IDs/clases -->
   <script type="module" src="../JS/Controllers/VehiculosController.js"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@ const frmEditar = document.getElementById("frmEditarVehiculo");
 
 const modalAgregar = document.getElementById("mdAgregarVehiculo");
 const modalEditar = document.getElementById("mdEditarVehiculo");
-
+ 
 // === VARIABLES DE PAGINACIÓN ===
 let vehiculos = [];         // aquí guardamos todos los registros
 let paginaActual = 1;       // número de página actual

@@ -1,0 +1,35 @@
+/* Tarjeta responsiva centrada */
+.auth-card {
+  width: 100%;
+  max-width: 420px;     /* 🔹 ancho cómodo en desktop */
+  background: #fff;
+}
+
+/* Inputs y foco */
+.form-control {
+  height: 46px;
+  border-radius: 0.8rem;
+}
+.form-control:focus {
+  box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .15);
+  border-color: #dc3545;
+}
+
+/* Botones redondeados y cómodos al tacto */
+.btn {
+  border-radius: 1rem;
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 360px) {
+  .card-body {
+    padding: 1.25rem !important;
+  }
+}
+
+/* Fondo un poco más suave en pantallas grandes */
+@media (min-width: 992px) {
+  body.bg-light {
+    background: #f6f7f9;
+  }
+}

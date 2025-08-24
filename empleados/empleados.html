@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Empleados</title>
 
-  <!-- Estilos -->
+  <!-- Estilos base del dashboard y de esta página -->
   <link rel="stylesheet" href="../CSS/dashboard.css" />
   <link rel="stylesheet" href="../CSS/empleados.css" />
+
+  <!-- Librerías UI -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
@@ -34,7 +36,13 @@
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
-      <input type="text" placeholder="Buscar..." id="buscar" onkeyup="BuscarEmpleado()" class="search-input" />
+      <input
+        type="text"
+        placeholder="Buscar..."
+        id="buscar"
+        onkeyup="BuscarEmpleado()"
+        class="search-input"
+      />
     </div>
     <div class="topbar-right">
       <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
@@ -48,13 +56,11 @@
     <section class="card">
       <h2 class="mb-4">Empleados</h2>
 
-      <!-- Encabezado de acciones -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <button class="btn-add" onclick="abrirModalAgregar()">
           <i class="bi bi-plus-lg"></i> Añadir Empleado
         </button>
 
-        <!-- Selector de cantidad de registros -->
         <div class="d-flex align-items-center">
           <label for="registrosPorPagina" class="me-2 fw-semibold">Mostrar:</label>
           <select id="registrosPorPagina" class="form-select" style="width:auto;">
@@ -68,7 +74,7 @@
 
       <!-- Tabla -->
       <div class="table-responsive">
-        <table class="table">
+        <table class="table align-middle">
           <thead>
             <tr>
               <th>ID</th>
@@ -78,7 +84,7 @@
               <th>DUI</th>
               <th>Teléfono</th>
               <th>Dirección</th>
-              <th>Fecha de Contratación</th>
+              <th>F. Contratación</th>
               <th>Correo</th>
               <th>Usuario</th>
               <th>Acciones</th>
@@ -96,46 +102,216 @@
   </main>
 
   <!-- Modal Agregar -->
-  <dialog id="mdAgregarEmpleado" class="p-4 rounded shadow">
-    <h3 class="text-center">Agregar Empleado</h3>
-    <form id="frmAgregarEmpleado" class="d-flex flex-column gap-3">
-      <input type="text" id="txtNombre" placeholder="Nombre" required class="form-control" />
-      <input type="text" id="txtApellido" placeholder="Apellido" required class="form-control" />
-      <select id="selectCargo" required class="form-control">
-        <option value="administrador">Administrador</option>
-      </select>
-      <input type="text" id="txtDUI" placeholder="DUI (XXXXXXXX-X)" required class="form-control" />
-      <input type="tel" id="txtTelefono" placeholder="Teléfono" required class="form-control" />
-      <input type="text" id="txtDireccion" placeholder="Dirección" required class="form-control" />
-      <input type="date" id="fechaContratacion" required class="form-control" />
-      <input type="email" id="txtCorreo" placeholder="Correo Electrónico" required class="form-control" />
-      <input type="text" id="txtUsuario" placeholder="Usuario" required class="form-control" />
-      <div class="d-flex justify-content-between mt-3">
-        <button type="submit" class="btn btn-primary">Guardar</button>
-        <button type="button" onclick="cerrarModalAgregar()" class="btn btn-secondary">Cerrar</button>
+  <dialog id="mdAgregarEmpleado" class="dlg dlg--wide">
+    <div class="dlg__header">
+      <h2>Agregar Empleado</h2>
+    </div>
+
+    <form id="frmAgregarEmpleado" class="dlg__form grid-two">
+      <!-- Nombre -->
+      <div class="form-field">
+        <label for="txtNombre">Nombre</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="txtNombre" class="form-control" placeholder="Ej. Juan" required />
+        </div>
+      </div>
+
+      <!-- Apellido -->
+      <div class="form-field">
+        <label for="txtApellido">Apellido</label>
+        <div class="input-wrap">
+          <i class="fa-regular fa-id-card"></i>
+          <input type="text" id="txtApellido" class="form-control" placeholder="Ej. Pérez" required />
+        </div>
+      </div>
+
+      <!-- Cargo -->
+      <div class="form-field">
+        <label for="selectCargo">Cargo</label>
+        <div class="select-wrap">
+          <i class="fa-solid fa-briefcase"></i>
+          <select id="selectCargo" class="form-select" required>
+            <option value="" disabled selected>Seleccione…</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Mecánico">Mecánico</option>
+            <option value="Recepción">Recepción</option>
+            <option value="Cajero">Cajero</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- DUI -->
+      <div class="form-field">
+        <label for="txtDUI">DUI</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-hashtag"></i>
+          <input
+            type="text"
+            id="txtDUI"
+            class="form-control"
+            placeholder="########-#"
+            maxlength="10"
+            inputmode="numeric"
+            pattern="^\d{8}-\d$"
+            title="8 dígitos, guion, 1 dígito (########-#)"
+            required
+          />
+        </div>
+      </div>
+
+      <!-- Teléfono -->
+      <div class="form-field">
+        <label for="txtTelefono">Teléfono</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-phone"></i>
+          <input type="tel" id="txtTelefono" class="form-control" placeholder="Ej. 7777-7777" required />
+        </div>
+      </div>
+
+      <!-- Dirección (span-2) -->
+      <div class="form-field span-2">
+        <label for="txtDireccion">Dirección</label>
+        <div class="input-wrap input-wrap--textarea">
+          <i class="fa-solid fa-location-dot"></i>
+          <textarea id="txtDireccion" class="form-control" rows="2" placeholder="Calle, número, colonia…" required></textarea>
+        </div>
+      </div>
+
+      <!-- Fecha Contratación -->
+      <div class="form-field">
+        <label for="fechaContratacion">Fecha de contratación</label>
+        <div class="input-wrap">
+          <i class="fa-regular fa-calendar"></i>
+          <input type="date" id="fechaContratacion" class="form-control" required />
+        </div>
+      </div>
+
+      <!-- Correo -->
+      <div class="form-field">
+        <label for="txtCorreo">Correo</label>
+        <div class="input-wrap">
+          <i class="fa-regular fa-envelope"></i>
+          <input type="email" id="txtCorreo" class="form-control" placeholder="empleado@empresa.com" required />
+        </div>
+      </div>
+
+      <!-- Usuario -->
+      <div class="form-field span-2">
+        <label for="txtUsuario">Usuario</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user-gear"></i>
+          <input type="text" id="txtUsuario" class="form-control" placeholder="Nombre de usuario" required />
+        </div>
+      </div>
+
+      <div class="dlg__actions span-2">
+        <button type="submit" class="btn-solid">Guardar</button>
+        <button type="button" class="btn-ghost" onclick="cerrarModalAgregar()">Cerrar</button>
       </div>
     </form>
   </dialog>
 
   <!-- Modal Editar -->
-  <dialog id="mdEditarEmpleado" class="p-4 rounded shadow">
-    <h3 class="text-center">Editar Empleado</h3>
-    <form id="frmEditarEmpleado" class="d-flex flex-column gap-3">
+  <dialog id="mdEditarEmpleado" class="dlg dlg--wide">
+    <div class="dlg__header">
+      <h2>Editar Empleado</h2>
+    </div>
+
+    <form id="frmEditarEmpleado" class="dlg__form grid-two">
       <input type="hidden" id="txtIdEmpleado" />
-      <input type="text" id="txtEditarNombre" placeholder="Nombre" required class="form-control" />
-      <input type="text" id="txtEditarApellido" placeholder="Apellido" required class="form-control" />
-      <select id="selectEditarCargo" required class="form-control">
-        <option value="administrador">Administrador</option>
-      </select>
-      <input type="text" id="txtEditarDUI" placeholder="DUI (XXXXXXXX-X)" required class="form-control" />
-      <input type="tel" id="txtEditarTelefono" placeholder="Teléfono" required class="form-control" />
-      <input type="text" id="txtEditarDireccion" placeholder="Dirección" required class="form-control" />
-      <input type="date" id="editarFechaContratacion" required class="form-control" />
-      <input type="email" id="txtEditarCorreo" placeholder="Correo Electrónico" required class="form-control" />
-      <input type="text" id="txtEditarUsuario" placeholder="Usuario" required class="form-control" />
-      <div class="d-flex justify-content-between mt-3">
-        <button type="submit" class="btn btn-primary">Actualizar</button>
-        <button type="button" onclick="cerrarModalEditar()" class="btn btn-secondary">Cerrar</button>
+
+      <div class="form-field">
+        <label for="txtEditarNombre">Nombre</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user"></i>
+          <input type="text" id="txtEditarNombre" class="form-control" placeholder="Ej. Juan" required />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="txtEditarApellido">Apellido</label>
+        <div class="input-wrap">
+          <i class="fa-regular fa-id-card"></i>
+          <input type="text" id="txtEditarApellido" class="form-control" placeholder="Ej. Pérez" required />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="selectEditarCargo">Cargo</label>
+        <div class="select-wrap">
+          <i class="fa-solid fa-briefcase"></i>
+          <select id="selectEditarCargo" class="form-select" required>
+            <option value="" disabled selected>Seleccione…</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Mecánico">Mecánico</option>
+            <option value="Recepción">Recepción</option>
+            <option value="Cajero">Cajero</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="txtEditarDUI">DUI</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-hashtag"></i>
+          <input
+            type="text"
+            id="txtEditarDUI"
+            class="form-control"
+            placeholder="########-#"
+            maxlength="10"
+            inputmode="numeric"
+            pattern="^\d{8}-\d$"
+            title="8 dígitos, guion, 1 dígito (########-#)"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="txtEditarTelefono">Teléfono</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-phone"></i>
+          <input type="tel" id="txtEditarTelefono" class="form-control" placeholder="Ej. 7777-7777" required />
+        </div>
+      </div>
+
+      <div class="form-field span-2">
+        <label for="txtEditarDireccion">Dirección</label>
+        <div class="input-wrap input-wrap--textarea">
+          <i class="fa-solid fa-location-dot"></i>
+          <textarea id="txtEditarDireccion" class="form-control" rows="2" placeholder="Calle, número, colonia…" required></textarea>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="editarFechaContratacion">Fecha de contratación</label>
+        <div class="input-wrap">
+          <i class="fa-regular fa-calendar"></i>
+          <input type="date" id="editarFechaContratacion" class="form-control" required />
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label for="txtEditarCorreo">Correo</label>
+        <div class="input-wrap">
+          <i class="fa-regular fa-envelope"></i>
+          <input type="email" id="txtEditarCorreo" class="form-control" placeholder="empleado@empresa.com" required />
+        </div>
+      </div>
+
+      <div class="form-field span-2">
+        <label for="txtEditarUsuario">Usuario</label>
+        <div class="input-wrap">
+          <i class="fa-solid fa-user-gear"></i>
+          <input type="text" id="txtEditarUsuario" class="form-control" placeholder="Nombre de usuario" required />
+        </div>
+      </div>
+
+      <div class="dlg__actions span-2">
+        <button type="submit" class="btn-solid">Actualizar</button>
+        <button type="button" class="btn-ghost" onclick="cerrarModalEditar()">Cerrar</button>
       </div>
     </form>
   </dialog>

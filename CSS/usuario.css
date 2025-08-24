@@ -1,0 +1,79 @@
+/* ===== Offsets dinámicos ===== */
+:root{
+  --topbar-h: 72px;           /* JS los ajusta */
+  --sidebar-w: 80px;          /* fallback: ancho típico de sidebar */
+  --container-max: 1200px;
+}
+.with-topbar-offset{
+  padding-top: calc(var(--topbar-h) + 16px) !important;
+}
+.with-side-offset{
+  padding-left: var(--sidebar-w);
+}
+
+/* ===== Layout responsivo ===== */
+@media (max-width: 992px){
+  .with-side-offset{ padding-left: 0; } /* en tablet/móvil, que use todo el ancho */
+}
+/* ../CSS/usuario.css (o en tu dashboard.css) */
+#sidebar .logo img { cursor: pointer; }
+
+
+/* Centrado y límites de ancho */
+.page-wrap{
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: clamp(12px, 3vw, 24px);
+}
+
+/* ===== Tarjeta ===== */
+.usuario-card{
+  border: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 28px rgba(0,0,0,.06), 0 2px 10px rgba(0,0,0,.04);
+}
+.usuario-card .card-header{
+  background: linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.02));
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  font-weight: 600;
+  padding-block: 14px;
+}
+.usuario-card .card-body{
+  padding: clamp(18px, 2.2vw, 28px);
+}
+.usuario-card hr{
+  opacity: .35;
+  margin-block: 18px;
+}
+
+/* ===== Formularios ===== */
+.form-label{ font-weight: 600; margin-bottom: .35rem; }
+input.form-control, select.form-select{
+  border-radius: 10px;
+  border-color: rgba(0,0,0,.15);
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+input[disabled]{ background-color: rgba(0,0,0,.035) !important; }
+input.form-control:focus, select.form-select:focus{
+  box-shadow: 0 0 0 .25rem rgba(0,0,0,.06);
+  border-color: rgba(0,0,0,.25);
+}
+.input-group > .form-control{ border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+.input-group > .btn{ border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+.form-text{ margin-top: .35rem; opacity: .8; }
+.btn{ border-radius: 10px; padding: .55rem .9rem; }
+
+/* Sección de contraseña con transición */
+#formPassword{ transition: opacity .18s ease, transform .18s ease; }
+#formPassword.d-none{ opacity: 0; transform: translateY(-4px); }
+
+/* ===== Responsive extras ===== */
+@media (max-width: 576px){
+  #formUsuario .d-grid{ margin-top: .5rem; }
+  .usuario-card .card-body{ padding: 16px; }
+}
+
+/* ===== Scroll y anclajes ===== */
+#ajustes{ scroll-margin-top: calc(var(--topbar-h) + 12px); }
