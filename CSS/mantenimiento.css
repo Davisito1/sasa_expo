@@ -21,7 +21,7 @@
 
 /* Botón de nuevo mantenimiento */
 .btn-add {
-    background-color: #0056b3 ;
+    background-color: #0056b3;
     color: white;
     border-radius: 10px;
     padding: 10px 20px;
@@ -34,10 +34,11 @@
     background-color: #bb2d3b;
 }
 
+/* Tabla */
 .table-responsive {
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 .table {
@@ -69,7 +70,7 @@ dialog {
     border: none;
     border-radius: 10px;
     padding: 20px 25px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
     background-color: white;
 }
 
@@ -128,6 +129,7 @@ dialog button[type="button"]:hover {
     background-color: #5a6268;
 }
 
+/* Buscador */
 .search-input {
     padding: 8px 12px;
     border: 1px solid #ced4da;
@@ -179,4 +181,21 @@ dialog button[type="button"]:hover {
   background-color: #f8d7da !important;
   color: #842029 !important;
   border-color: #842029 !important;
+}
+
+/* Paginación */
+.pagination li a {
+    color: #0056b3;
+    border-radius: 5px;
+    padding: 6px 12px;
+    margin: 0 3px;
+    border: 1px solid #dee2e6;
+    transition: background-color 0.3s ease;
+}
+
+.pagination li a:hover,
+.pagination li a.active {
+    background-color: #0056b3;
+    color: white;
+    border-color: #0056b3;
 }

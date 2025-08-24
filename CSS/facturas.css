@@ -1,69 +1,85 @@
-/* Contenedor principal */
-.card {
-  background-color: white;
+/* ===== Base global ===== */
+* { box-sizing: border-box; }
+img, video { max-width: 100%; height: auto; }
+
+/* ===== Contenedor principal (card) ===== */
+.card,
+.crud-container {
+  background: #fff;
   padding: 30px;
   border-radius: 10px;
   margin: 30px auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
   max-width: 1200px;
 }
-
-/* Título dentro del contenedor */
-.card h2 {
+.card h2,
+.crud-container h2 {
   font-size: 24px;
+  font-weight: 700;
   margin-bottom: 20px;
-  font-weight: bold;
+  text-align: center;
 }
 
-/* Encabezado */
+/* Encabezado de acciones (botón + selector) */
+.crud-header,
 .d-flex.justify-content-between.align-items-center.mb-4 {
   margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* Botón de nueva factura (mantiene diseño) */
+/* ===== Botón principal (Agregar / Nuevo) ===== */
 .btn-add {
-  background-color: #0056b3;
-  color: white;
-  border-radius: 10px;
-  padding: 10px 20px;
-  border: none;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-  cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
+  gap: 6px;
+  background: #0056b3 !important;
+  color: #fff !important;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none !important;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .2s ease-in-out;
 }
-.btn-add:hover { background-color: #bb2d3b; }
+.btn-add:hover { background: #155d85 !important; }
 
-/* Tabla contenedor responsive */
+/* ===== Búsqueda en topbar ===== */
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  width: 100%;
+  font-size: 1rem;
+  transition: border-color .3s ease;
+}
+.search-input:focus {
+  border-color: #0056b3;
+  outline: 0;
+  box-shadow: 0 0 5px rgba(0,86,179,.5);
+}
+
+/* ===== Tabla ===== */
 .table-responsive {
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: white;
-  padding: 0.5rem;
+  box-shadow: 0 0 10px rgba(0,0,0,.1);
+  background: #fff;
+  padding: 8px;
 }
-
-/* Tabla base */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 0;
-}
-
-/* Encabezado tabla */
+.table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
 .table thead th {
-  background-color: #f8f9fa;
+  background: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
   font-weight: 600;
   text-align: center;
   vertical-align: middle;
   padding: 12px 15px;
 }
-
-/* Celdas tabla */
 .table tbody td {
   vertical-align: middle;
   padding: 12px 15px;
@@ -71,110 +87,116 @@
   border: 1px solid #dee2e6;
 }
 
-/* Hover fila tabla */
-.table tbody tr:hover { background-color: #f9f9f9; }
-
-/* Modal dialog (unificado) */
-dialog {
-  width: 350px;
-  max-width: 90%;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  padding: 20px 25px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-  background-color: white;
-}
-dialog h2, dialog h3 {
-  font-size: 20px;
-  margin-bottom: 15px;
-  font-weight: bold;
-  text-align: center;
-}
-dialog form {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-dialog input, dialog select {
-  width: 100%;
-  padding: 7px 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-}
-dialog .d-flex.justify-content-between.mt-3 { margin-top: 20px; }
-dialog button[type="submit"] {
-  background-color: #0056b3;
-  color: white;
-  padding: 10px 0;
-  border: none;
-  border-radius: 4px;
-  font-weight: 500;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-dialog button[type="submit"]:hover { background-color: #004494; }
-dialog button[type="button"] {
-  background-color: #6c757d;
-  color: white;
-  padding: 10px 0;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
-dialog button[type="button"]:hover { background-color: #5a6268; }
-
-/* Campo búsqueda */
-.search-input {
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
-  width: 250px;
-  font-size: 0.9rem;
-}
-.search-input:focus {
-  outline: none;
-  border-color: #0056b3;
-  box-shadow: 0 0 0 2px rgba(0, 86, 179, 0.1);
-}
-
-/* Botones de acción consistentes en todos los módulos */
+/* ===== Botones de acción ===== */
+.table td:last-child { white-space: nowrap; }
 .icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: .35rem;
   padding: 6px 10px;
   font-size: 1rem;
   border-radius: 6px;
-  background-color: white !important;
+  background: #fff !important;
   border: 1.5px solid #ced4da !important;
   color: #333 !important;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background .3s, color .3s, border-color .3s;
 }
 .icon-btn i { font-size: 1.1rem; pointer-events: none; }
-.icon-btn:hover {
-  background-color: #e7f1ff !important;
-  border-color: #1d6fa5 !important;
-  color: #1d6fa5 !important;
+.icon-btn:hover { background: #e7f1ff !important; border-color: #1d6fa5 !important; color: #1d6fa5 !important; }
+.btn-primary.icon-btn { color: #0d6efd !important; border-color: #0d6efd !important; }
+.btn-primary.icon-btn:hover { background: #cfe2ff !important; color: #084298 !important; border-color: #084298 !important; }
+.btn-danger.icon-btn { color: #dc3545 !important; border-color: #dc3545 !important; }
+.btn-danger.icon-btn:hover { background: #f8d7da !important; color: #842029 !important; border-color: #842029 !important; }
+
+/* ===== Modal ===== */
+dialog {
+  width: 350px;
+  max-width: 90%;
+  border: 0;
+  border-radius: 10px;
+  padding: 20px 25px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);
+  background: #fff;
 }
-.btn-primary.icon-btn {
-  color: #0d6efd !important;
-  border-color: #0d6efd !important;
+dialog h2, dialog h3 {
+  font-size: 20px;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-align: center;
 }
-.btn-primary.icon-btn:hover {
-  background-color: #cfe2ff !important;
-  color: #084298 !important;
-  border-color: #084298 !important;
+dialog form { display: flex; flex-direction: column; gap: 12px; }
+dialog input, dialog select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 1rem;
 }
-.btn-danger.icon-btn {
-  color: #dc3545 !important;
-  border-color: #dc3545 !important;
+dialog input:focus, dialog select:focus {
+  outline: 0;
+  border-color: #0056b3;
+  box-shadow: 0 0 5px rgba(0,86,179,.5);
 }
-.btn-danger.icon-btn:hover {
-  background-color: #f8d7da !important;
-  color: #842029 !important;
-  border-color: #842029 !important;
+dialog .d-flex.justify-content-between { gap: 10px; }
+dialog button { flex: 1; }
+
+/* ===== Paginación ===== */
+#paginacion {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+#paginacion button {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: all .2s ease-in-out;
+  color: #333;
+}
+#paginacion button:hover { background: #0056b3; color: #fff; border-color: #0056b3; }
+#paginacion button.btn-primary { background: #0056b3; color: #fff; border-color: #0056b3; font-weight: 600; }
+#paginacion button:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; border-color: #dee2e6; }
+
+/* ===== Responsive ===== */
+@media (max-width: 992px) {
+  .card, .crud-container { padding: 20px; }
+  .card h2, .crud-container h2 { font-size: 20px; }
+
+  .btn-add {
+    padding: 8px 14px;
+    font-size: .95rem;
+    width: auto;
+    max-width: 250px;
+  }
+
+  .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table thead th, .table tbody td {
+    padding: 10px;
+    font-size: .9rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 576px) {
+  .crud-header,
+  .d-flex.justify-content-between.align-items-center.mb-4 {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .search-input { width: 100%; }
+  #registrosPorPagina { width: 100%; }
+
+  dialog { width: 92%; max-width: 400px; padding: 16px; }
+  dialog .d-flex.justify-content-between { flex-direction: column; }
+  dialog button { width: 100%; }
 }
