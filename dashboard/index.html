@@ -21,7 +21,7 @@
       <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
-      <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
+      <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
       <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
       <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
       <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
@@ -49,35 +49,65 @@
   <!-- Contenido -->
   <div class="content">
     <div class="container mt-4">
-      <div class="row text-center mb-4">
-        <div class="col-md-3 mb-3">
-          <div class="card p-3 shadow">
-            <h5 class="text-danger fw-bold">Vehículos</h5>
+      
+      <!-- Tarjeta saludo -->
+      <div class="card p-4 mb-4 shadow text-center">
+        <h4 id="saludo">Bienvenido</h4>
+        <p class="text-muted">Bienvenido al sistema de SASA</p>
+      </div>
+
+      <!-- Tarjetas principales -->
+      <div class="row mb-4">
+        <!-- Vehículos -->
+        <div class="col-md-2 mb-3">
+          <div class="card p-3 shadow text-center">
+            <h5 class="fw-bold text-danger">Vehículos</h5>
             <h2 id="vehiculosTotal">0</h2>
-            <small class="text-success">+Últimos añadidos</small>
+            <small class="text-muted">Registrados</small>
           </div>
         </div>
-        <div class="col-md-3 mb-3">
-          <div class="card p-3 shadow">
-            <h5 class="text-danger fw-bold">Historial</h5>
+        <!-- Historial -->
+        <div class="col-md-2 mb-3">
+          <div class="card p-3 shadow text-center">
+            <h5 class="fw-bold text-danger">Historial</h5>
             <h2 id="historialTotal">0</h2>
-            <small class="text-muted">Acciones recientes</small><br>
-            <button id="verHistorialBtn" class="btn btn-outline-danger mt-2 btn-sm">Ver historial completo</button>
+            <small class="text-muted">Acciones registradas</small><br>
+            <button id="verHistorialBtn" class="btn btn-outline-danger mt-2 btn-sm">Ver historial</button>
           </div>
         </div>
-        <div class="col-md-3 mb-3">
-          <div class="card p-3 shadow">
-            <h5 class="text-danger fw-bold">Empleados</h5>
+        <!-- Citas -->
+        <div class="col-md-2 mb-3">
+          <div class="card p-3 shadow text-center">
+            <h5 class="fw-bold text-danger">Citas</h5>
+            <h2 id="citasTotal">0</h2>
+            <small class="text-muted">Agendadas</small><br>
+            <button onclick="verCitasHoy()" class="btn btn-outline-danger mt-2 btn-sm">Hoy</button>
+          </div>
+        </div>
+        <!-- Empleados -->
+        <div class="col-md-2 mb-3">
+          <div class="card p-3 shadow text-center">
+            <h5 class="fw-bold text-danger">Empleados</h5>
             <h2 id="empleadosTotal">0</h2>
             <small class="text-muted">Registrados</small>
           </div>
         </div>
-        <div class="col-md-3 mb-3">
-          <div class="card p-3 shadow">
-            <h5 class="text-danger fw-bold">Citas</h5>
-            <h2 id="citasTotal">0</h2>
-            <small class="text-success">+Agendadas</small><br>
-            <button onclick="verCitasHoy()" class="btn btn-outline-primary mt-2 btn-sm">Ver citas de hoy</button>
+        <!-- Pagos -->
+        <div class="col-md-2 mb-3">
+          <div class="card p-3 shadow text-center">
+            <h5 class="fw-bold text-danger">Pagos</h5>
+            <h2 id="pagosTotal">0</h2>
+            <small class="text-muted">Realizados</small>
+          </div>
+        </div>
+        <!-- Clientes -->
+        <div class="col-md-2 mb-3">
+          <div class="card p-3 shadow text-center">
+            <h5 class="fw-bold text-danger">Clientes</h5>
+            <select id="selectCliente" class="form-select mb-2">
+              <option value="">Seleccione cliente</option>
+            </select>
+            <p id="infoCliente" class="text-muted">Seleccione un cliente</p>
           </div>
         </div>
       </div>
@@ -101,6 +131,7 @@
           </div>
         </div>
       </div>
+
     </div>
   </div>
 

@@ -10,8 +10,11 @@ const vehiculoForm = document.getElementById("vehiculoForm");
 const btnAddVehiculo = document.getElementById("btnAddVehiculo");
 const modalVehiculo = new bootstrap.Modal(document.getElementById("vehiculoModal"));
 
+const inputBuscar = document.getElementById("buscar"); // 🔎 buscador en la topbar
+
 let clientesCache = [];
 let estadosCache = [];
+let vehiculosCache = []; // 🔹 guardamos todos los registros para filtrar
 
 // =====================================================
 // 🔹 Helper para normalizar respuestas
@@ -61,8 +64,6 @@ vehiculoForm.addEventListener("submit", async (e) => {
     idEstado: parseInt(document.getElementById("idEstado").value)
   };
 
-  console.log("Vehículo a enviar:", vehiculo);
-
   try {
     if (id) {
       await updateVehiculo(id, vehiculo);
@@ -80,53 +81,76 @@ vehiculoForm.addEventListener("submit", async (e) => {
 });
 
 // =====================================================
-// 🔹 Mostrar vehículos en la tabla
+// 🔹 Cargar y mostrar vehículos
 // =====================================================
 async function loadVehiculos() {
   try {
     const vehiculos = await getVehiculos();
-    tablaVehiculos.innerHTML = "";
-
-    vehiculos.forEach(v => {
-      const cliente = clientesCache.find(c => (c.id || c.idCliente) === v.idCliente);
-      const estado = estadosCache.find(e => (e.id || e.idEstado) === v.idEstado);
-
-      const row = `
-        <tr>
-          <td>${v.id || v.idVehiculo}</td>
-          <td>${v.marca}</td>
-          <td>${v.modelo}</td>
-          <td>${v.anio}</td>
-          <td>${v.placa}</td>
-          <td>${v.vin || "-"}</td>
-          <td>${cliente ? cliente.nombre + " " + cliente.apellido : v.idCliente}</td>
-          <td>${estado ? estado.nombreEstado : v.idEstado}</td>
-          <td class="text-center">
-            <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editVehiculo(${v.id || v.idVehiculo})">
-              <i class="bi bi-pencil-square"></i>
-            </button>
-            <button class="btn btn-sm btn-danger icon-btn" onclick="removeVehiculo(${v.id || v.idVehiculo})">
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-      tablaVehiculos.innerHTML += row;
-    });
+    vehiculosCache = vehiculos; // guardamos todos
+    renderVehiculos(vehiculosCache);
   } catch (err) {
     console.error("Error al cargar vehículos:", err);
     Swal.fire("Error", "No se pudieron cargar los vehículos", "error");
   }
 }
 
+function renderVehiculos(lista) {
+  tablaVehiculos.innerHTML = "";
+
+  lista.forEach(v => {
+    const cliente = clientesCache.find(c => (c.id || c.idCliente) === v.idCliente);
+    const estado = estadosCache.find(e => (e.id || e.idEstado) === v.idEstado);
+
+    const row = `
+      <tr>
+        <td>${v.id || v.idVehiculo}</td>
+        <td>${v.marca}</td>
+        <td>${v.modelo}</td>
+        <td>${v.anio}</td>
+        <td>${v.placa}</td>
+        <td>${v.vin || "-"}</td>
+        <td>${cliente ? cliente.nombre + " " + cliente.apellido : v.idCliente}</td>
+        <td>${estado ? estado.nombreEstado : v.idEstado}</td>
+        <td class="text-center">
+          <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editVehiculo(${v.id || v.idVehiculo})">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+          <button class="btn btn-sm btn-danger icon-btn" onclick="removeVehiculo(${v.id || v.idVehiculo})">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+    tablaVehiculos.innerHTML += row;
+  });
+}
+
+// =====================================================
+// 🔹 Buscador en tiempo real
+// =====================================================
+inputBuscar.addEventListener("keyup", () => {
+  const texto = inputBuscar.value.toLowerCase();
+
+  const filtrados = vehiculosCache.filter(v =>
+    v.marca.toLowerCase().includes(texto) ||
+    v.modelo.toLowerCase().includes(texto) ||
+    v.placa.toLowerCase().includes(texto) ||
+    (v.vin && v.vin.toLowerCase().includes(texto)) ||
+    clientesCache.some(c => (c.id || c.idCliente) === v.idCliente &&
+                            (`${c.nombre} ${c.apellido}`).toLowerCase().includes(texto)) ||
+    estadosCache.some(e => (e.id || e.idEstado) === v.idEstado &&
+                           e.nombreEstado.toLowerCase().includes(texto))
+  );
+
+  renderVehiculos(filtrados);
+});
+
 // =====================================================
 // 🔹 Editar
 // =====================================================
 window.editVehiculo = async (id) => {
   try {
-    const vehiculos = await getVehiculos();
-    const v = vehiculos.find(veh => (veh.id || veh.idVehiculo) === id);
-
+    const v = vehiculosCache.find(veh => (veh.id || veh.idVehiculo) === id);
     if (!v) return;
 
     document.getElementById("vehiculoId").value = v.id || v.idVehiculo;
@@ -180,8 +204,6 @@ async function cargarClientes() {
     const data = await res.json();
 
     clientesCache = parseResponse(data);
-    console.log("Clientes cache cargados:", clientesCache);
-
     const selectCliente = document.getElementById("idCliente");
     selectCliente.innerHTML = '<option value="">Seleccione un Cliente</option>';
 
@@ -205,8 +227,6 @@ async function cargarEstados() {
     const data = await res.json();
 
     estadosCache = parseResponse(data);
-    console.log("Estados cache cargados:", estadosCache);
-
     const selectEstado = document.getElementById("idEstado");
     selectEstado.innerHTML = '<option value="">Seleccione un Estado</option>';
 

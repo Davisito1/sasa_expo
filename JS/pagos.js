@@ -1,6 +1,3 @@
-/*************************************************
- * Pagos — CRUD + búsqueda + selector + paginación
- *************************************************/
 const API_URL_PAGOS    = "https://retoolapi.dev/Tym5QB/pagos";
 const API_URL_FACTURAS = "https://retoolapi.dev/AE88w9/data";
 
