@@ -71,31 +71,28 @@
       <!-- Modal -->
       <dialog id="modalPago">
         <h2>Nuevo Pago</h2>
-        <form id="formNuevoPago" method="dialog" autocomplete="off" class="d-flex flex-column gap-3">
+        <form id="formPago" method="dialog" autocomplete="off" class="d-flex flex-column gap-3">
+          <input type="hidden" id="idPago" name="idPago" />
+
           <div>
-            <label for="fecha" class="form-label">Fecha</label>
-            <input type="date" id="fecha" name="fecha" required class="form-control">
-          </div>
-          <div>
-            <label for="metodo" class="form-label">Método</label>
-            <select id="metodo" name="metodo" required class="form-control">
-              <option value="">Seleccione método</option>
-              <option value="Tarjeta">Tarjeta</option>
-              <option value="Efectivo">Efectivo</option>
-              <option value="Transferencia">Transferencia</option>
-            </select>
+            <label for="fechaPago" class="form-label">Fecha</label>
+            <input type="date" id="fechaPago" name="fechaPago" required class="form-control">
           </div>
           <div>
             <label for="monto" class="form-label">Monto</label>
-            <input type="number" id="monto" name="monto" step="0.01" required class="form-control">
+            <input type="number" id="monto" name="monto" step="0.01" required class="form-control" placeholder="0.00">
           </div>
           <div>
-            <label for="factura" class="form-label">Factura</label>
-            <input type="number" id="factura" name="factura" required class="form-control" readonly>
+            <label for="idMetodoPago" class="form-label">Método (idMetodoPago)</label>
+            <select id="idMetodoPago" name="idMetodoPago" required class="form-select"></select>
+          </div>
+          <div>
+            <label for="idFactura" class="form-label">Factura (idFactura)</label>
+            <input type="number" id="idFactura" name="idFactura" required class="form-control" readonly>
           </div>
 
           <div class="d-flex justify-content-between mt-2">
-            <button type="submit" class="btn btn-success">Registrar Pago</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
             <button type="button" class="btn btn-secondary" onclick="cerrarModalPago()">Cerrar</button>
           </div>
         </form>
@@ -106,11 +103,11 @@
         <table class="table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Fecha</th>
-              <th>Monto</th>
-              <th>Método</th>
-              <th>Factura</th>
+              <th>idPago</th>
+              <th>fechaPago</th>
+              <th>monto</th>
+              <th>idMetodoPago</th>
+              <th>idFactura</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -121,17 +118,11 @@
       </div>
 
       <!-- Paginación -->
-      <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2"></div>
+      <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3"></div>
     </section>
   </main>
 
   <!-- JS -->
   <script src="../JS/pagos.js"></script>
-
-  <!-- Helpers mínimos para abrir/cerrar dialog (si aún no los tienes en pagos.js) -->
-  <script>
-    function abrirModalPago(){ document.getElementById('modalPago').showModal(); }
-    function cerrarModalPago(){ document.getElementById('modalPago').close(); }
-  </script>
 </body>
 </html>

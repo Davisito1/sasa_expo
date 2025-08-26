@@ -70,14 +70,17 @@
       <dialog id="mdAgregarCita">
         <h2 class="text-center">Agregar Cita</h2>
         <form id="frmAgregarCita" class="d-flex flex-column gap-3">
-          <input type="text" id="txtCliente" placeholder="Cliente" required class="form-control" />
           <input type="date" id="fechaCita" required class="form-control" />
           <input type="time" id="horaCita" required class="form-control" />
           <select id="selectEstado" required class="form-control">
             <option disabled selected value="">Seleccionar Estado</option>
             <option value="Pendiente">Pendiente</option>
-            <option value="Confirmado">Confirmado</option>
-            <option value="Cancelado">Cancelado</option>
+            <option value="Confirmada">Confirmada</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+          <select id="selectCliente" required class="form-control">
+            <option disabled selected value="">Seleccionar Cliente</option>
+            <!-- Se cargan los clientes desde la API -->
           </select>
           <div class="d-flex justify-content-between mt-2">
             <button type="submit" class="btn btn-primary">Guardar</button>
@@ -91,14 +94,17 @@
         <h2 class="text-center">Editar Cita</h2>
         <form id="frmEditarCita" class="d-flex flex-column gap-3">
           <input type="hidden" id="txtIdCita" />
-          <input type="text" id="txtEditarCliente" placeholder="Cliente" required class="form-control" />
           <input type="date" id="editarFechaCita" required class="form-control" />
           <input type="time" id="editarHoraCita" required class="form-control" />
           <select id="selectEditarEstado" required class="form-control">
             <option disabled selected value="">Seleccionar Estado</option>
             <option value="Pendiente">Pendiente</option>
-            <option value="Confirmado">Confirmado</option>
-            <option value="Cancelado">Cancelado</option>
+            <option value="Confirmada">Confirmada</option>
+            <option value="Cancelada">Cancelada</option>
+          </select>
+          <select id="selectEditarCliente" required class="form-control">
+            <option disabled selected value="">Seleccionar Cliente</option>
+            <!-- Se cargan los clientes desde la API -->
           </select>
           <div class="d-flex justify-content-between mt-2">
             <button type="submit" class="btn btn-success">Actualizar</button>
@@ -112,11 +118,11 @@
         <table class="table">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Cliente</th>
+              <th>ID Cita</th>
               <th>Fecha</th>
               <th>Hora</th>
               <th>Estado</th>
+              <th>Cliente</th>
               <th>Acciones</th>
             </tr>
           </thead>

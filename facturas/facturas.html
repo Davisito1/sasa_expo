@@ -77,6 +77,12 @@
       <dialog id="mdAgregarFactura">
         <h2 class="text-center">Agregar Factura</h2>
         <form id="frmAgregarFactura" class="d-flex flex-column gap-3" novalidate>
+          <input type="date" id="fechaFacturaAdd" required class="form-control" />
+          <div id="errorFechaFactura" class="text-danger small"></div>
+
+          <input type="number" id="txtMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
+          <div id="errorMontoFactura" class="text-danger small"></div>
+
           <select id="selEmpleadoAdd" class="form-select" required>
             <option value="" selected disabled>Seleccione un empleado</option>
           </select>
@@ -86,12 +92,6 @@
             <option value="" selected disabled>Seleccione un mantenimiento</option>
           </select>
           <div id="errorMantenimientoFactura" class="text-danger small"></div>
-
-          <input type="number" id="txtMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
-          <div id="errorMontoFactura" class="text-danger small"></div>
-
-          <input type="date" id="fechaFactura" required class="form-control" />
-          <div id="errorFechaFactura" class="text-danger small"></div>
 
           <div class="d-flex justify-content-between mt-3">
             <button type="submit" class="btn btn-primary">Guardar</button>
@@ -106,18 +106,16 @@
         <form id="frmEditarFactura" class="d-flex flex-column gap-3" novalidate>
           <input type="hidden" id="txtIdFactura" />
 
+          <input type="date" id="fechaFacturaEdit" required class="form-control" />
+          <input type="number" id="txtEditarMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
+
           <select id="selEmpleadoEdit" class="form-select" required>
             <option value="" selected disabled>Seleccione un empleado</option>
           </select>
-          <div id="errorEmpleadoEditarFactura" class="text-danger small"></div>
 
           <select id="selMantenimientoEdit" class="form-select" required>
             <option value="" selected disabled>Seleccione un mantenimiento</option>
           </select>
-          <div id="errorMantenimientoEditarFactura" class="text-danger small"></div>
-
-          <input type="number" id="txtEditarMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
-          <input type="date" id="editarFechaFactura" required class="form-control" />
 
           <div class="d-flex justify-content-between mt-3">
             <button type="submit" class="btn btn-success">Actualizar</button>
@@ -131,11 +129,11 @@
         <table class="table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>ID Factura</th>
+              <th>Fecha Emisión</th>
+              <th>Monto Total</th>
               <th>Empleado</th>
               <th>Mantenimiento</th>
-              <th>Monto</th>
-              <th>Fecha</th>
               <th>Acciones</th>
             </tr>
           </thead>

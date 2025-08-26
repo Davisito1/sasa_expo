@@ -1,14 +1,22 @@
+
+
 const API_URL_PAGOS    = "https://retoolapi.dev/Tym5QB/pagos";
 const API_URL_FACTURAS = "https://retoolapi.dev/AE88w9/data";
 
 /* ====== Nodos ====== */
-const btnNuevoPago   = document.querySelector(".btn-add");              // botón "Nuevo Pago"
-const modalPago      = document.getElementById("modalPago");
-const formNuevoPago  = document.getElementById("formNuevoPago");
-const tbody          = document.getElementById("tablaPagos");
-const inputBuscar    = document.getElementById("buscar");
-const selectPorPagina= document.getElementById("registrosPorPagina");
-const paginacionWrap = document.getElementById("paginacion");
+const btnNuevoPago    = document.querySelector(".btn-add");
+const modalPago       = document.getElementById("modalPago");
+const formPago        = document.getElementById("formPago");
+const tbody           = document.getElementById("tablaPagos");
+const inputBuscar     = document.getElementById("buscar");
+const selectPorPagina = document.getElementById("registrosPorPagina");
+const paginacionWrap  = document.getElementById("paginacion");
+
+const inputIdPago      = document.getElementById("idPago");       // hidden
+const inputFechaPago   = document.getElementById("fechaPago");
+const inputMonto       = document.getElementById("monto");
+const selectMetodo     = document.getElementById("idMetodoPago");
+const inputIdFactura   = document.getElementById("idFactura");
 
 /* ====== Estado ====== */
 let pagos = [];
@@ -17,38 +25,99 @@ let paginaActual = 1;
 let porPagina = (selectPorPagina && parseInt(selectPorPagina.value, 10)) || 10;
 let idEditando = null;
 
+/* ====== Catálogo local de MétodoPago ======
+   Si luego expones API de métodos, rellena dinámicamente aquí.
+   Estructura: { id: number, nombre: string }                                        */
+const METODOS_PAGO = [
+  { id: 1, nombre: "Tarjeta" },
+  { id: 2, nombre: "Efectivo" },
+  { id: 3, nombre: "Transferencia" },
+];
+
 /* ====== Utils ====== */
-const fmtFecha = (val) =>
-  val ? new Date(val).toLocaleDateString("es-ES") : "";
+const fmtFecha = (val) => (val ? new Date(val).toLocaleDateString("es-ES") : "");
+
 const fmtMonto = (n) => {
   const num = Number(n);
-  return Number.isFinite(num) ? num.toFixed(2).replace(".", ",") : "";
+  if (!Number.isFinite(num)) return "";
+  // Mostrar como $ 1,234.56
+  return `$ ${num.toFixed(2)}`;
 };
 
-function validarFormPago(d) {
-  if (!d.fecha || !d.monto || !d.metodo || !d.factura) {
+const normalizarPago = (raw) => {
+  // Soporta tanto nombres "de API vieja" (fecha, metodo, factura) como "de BD" (fechaPago, idMetodoPago, idFactura)
+  return {
+    idPago:        raw.idPago ?? raw.id ?? null,
+    fechaPago:     raw.fechaPago ?? raw.fecha ?? null,
+    monto:         raw.monto ?? null,
+    idMetodoPago:  raw.idMetodoPago ?? raw.metodo ?? null, // puede venir como número (id) o string (nombre)
+    idFactura:     raw.idFactura ?? raw.factura ?? null,
+    metodoTexto:   raw.metodo ?? null, // si viene texto, lo guardamos para mostrar
+  };
+};
+
+const metodoNombre = (idOMetodo) => {
+  // Si ya es un string (p.ej. "Tarjeta"), lo devolvemos tal cual
+  if (typeof idOMetodo === "string") return idOMetodo;
+  const found = METODOS_PAGO.find((m) => String(m.id) === String(idOMetodo));
+  return found ? found.nombre : (idOMetodo ?? "");
+};
+
+function validarFormPago(datos) {
+  // datos: { fechaPago, monto, idMetodoPago, idFactura }
+  if (!datos.fechaPago || !datos.monto || !datos.idMetodoPago || !datos.idFactura) {
     Swal.fire("Campos obligatorios", "Completa todos los campos.", "warning");
     return false;
   }
-  const monto = parseFloat(d.monto);
-  if (isNaN(monto) || monto <= 0) {
+
+  // Monto > 0 con 2 decimales
+  const monto = Number(datos.monto);
+  if (!Number.isFinite(monto) || monto <= 0) {
     Swal.fire("Monto inválido", "El monto debe ser mayor a 0.", "warning");
     return false;
   }
-  const fechaIngresada = new Date(d.fecha);
+  // Forzar 2 decimales en input
+  inputMonto.value = monto.toFixed(2);
+
+  // Fecha no futura ni > 6 meses atrás
+  const fechaIngresada = new Date(datos.fechaPago);
   const hoy = new Date();
+  // normalizar 00:00
+  hoy.setHours(0,0,0,0);
+  fechaIngresada.setHours(0,0,0,0);
+
   const seisMesesAtras = new Date();
   seisMesesAtras.setMonth(seisMesesAtras.getMonth() - 6);
+  seisMesesAtras.setHours(0,0,0,0);
 
   if (fechaIngresada > hoy) {
     Swal.fire("Fecha inválida", "La fecha no puede ser futura.", "warning");
     return false;
   }
   if (fechaIngresada < seisMesesAtras) {
-    Swal.fire("Fecha inválida", "La fecha no puede ser mayor a 6 meses atrás.", "warning");
+    Swal.fire("Fecha inválida", "La fecha no puede tener más de 6 meses.", "warning");
     return false;
   }
+
+  // idFactura solo lectura (por seguridad)
+  if (inputIdFactura.readOnly !== true) {
+    inputIdFactura.readOnly = true;
+  }
+
   return true;
+}
+
+/* ====== Inicializar combo Método de Pago ====== */
+function poblarComboMetodos() {
+  if (!selectMetodo) return;
+  // Limpia y carga opciones
+  selectMetodo.innerHTML = `<option value="">Seleccione un método</option>`;
+  METODOS_PAGO.forEach((m) => {
+    const opt = document.createElement("option");
+    opt.value = String(m.id);
+    opt.textContent = `${m.id} - ${m.nombre}`;
+    selectMetodo.appendChild(opt);
+  });
 }
 
 /* ====== Facturas ====== */
@@ -57,32 +126,50 @@ async function setUltimaFacturaEnForm() {
     const res = await fetch(API_URL_FACTURAS);
     const facturas = await res.json();
     if (Array.isArray(facturas) && facturas.length > 0) {
-      const ultima = facturas.reduce((a, b) => (+a.id > +b.id ? a : b));
-      formNuevoPago.factura.value = ultima.id;
+      // Detectar campo id de la factura (id, idFactura, etc.)
+      const obtenerId = (f) => f.idFactura ?? f.id ?? f.Id ?? f.ID ?? null;
+      const ultima = facturas.reduce((a, b) => {
+        const ida = Number(obtenerId(a)) || -Infinity;
+        const idb = Number(obtenerId(b)) || -Infinity;
+        return ida > idb ? a : b;
+      });
+      const idUltima = obtenerId(ultima);
+      inputIdFactura.value = idUltima ?? "";
+      inputIdFactura.readOnly = true;
     } else {
-      formNuevoPago.factura.value = "N/A";
+      inputIdFactura.value = "";
     }
   } catch (e) {
     console.error(e);
     Swal.fire("Error", "No se pudo obtener la última factura.", "error");
-    formNuevoPago.factura.value = "";
+    inputIdFactura.value = "";
   }
 }
 
-/* ====== Modal helpers (también existen helpers inline en HTML) ====== */
+/* ====== Modal helpers (expuestos en window por si los llama el HTML) ====== */
 function abrirModalPago() {
   idEditando = null;
-  formNuevoPago.reset();
-  formNuevoPago.factura.readOnly = true;
+  formPago.reset();
+  poblarComboMetodos();
   setUltimaFacturaEnForm();
+
+  // Sugerir fecha = hoy
+  const hoyISO = new Date().toISOString().slice(0, 10);
+  inputFechaPago.value = hoyISO;
+
+  // Asegurar lectura sólo para factura
+  inputIdFactura.readOnly = true;
+
   modalPago.showModal();
 }
+
 function cerrarModalPago() {
   modalPago.close();
-  formNuevoPago.reset();
+  formPago.reset();
   idEditando = null;
 }
-window.abrirModalPago = abrirModalPago;  // por si el HTML los llama
+
+window.abrirModalPago = abrirModalPago;
 window.cerrarModalPago = cerrarModalPago;
 
 /* Cerrar al click fuera del contenido */
@@ -95,7 +182,8 @@ async function cargarPagos() {
   try {
     const res = await fetch(API_URL_PAGOS);
     if (!res.ok) throw new Error("Error al cargar pagos");
-    pagos = await res.json();
+    const data = await res.json();
+    pagos = Array.isArray(data) ? data.map(normalizarPago) : [];
   } catch (e) {
     console.error(e);
     pagos = [];
@@ -108,15 +196,23 @@ async function cargarPagos() {
 /* ====== Filtro + selector ====== */
 function aplicarFiltro() {
   const q = (inputBuscar?.value || "").trim().toLowerCase();
-  if (!q) filtrados = [...pagos];
-  else {
+  if (!q) {
+    filtrados = [...pagos];
+  } else {
     filtrados = pagos.filter((p) => {
-      const campos = [p.id, p.fecha, p.monto, p.metodo, p.factura];
+      const campos = [
+        p.idPago,
+        p.fechaPago,
+        p.monto,
+        metodoNombre(p.idMetodoPago || p.metodoTexto),
+        p.idFactura,
+      ];
       return campos.some((v) => String(v ?? "").toLowerCase().includes(q));
     });
   }
   paginaActual = 1;
 }
+
 function setPorPagina() {
   porPagina = (selectPorPagina && parseInt(selectPorPagina.value, 10)) || 10;
   paginaActual = 1;
@@ -146,24 +242,25 @@ function renderTabla() {
   }
 
   tbody.innerHTML = vista
-    .map(
-      (pago) => `
-      <tr>
-        <td>${pago.id ?? ""}</td>
-        <td>${fmtFecha(pago.fecha)}</td>
-        <td>${fmtMonto(pago.monto)}</td>
-        <td>${pago.metodo ?? ""}</td>
-        <td>${pago.factura ?? ""}</td>
-        <td>
-          <button class="icon-btn btn-primary editar" data-id="${pago.id}" title="Editar">
-            <i class="bi bi-pencil-square"></i>
-          </button>
-          <button class="icon-btn btn-danger eliminar" data-id="${pago.id}" title="Eliminar">
-            <i class="bi bi-trash"></i>
-          </button>
-        </td>
-      </tr>`
-    )
+    .map((p) => {
+      const metodo = metodoNombre(p.idMetodoPago || p.metodoTexto);
+      return `
+        <tr>
+          <td>${p.idPago ?? ""}</td>
+          <td>${fmtFecha(p.fechaPago)}</td>
+          <td>${fmtMonto(p.monto)}</td>
+          <td>${metodo}</td>
+          <td>${p.idFactura ?? ""}</td>
+          <td>
+            <button class="icon-btn btn-primary editar" data-id="${p.idPago}" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+            <button class="icon-btn btn-danger eliminar" data-id="${p.idPago}" title="Eliminar">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>`;
+    })
     .join("");
 }
 
@@ -172,35 +269,40 @@ function renderPaginacion() {
 
   const total = filtrados.length;
   const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
-  const btn = (label, disabled, action, extra = "") =>
-    `<button class="btn ${extra}" ${disabled ? "disabled" : ""} data-action="${action}">${label}</button>`;
+  paginaActual = Math.min(Math.max(1, paginaActual), totalPaginas);
 
-  let html = "";
-  html += btn("Anterior", paginaActual === 1, "prev");
-  for (let p = 1; p <= totalPaginas; p++) {
-    html += btn(p, false, `page-${p}`, p === paginaActual ? "btn-primary" : "");
-  }
-  html += btn("Siguiente", paginaActual === totalPaginas, "next");
+  // Solo tres items: ««  [n]  »»
+  let html = `
+    <ul class="pagination pagination-compact mb-0">
+      <li class="page-item ${paginaActual === 1 ? "disabled" : ""}">
+        <a class="page-link" href="#" data-action="prev" aria-label="Anterior">&laquo;&laquo;</a>
+      </li>
+      <li class="page-item active">
+        <a class="page-link" href="#" data-action="noop" tabindex="-1">${paginaActual}</a>
+      </li>
+      <li class="page-item ${paginaActual === totalPaginas ? "disabled" : ""}">
+        <a class="page-link" href="#" data-action="next" aria-label="Siguiente">&raquo;&raquo;</a>
+      </li>
+    </ul>`;
+
   paginacionWrap.innerHTML = html;
 
-  paginacionWrap.querySelectorAll("button[data-action]").forEach((b) => {
-    b.addEventListener("click", () => {
-      const action = b.getAttribute("data-action");
+  paginacionWrap.querySelectorAll("a[data-action]").forEach((a) => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const action = a.getAttribute("data-action");
       if (action === "prev" && paginaActual > 1) {
         paginaActual--;
         render();
-      } else if (action === "next") {
-        if (paginaActual < totalPaginas) {
-          paginaActual++;
-          render();
-        }
-      } else if (action?.startsWith("page-")) {
-        paginaActual = parseInt(action.split("-")[1], 10) || 1;
+      } else if (action === "next" && paginaActual < totalPaginas) {
+        paginaActual++;
         render();
       }
     });
   });
 }
+
+
 
 function rewireRowActions() {
   // Editar
@@ -210,15 +312,24 @@ function rewireRowActions() {
       try {
         const res = await fetch(`${API_URL_PAGOS}/${id}`);
         if (!res.ok) throw new Error("No se pudo cargar el pago");
-        const data = await res.json();
+        const raw = await res.json();
+        const data = normalizarPago(raw);
 
         idEditando = id;
-        formNuevoPago.reset();
-        formNuevoPago.fecha.value   = data.fecha ?? "";
-        formNuevoPago.monto.value   = data.monto ?? "";
-        formNuevoPago.metodo.value  = data.metodo ?? "";
-        formNuevoPago.factura.value = data.factura ?? "";
-        formNuevoPago.factura.readOnly = true;
+        formPago.reset();
+        poblarComboMetodos();
+
+        inputIdPago.value     = data.idPago ?? "";
+        inputFechaPago.value  = data.fechaPago ? new Date(data.fechaPago).toISOString().slice(0,10) : "";
+        inputMonto.value      = Number(data.monto ?? 0) > 0 ? Number(data.monto).toFixed(2) : "";
+
+        // Si la API guarda el nombre ("Tarjeta"), mapea al id del combo
+        const nombre = metodoNombre(data.idMetodoPago || data.metodoTexto);
+        const opt = METODOS_PAGO.find((m) => m.nombre === nombre);
+        selectMetodo.value = opt ? String(opt.id) : "";
+
+        inputIdFactura.value  = data.idFactura ?? "";
+        inputIdFactura.readOnly = true;
 
         modalPago.showModal();
       } catch (e) {
@@ -258,24 +369,43 @@ function rewireRowActions() {
 /* ====== Eventos ====== */
 btnNuevoPago?.addEventListener("click", abrirModalPago);
 
-formNuevoPago?.addEventListener("submit", async (e) => {
+formPago?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const datos = {
-    fecha: formNuevoPago.fecha.value,
-    monto: formNuevoPago.monto.value,
-    metodo: formNuevoPago.metodo.value,
-    factura: formNuevoPago.factura.value,
+  const idMetodoSeleccionado = selectMetodo.value; // id numérico
+  const nombreMetodo = metodoNombre(idMetodoSeleccionado); // nombre para compatibilidad
+
+  const datosUI = {
+    fechaPago:   inputFechaPago.value,
+    monto:       inputMonto.value,
+    idMetodoPago: idMetodoSeleccionado,
+    idFactura:   inputIdFactura.value,
   };
 
-  if (!validarFormPago(datos)) return;
+  if (!validarFormPago(datosUI)) return;
+
+  // Payload compatible con tu API actual:
+  // - Campos "de BD"
+  // - Y además "metodo" (texto) y "factura" (por compatibilidad con API antigua)
+  const payload = {
+    // BD
+    idPago:       idEditando ? Number(idEditando) : undefined,
+    fechaPago:    datosUI.fechaPago,
+    monto:        Number(datosUI.monto),
+    idMetodoPago: Number(datosUI.idMetodoPago),
+    idFactura:    Number(datosUI.idFactura),
+    // Compatibilidad
+    fecha:        datosUI.fechaPago,
+    metodo:       nombreMetodo,
+    factura:      Number(datosUI.idFactura),
+  };
 
   try {
     if (idEditando) {
       const res = await fetch(`${API_URL_PAGOS}/${idEditando}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Error al actualizar");
       Swal.fire("Pago actualizado", "El pago fue actualizado correctamente.", "success");
@@ -283,7 +413,7 @@ formNuevoPago?.addEventListener("submit", async (e) => {
       const res = await fetch(API_URL_PAGOS, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(datos),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Error al crear");
       Swal.fire("Pago agregado", "El nuevo pago ha sido registrado.", "success");
@@ -298,11 +428,21 @@ formNuevoPago?.addEventListener("submit", async (e) => {
   }
 });
 
+/* ====== UX menor ====== */
 inputBuscar?.addEventListener("input", () => {
   aplicarFiltro();
   render();
 });
 selectPorPagina?.addEventListener("change", setPorPagina);
 
+// Forzar 2 decimales al salir del input monto
+inputMonto?.addEventListener("blur", () => {
+  const n = Number(inputMonto.value);
+  if (Number.isFinite(n) && n > 0) inputMonto.value = n.toFixed(2);
+});
+
 /* ====== Inicio ====== */
-document.addEventListener("DOMContentLoaded", cargarPagos);
+document.addEventListener("DOMContentLoaded", async () => {
+  poblarComboMetodos();
+  await cargarPagos();
+});

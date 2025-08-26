@@ -1,26 +1,26 @@
 // ===== Endpoints =====
 const FACT_API_URL = 'https://retoolapi.dev/AE88w9/data';
-const MANT_API_URL = 'https://retoolapi.dev/35dv6Q/data'; // usa el MISMO que en mantenimiento.html
-const EMP_API_URL  = 'https://retoolapi.dev/mm42wr/empleados'; // tu endpoint de empleados
+const MANT_API_URL = 'https://retoolapi.dev/35dv6Q/data'; // mismo que mantenimiento.html
+const EMP_API_URL  = 'https://retoolapi.dev/mm42wr/empleados'; // empleados
 
 // ===== DOM =====
-const modalAgregar = document.getElementById('mdAgregarFactura');
-const modalEditar  = document.getElementById('mdEditarFactura');
-const tablaFacturas = document.getElementById('tablaFacturas');
-const inputBuscar  = document.getElementById('buscar');
+const modalAgregar   = document.getElementById('mdAgregarFactura');
+const modalEditar    = document.getElementById('mdEditarFactura');
+const tablaFacturas  = document.getElementById('tablaFacturas');
+const inputBuscar    = document.getElementById('buscar');
 
 // Agregar
-const selEmpleadoAdd      = document.getElementById('selEmpleadoAdd');
-const selMantenimientoAdd = document.getElementById('selMantenimientoAdd');
-const inMontoAdd          = document.getElementById('txtMontoFactura');
-const inFechaAdd          = document.getElementById('fechaFactura');
+const selEmpleadoAdd       = document.getElementById('selEmpleadoAdd');
+const selMantenimientoAdd  = document.getElementById('selMantenimientoAdd');
+const inMontoAdd           = document.getElementById('txtMontoFactura');
+const inFechaAdd           = document.getElementById('fechaFacturaAdd'); // <-- actualizado
 
 // Editar
-const inIdEdit            = document.getElementById('txtIdFactura');
-const selEmpleadoEdit     = document.getElementById('selEmpleadoEdit');
-const selMantenimientoEdit= document.getElementById('selMantenimientoEdit');
-const inMontoEdit         = document.getElementById('txtEditarMontoFactura');
-const inFechaEdit         = document.getElementById('editarFechaFactura');
+const inIdEdit             = document.getElementById('txtIdFactura');
+const selEmpleadoEdit      = document.getElementById('selEmpleadoEdit');
+const selMantenimientoEdit = document.getElementById('selMantenimientoEdit');
+const inMontoEdit          = document.getElementById('txtEditarMontoFactura');
+const inFechaEdit          = document.getElementById('fechaFacturaEdit'); // <-- actualizado
 
 // ===== Estado =====
 let facturasCache = [];
@@ -63,13 +63,15 @@ function normalizarFactura(f) {
   if (isNaN(idMantenimiento)) idMantenimiento = null;
 
   const montoTotal = Number((f.montoTotal ?? f.Monto ?? f.monto ?? 0));
-  const fechaRaw = (f.fecha ?? f.Fecha ?? '').toString();
-  const fecha = fechaRaw ? fechaRaw.split('T')[0] : '';
 
-  return { id, idEmpleado, empleadoNombre, idMantenimiento, montoTotal, fecha };
+  // usar fechaEmision como fuente principal
+  const fechaRaw = (f.fechaEmision ?? f.FechaEmision ?? f.fecha ?? f.Fecha ?? '').toString();
+  const fechaEmision = fechaRaw ? fechaRaw.split('T')[0] : '';
+
+  return { id, idEmpleado, empleadoNombre, idMantenimiento, montoTotal, fechaEmision };
 }
 
-// campos posibles para descripción/fecha en tu API de mantenimiento
+// claves posibles para descripción/fecha en tu API de mantenimiento
 const MANT_DESC_KEYS = [
   'descripcion','Descripcion',
   'trabajoRealizado','TrabajoRealizado',
@@ -114,6 +116,41 @@ function configurarLimitesFecha() {
   if (inFechaEdit) { inFechaEdit.max = hoyStr; inFechaEdit.min = min; }
 }
 
+// ===== Combobox (filtro simple sobre <select>) =====
+function makeComboBox(selectEl, placeholder = 'Buscar...') {
+  if (!selectEl || selectEl.dataset.combo === '1') return;
+  selectEl.dataset.combo = '1';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'combo-wrapper';
+  wrapper.style.position = 'relative';
+  wrapper.style.display = 'grid';
+  wrapper.style.gap = '6px';
+
+  const search = document.createElement('input');
+  search.type = 'text';
+  search.className = 'form-control';
+  search.placeholder = placeholder;
+
+  const parent = selectEl.parentNode;
+  parent.insertBefore(wrapper, selectEl);
+  wrapper.appendChild(search);
+  wrapper.appendChild(selectEl);
+
+  const allOptions = () => [...selectEl.querySelectorAll('option')];
+
+  search.addEventListener('input', () => {
+    const q = search.value.toLowerCase().trim();
+    allOptions().forEach(opt => {
+      if (opt.value === '') return; // deja visible el placeholder
+      opt.hidden = !opt.textContent.toLowerCase().includes(q);
+    });
+  });
+
+  // limpiar filtro si se cambia de selección
+  selectEl.addEventListener('change', () => { search.value = ''; search.dispatchEvent(new Event('input')); });
+}
+
 // ===== Renders =====
 function renderSelectEmpleados(selectEl, selectedId = '') {
   if (!selectEl) return;
@@ -147,6 +184,7 @@ function renderSelectMantenimientos(selectEl, selectedId = '') {
   });
 }
 
+
 function actualizarTabla(facturas) {
   if (!tablaFacturas) return;
   tablaFacturas.innerHTML = '';
@@ -157,13 +195,15 @@ function actualizarTabla(facturas) {
   facturas.forEach(f => {
     const nombreEmp = obtenerNombreEmpleadoPorId(f.idEmpleado) || f.empleadoNombre || (f.idEmpleado ? `Empleado #${f.idEmpleado}` : '—');
     const descMant  = obtenerDescMantPorId(f.idMantenimiento);
+
+    // Orden de columnas: idFactura, fechaEmision, montoTotal, idEmpleado, idMantenimiento
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${f.id ?? ''}</td>
+      <td>${f.fechaEmision ?? ''}</td>
+      <td>${fmtUSD(f.montoTotal)}</td>
       <td>${nombreEmp}</td>
       <td title="ID: ${f.idMantenimiento ?? ''}">${descMant}</td>
-      <td>${fmtUSD(f.montoTotal)}</td>
-      <td>${f.fecha ?? ''}</td>
       <td>
         <button class="btn btn-sm btn-primary me-2 icon-btn editar" data-id="${f.id}" title="Editar">
           <i class="bi bi-pencil-square"></i>
@@ -245,11 +285,11 @@ function aplicarFiltro() {
     const mantDesc  = obtenerDescMantPorId(f.idMantenimiento).toLowerCase();
     return (
       String(f.id ?? '').toLowerCase().includes(q) ||
+      String(f.fechaEmision ?? '').toLowerCase().includes(q) ||
+      fmtUSD(f.montoTotal).toLowerCase().includes(q) ||
       nombreEmp.toLowerCase().includes(q) ||
       mantDesc.includes(q) ||
-      String(f.idMantenimiento ?? '').toLowerCase().includes(q) ||
-      String(f.fecha ?? '').toLowerCase().includes(q) ||
-      fmtUSD(f.montoTotal).toLowerCase().includes(q)
+      String(f.idMantenimiento ?? '').toLowerCase().includes(q)
     );
   });
   actualizarTabla(filtradas);
@@ -267,6 +307,21 @@ function abrirModalAgregar() {
 function cerrarModalAgregar() { modalAgregar?.close?.(); }
 function cerrarModalEditar()  { modalEditar?.close?.(); }
 
+// ===== Validaciones =====
+function validarFacturaCampos({ idEmpleado, idMantenimiento, montoTotal, fechaEmision }) {
+  if (!Number.isFinite(idEmpleado) || idEmpleado <= 0) return Swal.fire('Validación','Seleccione un empleado.','warning'), false;
+  if (!Number.isFinite(idMantenimiento) || idMantenimiento <= 0) return Swal.fire('Validación','Seleccione un mantenimiento.','warning'), false;
+  if (!Number.isFinite(montoTotal) || montoTotal < 0) return Swal.fire('Validación','El monto total debe ser un número ≥ 0.','warning'), false;
+  const parts = montoTotal.toString().split('.'); if (parts[1] && parts[1].length > 2) return Swal.fire('Validación','El monto total solo puede tener 2 decimales.','warning'), false;
+  if (!fechaEmision) return Swal.fire('Validación','La fecha de emisión es obligatoria.','warning'), false;
+  const d = new Date(fechaEmision), hoy = new Date(), min = new Date('2000-01-01');
+  // normaliza horas para comparar solo fecha
+  d.setHours(0,0,0,0); hoy.setHours(0,0,0,0);
+  if (d > hoy) return Swal.fire('Validación','La fecha no puede ser futura.','warning'), false;
+  if (d < min) return Swal.fire('Validación','La fecha no puede ser anterior a 2000-01-01.','warning'), false;
+  return true;
+}
+
 // ===== CRUD =====
 document.getElementById('frmAgregarFactura')?.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -274,19 +329,24 @@ document.getElementById('frmAgregarFactura')?.addEventListener('submit', async (
     idEmpleado: Number(selEmpleadoAdd.value),
     idMantenimiento: Number(selMantenimientoAdd.value),
     montoTotal: Number(parseFloat(inMontoAdd.value || '0').toFixed(2)),
-    fecha: inFechaAdd.value
+    fechaEmision: inFechaAdd.value // <-- clave correcta
   };
   if (!validarFacturaCampos(payload)) return;
 
   try {
     const response = await fetch(FACT_API_URL, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
     if (response.ok) {
       Swal.fire('¡Éxito!', 'Factura agregada correctamente.', 'success');
       cerrarModalAgregar();
-      await cargarFacturas(); // repinta con descripciones
-      selEmpleadoAdd.value = ''; selMantenimientoAdd.value = ''; inMontoAdd.value = ''; inFechaAdd.value = '';
+      await cargarFacturas();
+      selEmpleadoAdd.value = '';
+      selMantenimientoAdd.value = '';
+      inMontoAdd.value = '';
+      inFechaAdd.value = '';
     } else {
       const result = await response.json().catch(() => ({}));
       Swal.fire('Error', result.message || 'Error al agregar la factura.', 'error');
@@ -303,7 +363,6 @@ async function editarFactura(id) {
     if (!res.ok) throw new Error('No se pudo obtener la factura');
     const f = normalizarFactura(await res.json());
 
-    // por si ese idMant no está en caché, lo traemos
     await hidratarMantFaltantesPorId([f.idMantenimiento]);
 
     inIdEdit.value = f.id;
@@ -311,7 +370,7 @@ async function editarFactura(id) {
     renderSelectMantenimientos(selMantenimientoEdit, f.idMantenimiento || '');
 
     inMontoEdit.value = (Number(f.montoTotal || 0)).toFixed(2);
-    inFechaEdit.value = f.fecha || '';
+    inFechaEdit.value = f.fechaEmision || '';
 
     document.activeElement && document.activeElement.blur();
     modalEditar?.showModal?.();
@@ -328,18 +387,20 @@ document.getElementById('frmEditarFactura')?.addEventListener('submit', async (e
     idEmpleado: Number(selEmpleadoEdit.value),
     idMantenimiento: Number(selMantenimientoEdit.value),
     montoTotal: Number(parseFloat(inMontoEdit.value || '0').toFixed(2)),
-    fecha: inFechaEdit.value
+    fechaEmision: inFechaEdit.value // <-- clave correcta
   };
   if (!validarFacturaCampos(payload)) return;
 
   try {
     const res = await fetch(`${FACT_API_URL}/${id}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
     if (res.ok) {
       Swal.fire('¡Éxito!', 'Factura actualizada correctamente.', 'success');
       cerrarModalEditar();
-      await cargarFacturas(); // repinta con descripciones
+      await cargarFacturas();
     } else {
       const result = await res.json().catch(() => ({}));
       Swal.fire('Error', result.message || 'Error al actualizar la factura.', 'error');
@@ -373,19 +434,6 @@ async function eliminarFactura(id) {
   }
 }
 
-// ===== Validaciones =====
-function validarFacturaCampos({ idEmpleado, idMantenimiento, montoTotal, fecha }) {
-  if (!Number.isFinite(idEmpleado) || idEmpleado <= 0) return Swal.fire('Validación','Seleccione un empleado.','warning'), false;
-  if (!Number.isFinite(idMantenimiento) || idMantenimiento <= 0) return Swal.fire('Validación','Seleccione un mantenimiento.','warning'), false;
-  if (!Number.isFinite(montoTotal) || montoTotal < 0) return Swal.fire('Validación','El monto total debe ser un número ≥ 0.','warning'), false;
-  const parts = montoTotal.toString().split('.'); if (parts[1] && parts[1].length > 2) return Swal.fire('Validación','El monto total solo puede tener 2 decimales.','warning'), false;
-  if (!fecha) return Swal.fire('Validación','La fecha es obligatoria.','warning'), false;
-  const d = new Date(fecha), hoy = new Date(), min = new Date('2000-01-01');
-  if (d > hoy) return Swal.fire('Validación','La fecha no puede ser futura.','warning'), false;
-  if (d < min) return Swal.fire('Validación','La fecha no puede ser anterior a 2000-01-01.','warning'), false;
-  return true;
-}
-
 // ===== Cargar Facturas =====
 async function cargarFacturas() {
   try {
@@ -393,14 +441,11 @@ async function cargarFacturas() {
     if (!res.ok) throw new Error('No se pudieron cargar las facturas');
     const data = await res.json();
 
-    // Normaliza y guarda en caché
     facturasCache = (data || []).map(normalizarFactura);
 
-    // Asegurarnos de tener en caché las descripciones de mantenimientos usadas por estas facturas
     const idsMant = facturasCache.map(f => f.idMantenimiento).filter(Boolean);
     await hidratarMantFaltantesPorId(idsMant);
 
-    // Render
     actualizarTabla(facturasCache);
   } catch (err) {
     console.error('Error al cargar facturas:', err);
@@ -411,15 +456,16 @@ async function cargarFacturas() {
 }
 
 // ===== Init =====
-// ⚠️ Cargamos en ORDEN: primero MANTENIMIENTOS (para tener descripciones), luego EMPLEADOS, luego FACTURAS.
 async function init() {
   configurarLimitesFecha();
   await cargarMantenimientos();
   await cargarEmpleados();
+
   renderSelectMantenimientos(selMantenimientoAdd);
   renderSelectMantenimientos(selMantenimientoEdit);
   renderSelectEmpleados(selEmpleadoAdd);
   renderSelectEmpleados(selEmpleadoEdit);
+
   await cargarFacturas();
 }
 init();

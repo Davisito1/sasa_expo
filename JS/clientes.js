@@ -1,5 +1,7 @@
+// === Endpoint ===
 const API_URL = 'https://retoolapi.dev/PifxKy/data';
 
+// === DOM ===
 const tablaClientes = document.getElementById("tablaClientes");
 const frmAgregar = document.getElementById("frmAgregarClientes");
 const frmEditar = document.getElementById("frmEditarClientes");
@@ -11,44 +13,80 @@ const selectRegistros = document.getElementById("registrosPorPagina");
 const contenedorPaginacion = document.getElementById("paginacion");
 const inputBuscar = document.getElementById("buscar");
 
-// === VARIABLES DE PAGINACIÓN ===
+// === Estado (paginación) ===
 let clientes = [];
 let paginaActual = 1;
-let registrosPorPagina = parseInt(selectRegistros?.value || 5, 10);
+let registrosPorPagina = parseInt(selectRegistros?.value || 10, 10);
 
-// === MODALES ===
+// ===============================
+// Utilidades de normalización
+// ===============================
+const toId = (c) =>
+  c.id ?? c.idCliente ?? c.ID ?? c.Id ?? c.id_cliente ?? null;
+
+function normalizar(c) {
+  return {
+    id: toId(c),
+    nombre:  c.nombre ?? c.Nombre ?? c.Nombres ?? c.nombres ?? "",
+    apellido:c.apellido ?? c.Apellido ?? c.Apellidos ?? c.apellidos ?? "",
+    dui:     c.dui ?? c.DUI ?? c.Dui ?? "",
+    fechaNacimiento: c.fechaNacimiento ?? c.Fechadenacimiento ?? c.fecha_nacimiento ?? c.fecha ?? "",
+    genero:  c.genero ?? c.Genero ?? "",
+    correo:  c.correo ?? c.Correo ?? c.correoElectronico ?? c.correo_electronico ?? c.email ?? ""
+  };
+}
+
+function buildPayloadFromForm({ nombre, apellido, dui, fechaNacimiento, genero, correo }) {
+  // Asegurar exactamente los nombres de campos de la BD
+  return { nombre, apellido, dui, fechaNacimiento, genero, correo };
+}
+
+// ===============================
+// Modales
+// ===============================
 function abrirModalAgregar() { frmAgregar.reset(); modalAgregar.showModal(); }
 function cerrarModalAgregar() { frmAgregar.reset(); modalAgregar.close(); }
 function cerrarModalEditar() { frmEditar.reset(); modalEditar.close(); }
 
-// === VALIDACIONES ===
-function validarNombre(texto) { return /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]{2,40}$/.test(texto); }
-function validarDUI(dui) { return /^\d{8}-\d{1}$/.test(dui); }
+// ===============================
+// Validaciones
+// ===============================
+function validarNombre(texto) { return /^[A-Za-zÁÉÍÓÚÑáéíóúñ\s]{2,100}$/.test((texto||"").trim()); }
+function validarDUI(dui) { return /^\d{8}-\d{1}$/.test((dui||"").trim()); }
 function validarFechaNacimiento(fecha) {
+  if (!fecha) return false;
   const f = new Date(fecha), hoy = new Date(), minimo = new Date('1900-01-01');
+  f.setHours(0,0,0,0); hoy.setHours(0,0,0,0); minimo.setHours(0,0,0,0);
   return f >= minimo && f <= hoy;
 }
 function validarGenero(genero) {
-  const g = genero.trim().toLowerCase();
+  const g = (genero || "").trim().toLowerCase();
   return g === "masculino" || g === "femenino" || g === "otro";
 }
-function validarFormulario(cliente) {
-  if (!validarNombre(cliente.Nombres)) { alert("Nombre inválido."); return false; }
-  if (!validarNombre(cliente.Apellidos)) { alert("Apellido inválido."); return false; }
-  if (!validarDUI(cliente.DUI)) { alert("DUI inválido."); return false; }
-  if (!validarFechaNacimiento(cliente.Fechadenacimiento)) { alert("Fecha de nacimiento inválida."); return false; }
-  if (!validarGenero(cliente.Genero)) { alert("Género debe ser Masculino, Femenino u Otro."); return false; }
+function validarCorreo(correo) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((correo || "").trim());
+}
+function validarFormulario(cli) {
+  if (!validarNombre(cli.nombre)) { Swal.fire("Atención", "Nombre inválido.", "warning"); return false; }
+  if (!validarNombre(cli.apellido)) { Swal.fire("Atención", "Apellido inválido.", "warning"); return false; }
+  if (!validarDUI(cli.dui)) { Swal.fire("Atención", "DUI inválido. Formato: 12345678-9", "warning"); return false; }
+  if (!validarFechaNacimiento(cli.fechaNacimiento)) { Swal.fire("Atención", "Fecha de nacimiento inválida.", "warning"); return false; }
+  if (!validarGenero(cli.genero)) { Swal.fire("Atención", "Seleccione un género válido.", "warning"); return false; }
+  if (!validarCorreo(cli.correo)) { Swal.fire("Atención", "Correo inválido.", "warning"); return false; }
   return true;
 }
 
-// === MOSTRAR CLIENTES CON PAGINACIÓN ===
+// ===============================
+// Render de tabla + paginación
+// ===============================
 function mostrarClientes() {
   tablaClientes.innerHTML = "";
 
-  const textoBuscar = inputBuscar?.value.toLowerCase() || "";
-  const listaFiltrada = clientes.filter(c =>
-    `${c.Nombres} ${c.Apellidos} ${c.DUI} ${c.Fechadenacimiento} ${c.Genero}`.toLowerCase().includes(textoBuscar)
-  );
+  const textoBuscar = (inputBuscar?.value || "").toLowerCase();
+  const listaFiltrada = clientes.filter(c => {
+    const cadena = `${c.nombre} ${c.apellido} ${c.dui} ${c.fechaNacimiento} ${c.genero} ${c.correo}`.toLowerCase();
+    return cadena.includes(textoBuscar);
+  });
 
   const inicio = (paginaActual - 1) * registrosPorPagina;
   const fin = inicio + registrosPorPagina;
@@ -57,12 +95,13 @@ function mostrarClientes() {
   listaPaginada.forEach(c => {
     tablaClientes.innerHTML += `
       <tr>
-        <td>${c.id}</td>
-        <td>${c.Nombres}</td>
-        <td>${c.Apellidos}</td>
-        <td>${c.DUI}</td>
-        <td>${c.Fechadenacimiento}</td>
-        <td>${c.Genero}</td>
+        <td>${c.id ?? ""}</td>
+        <td>${c.nombre}</td>
+        <td>${c.apellido}</td>
+        <td>${c.dui}</td>
+        <td>${c.fechaNacimiento}</td>
+        <td>${c.genero}</td>
+        <td>${c.correo}</td>
         <td>
           <button class="btn btn-sm btn-primary me-2 icon-btn editar" data-id="${c.id}" title="Editar">
             <i class="bi bi-pencil-square"></i>
@@ -78,20 +117,16 @@ function mostrarClientes() {
   renderizarPaginacion(listaFiltrada.length);
 }
 
-// === RENDERIZAR PAGINACIÓN ===
 function renderizarPaginacion(totalRegistros) {
   contenedorPaginacion.innerHTML = "";
-  const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+  const totalPaginas = Math.max(1, Math.ceil(totalRegistros / registrosPorPagina));
 
   const crearBoton = (texto, pagina, disabled = false, isActive = false) => {
     const btn = document.createElement("button");
     btn.textContent = texto;
     btn.disabled = disabled;
     btn.classList.add("btn", "btn-sm", "me-1");
-
-    if (isActive) btn.classList.add("btn-primary");
-    else btn.classList.add("btn-outline-primary");
-
+    btn.classList.add(isActive ? "btn-primary" : "btn-outline-primary");
     btn.addEventListener("click", () => {
       if (!disabled) {
         paginaActual = pagina;
@@ -101,23 +136,21 @@ function renderizarPaginacion(totalRegistros) {
     return btn;
   };
 
-  // Botón Anterior
-  contenedorPaginacion.appendChild(crearBoton("Anterior", paginaActual - 1, paginaActual === 1));
-
-  // Botones numéricos
+  contenedorPaginacion.appendChild(crearBoton("Anterior", Math.max(1, paginaActual - 1), paginaActual === 1));
   for (let i = 1; i <= totalPaginas; i++) {
-    contenedorPaginacion.appendChild(crearBoton(i, i, false, i === paginaActual));
+    contenedorPaginacion.appendChild(crearBoton(String(i), i, false, i === paginaActual));
   }
-
-  // Botón Siguiente
-  contenedorPaginacion.appendChild(crearBoton("Siguiente", paginaActual + 1, paginaActual === totalPaginas));
+  contenedorPaginacion.appendChild(crearBoton("Siguiente", Math.min(totalPaginas, paginaActual + 1), paginaActual === totalPaginas));
 }
 
-// === CARGAR CLIENTES DESDE API ===
+// ===============================
+// Carga desde API
+// ===============================
 async function cargarClientes() {
   try {
     const res = await fetch(API_URL);
-    clientes = await res.json();
+    const raw = await res.json();
+    clientes = Array.isArray(raw) ? raw.map(normalizar) : [];
     paginaActual = 1;
     mostrarClientes();
   } catch (err) {
@@ -126,32 +159,49 @@ async function cargarClientes() {
   }
 }
 
-// === EVENTOS BOTONES ===
+// ===============================
+// Eventos de botones acciones
+// ===============================
 function agregarEventosBotones() {
   document.querySelectorAll(".editar").forEach(btn => {
-    btn.addEventListener("click", () => cargarParaEditar(parseInt(btn.dataset.id)));
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.dataset.id);
+      cargarParaEditar(id);
+    });
   });
   document.querySelectorAll(".eliminar").forEach(btn => {
-    btn.addEventListener("click", () => eliminarCliente(parseInt(btn.dataset.id)));
+    btn.addEventListener("click", () => {
+      const id = parseInt(btn.dataset.id);
+      eliminarCliente(id);
+    });
   });
 }
 
-// === AGREGAR CLIENTE ===
-frmAgregar.addEventListener("submit", async e => {
+// ===============================
+// Crear
+// ===============================
+frmAgregar?.addEventListener("submit", async e => {
   e.preventDefault();
-  const nuevo = {
-    Nombres: document.getElementById("txtNombres").value.trim(),
-    Apellidos: document.getElementById("txtApellidos").value.trim(),
-    DUI: document.getElementById("txtDUI").value.trim(),
-    Fechadenacimiento: document.getElementById("txtFecha").value,
-    Genero: document.getElementById("txtGenero").value.trim(),
+
+  const data = {
+    nombre: document.getElementById("txtNombre").value.trim(),
+    apellido: document.getElementById("txtApellido").value.trim(),
+    dui: document.getElementById("txtDUI").value.trim(),
+    fechaNacimiento: document.getElementById("txtFecha").value,
+    genero: document.getElementById("txtGenero").value.trim(),
+    correo: document.getElementById("txtCorreo").value.trim()
   };
-  if (!validarFormulario(nuevo)) return;
+
+  if (!validarFormulario(data)) return;
 
   try {
-    await fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(nuevo) });
+    await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(buildPayloadFromForm(data))
+    });
     cerrarModalAgregar();
-    cargarClientes();
+    await cargarClientes();
     Swal.fire("Agregado", "El cliente fue agregado correctamente.", "success");
   } catch (error) {
     console.error(error);
@@ -159,38 +209,50 @@ frmAgregar.addEventListener("submit", async e => {
   }
 });
 
-// === CARGAR CLIENTE PARA EDITAR ===
+// ===============================
+// Cargar para editar
+// ===============================
 function cargarParaEditar(id) {
-  const cliente = clientes.find(c => c.id === id);
-  if (!cliente) return;
+  const cli = clientes.find(c => c.id === id);
+  if (!cli) return;
 
-  document.getElementById("txtIdEditarClientes").value = cliente.id;
-  document.getElementById("txtNombreEditar").value = cliente.Nombres;
-  document.getElementById("txtApellidoEditar").value = cliente.Apellidos;
-  document.getElementById("txtDUIEditar").value = cliente.DUI;
-  document.getElementById("txtFechaEditar").value = cliente.Fechadenacimiento;
-  document.getElementById("txtGeneroEditar").value = cliente.Genero;
+  document.getElementById("txtIdEditarClientes").value = cli.id;
+  document.getElementById("txtNombreEditar").value = cli.nombre;
+  document.getElementById("txtApellidoEditar").value = cli.apellido;
+  document.getElementById("txtDUIEditar").value = cli.dui;
+  document.getElementById("txtFechaEditar").value = cli.fechaNacimiento;
+  document.getElementById("txtGeneroEditar").value = cli.genero;
+  document.getElementById("txtCorreoEditar").value = cli.correo;
 
   modalEditar.showModal();
 }
 
-// === EDITAR CLIENTE ===
-frmEditar.addEventListener("submit", async e => {
+// ===============================
+// Editar
+// ===============================
+frmEditar?.addEventListener("submit", async e => {
   e.preventDefault();
+
   const id = document.getElementById("txtIdEditarClientes").value;
-  const editado = {
-    Nombres: document.getElementById("txtNombreEditar").value.trim(),
-    Apellidos: document.getElementById("txtApellidoEditar").value.trim(),
-    DUI: document.getElementById("txtDUIEditar").value.trim(),
-    Fechadenacimiento: document.getElementById("txtFechaEditar").value,
-    Genero: document.getElementById("txtGeneroEditar").value.trim(),
+  const data = {
+    nombre: document.getElementById("txtNombreEditar").value.trim(),
+    apellido: document.getElementById("txtApellidoEditar").value.trim(),
+    dui: document.getElementById("txtDUIEditar").value.trim(),
+    fechaNacimiento: document.getElementById("txtFechaEditar").value,
+    genero: document.getElementById("txtGeneroEditar").value.trim(),
+    correo: document.getElementById("txtCorreoEditar").value.trim()
   };
-  if (!validarFormulario(editado)) return;
+
+  if (!validarFormulario(data)) return;
 
   try {
-    await fetch(`${API_URL}/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(editado) });
+    await fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(buildPayloadFromForm(data))
+    });
     cerrarModalEditar();
-    cargarClientes();
+    await cargarClientes();
     Swal.fire("Actualizado", "El cliente fue actualizado correctamente.", "success");
   } catch (error) {
     console.error(error);
@@ -198,7 +260,9 @@ frmEditar.addEventListener("submit", async e => {
   }
 });
 
-// === ELIMINAR CLIENTE ===
+// ===============================
+// Eliminar
+// ===============================
 async function eliminarCliente(id) {
   const result = await Swal.fire({
     title: '¿Eliminar?',
@@ -211,7 +275,7 @@ async function eliminarCliente(id) {
   if (result.isConfirmed) {
     try {
       await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      cargarClientes();
+      await cargarClientes();
       Swal.fire("Eliminado", "El cliente fue eliminado.", "success");
     } catch (error) {
       console.error(error);
@@ -220,18 +284,36 @@ async function eliminarCliente(id) {
   }
 }
 
-// === EVENTO: BUSCAR ===
+// ===============================
+// Filtros y controles UI
+// ===============================
 inputBuscar?.addEventListener("input", () => {
   paginaActual = 1;
   mostrarClientes();
 });
 
-// === EVENTO: CAMBIAR REGISTROS POR PÁGINA ===
 selectRegistros?.addEventListener("change", e => {
   registrosPorPagina = parseInt(e.target.value, 10);
   paginaActual = 1;
   mostrarClientes();
 });
 
-// === INICIALIZAR ===
-document.addEventListener("DOMContentLoaded", cargarClientes);
+// ===============================
+// Inicializar (max fecha = hoy)
+// ===============================
+document.addEventListener("DOMContentLoaded", () => {
+  // Limitar fecha de nacimiento a hoy
+  const hoyStr = new Date().toISOString().split('T')[0];
+  const inAdd = document.getElementById("txtFecha");
+  const inEdit = document.getElementById("txtFechaEditar");
+  if (inAdd) inAdd.max = hoyStr;
+  if (inEdit) inEdit.max = hoyStr;
+
+  cargarClientes();
+});
+
+// Exponer funciones por si se llaman desde HTML
+window.abrirModalAgregar = abrirModalAgregar;
+window.cerrarModalAgregar = cerrarModalAgregar;
+window.cerrarModalEditar = cerrarModalEditar;
+window.buscarClientes = () => { paginaActual = 1; mostrarClientes(); };
