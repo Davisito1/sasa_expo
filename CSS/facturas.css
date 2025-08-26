@@ -20,7 +20,7 @@ img, video { max-width: 100%; height: auto; }
   text-align: center;
 }
 
-/* Encabezado de acciones (botón + selector) */
+/* Encabezado de acciones */
 .crud-header,
 .d-flex.justify-content-between.align-items-center.mb-4 {
   margin-bottom: 20px;
@@ -31,7 +31,7 @@ img, video { max-width: 100%; height: auto; }
   justify-content: space-between;
 }
 
-/* ===== Botón principal (Agregar / Nuevo) ===== */
+/* ===== Botón principal (Agregar) ===== */
 .btn-add {
   display: inline-flex;
   align-items: center;
@@ -48,7 +48,7 @@ img, video { max-width: 100%; height: auto; }
 }
 .btn-add:hover { background: #155d85 !important; }
 
-/* ===== Búsqueda en topbar ===== */
+/* ===== Búsqueda ===== */
 .search-input {
   padding: 8px 12px;
   border: 1px solid #ced4da;
@@ -120,7 +120,7 @@ dialog {
   box-shadow: 0 2px 12px rgba(0,0,0,.2);
   background: #fff;
 }
-dialog h2, dialog h3 {
+dialog h2 {
   font-size: 20px;
   margin-bottom: 15px;
   font-weight: 700;

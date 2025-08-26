@@ -69,39 +69,16 @@
         </div>
       </div>
 
-      <!-- Modal Agregar -->
+      <!-- Modal Agregar (orden exacto BD: descripcion, fecha, código, vehículo) -->
       <dialog id="mdAgregarMantenimiento">
         <h2 class="text-center">Agregar Mantenimiento</h2>
         <form id="frmAgregarMantenimiento" class="d-flex flex-column gap-3">
+          <textarea id="txtDescripcionTrabajo" class="form-control" placeholder="Descripción del trabajo (opcional, máx. 500)" maxlength="500" rows="3"></textarea>
+          <input type="date" id="txtFechaRealizacion" class="form-control" required />
+          <input type="text" id="txtCodigoMantenimiento" class="form-control" placeholder="Código de mantenimiento (se autogenera)" maxlength="50" required readonly />
           <select id="selVehiculo" class="form-select" required>
             <option value="" selected disabled>Seleccione un vehículo</option>
           </select>
-
-          <input
-            type="text"
-            id="txtCodigoMantenimiento"
-            class="form-control"
-            placeholder="Código de mantenimiento (se autogenera)"
-            maxlength="50"
-            required
-            readonly
-          />
-
-          <textarea
-            id="txtDescripcionTrabajo"
-            class="form-control"
-            placeholder="Descripción del trabajo"
-            maxlength="500"
-            rows="3"
-            required
-          ></textarea>
-
-          <input
-            type="date"
-            id="txtFechaRealizacion"
-            class="form-control"
-            required
-          />
 
           <div class="d-flex justify-content-between mt-3">
             <button type="submit" class="btn btn-primary">Guardar</button>
@@ -115,36 +92,12 @@
         <h2 class="text-center">Editar Mantenimiento</h2>
         <form id="frmEditarMantenimiento" class="d-flex flex-column gap-3">
           <input type="hidden" id="txtIdEditarMantenimiento" />
-
+          <textarea id="txtDescripcionTrabajoEditar" class="form-control" placeholder="Descripción del trabajo (opcional, máx. 500)" maxlength="500" rows="3"></textarea>
+          <input type="date" id="txtFechaRealizacionEditar" class="form-control" required />
+          <input type="text" id="txtCodigoMantenimientoEditar" class="form-control" placeholder="Código de mantenimiento" maxlength="50" required readonly />
           <select id="selVehiculoEditar" class="form-select" required>
             <option value="" selected disabled>Seleccione un vehículo</option>
           </select>
-
-          <input
-            type="text"
-            id="txtCodigoMantenimientoEditar"
-            class="form-control"
-            placeholder="Código de mantenimiento"
-            maxlength="50"
-            required
-            readonly
-          />
-
-          <textarea
-            id="txtDescripcionTrabajoEditar"
-            class="form-control"
-            placeholder="Descripción del trabajo"
-            maxlength="500"
-            rows="3"
-            required
-          ></textarea>
-
-          <input
-            type="date"
-            id="txtFechaRealizacionEditar"
-            class="form-control"
-            required
-          />
 
           <div class="d-flex justify-content-between mt-3">
             <button type="submit" class="btn btn-success">Actualizar</button>
@@ -153,16 +106,16 @@
         </form>
       </dialog>
 
-      <!-- Tabla -->
+      <!-- Tabla (orden BD: id, descripcion, fecha, código, idVehiculo) -->
       <div class="table-responsive">
         <table class="table">
           <thead class="tabla-encabezado">
             <tr>
               <th>ID</th>
-              <th>Código</th>
-              <th>Vehículo</th>
               <th>Descripción del trabajo</th>
               <th>Fecha de realización</th>
+              <th>Código</th>
+              <th>Vehículo</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -172,27 +125,12 @@
         </table>
       </div>
 
-      <!-- Paginación -->
+      <!-- Paginación (IDÉNTICA A EMPLEADOS) -->
       <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2"></div>
     </div>
   </div>
 
-  <!-- Limitar fecha MÍNIMA a hoy (para permitir hoy o futuro) -->
-  <script>
-    (function () {
-      const hoy = new Date();
-      hoy.setHours(0,0,0,0);
-      const min = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000).toISOString().split("T")[0];
-
-      const add = document.getElementById("txtFechaRealizacion");
-      const edit = document.getElementById("txtFechaRealizacionEditar");
-      if (add) add.min = min;   
-      if (edit) edit.min = min; 
-    })();
-  </script>
-
-  <!-- JS -->
+  <!-- JS principal -->
   <script src="../JS/mantenimiento.js"></script>
 </body>
 </html>
-     

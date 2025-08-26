@@ -1,10 +1,13 @@
+/* ===========================
+   pagos.css — igual a mantenimiento
+   =========================== */
+
 /* ===== Base global ===== */
 * { box-sizing: border-box; }
 img, video { max-width: 100%; height: auto; }
 
 /* ===== Contenedor principal (card) ===== */
-.card,
-.crud-container {
+.card {
   background: #fff;
   padding: 30px;
   border-radius: 10px;
@@ -12,8 +15,7 @@ img, video { max-width: 100%; height: auto; }
   box-shadow: 0 2px 8px rgba(0,0,0,.1);
   max-width: 1200px;
 }
-.card h2,
-.crud-container h2 {
+.card h2 {
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 20px;
@@ -21,7 +23,6 @@ img, video { max-width: 100%; height: auto; }
 }
 
 /* Encabezado de acciones (botón + selector) */
-.crud-header,
 .d-flex.justify-content-between.align-items-center.mb-4 {
   margin-bottom: 20px;
   gap: 12px;
@@ -31,7 +32,7 @@ img, video { max-width: 100%; height: auto; }
   justify-content: space-between;
 }
 
-/* ===== Botón principal (Agregar / Nuevo) ===== */
+/* ===== Botón principal ===== */
 .btn-add {
   display: inline-flex;
   align-items: center;
@@ -44,9 +45,10 @@ img, video { max-width: 100%; height: auto; }
   border-radius: 10px;
   font-weight: 500;
   cursor: pointer;
-  transition: background .2s ease-in-out;
+  transition: background .2s ease-in-out, transform .05s ease-in-out;
 }
 .btn-add:hover { background: #155d85 !important; }
+.btn-add:active { transform: scale(.98); }
 
 /* ===== Búsqueda en topbar ===== */
 .search-input {
@@ -55,12 +57,12 @@ img, video { max-width: 100%; height: auto; }
   border-radius: 5px;
   width: 100%;
   font-size: 1rem;
-  transition: border-color .3s ease;
+  transition: border-color .3s ease, box-shadow .3s ease;
 }
 .search-input:focus {
   border-color: #0056b3;
   outline: 0;
-  box-shadow: 0 0 5px rgba(0,86,179,.5);
+  box-shadow: 0 0 5px rgba(0,86,179,.35);
 }
 
 /* ===== Tabla ===== */
@@ -71,7 +73,11 @@ img, video { max-width: 100%; height: auto; }
   background: #fff;
   padding: 8px;
 }
-.table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+}
 .table thead th {
   background: #f8f9fa;
   border-bottom: 2px solid #dee2e6;
@@ -86,6 +92,8 @@ img, video { max-width: 100%; height: auto; }
   text-align: center;
   border: 1px solid #dee2e6;
 }
+.table tbody tr:nth-child(even) td { background: #fcfdff; }
+.table tbody tr:hover td { background: #eef6ff; }
 
 /* ===== Botones de acción ===== */
 .table td:last-child { white-space: nowrap; }
@@ -101,14 +109,33 @@ img, video { max-width: 100%; height: auto; }
   border: 1.5px solid #ced4da !important;
   color: #333 !important;
   cursor: pointer;
-  transition: background .3s, color .3s, border-color .3s;
+  transition: background .3s, color .3s, border-color .3s, transform .05s;
 }
 .icon-btn i { font-size: 1.1rem; pointer-events: none; }
-.icon-btn:hover { background: #e7f1ff !important; border-color: #1d6fa5 !important; color: #1d6fa5 !important; }
-.btn-primary.icon-btn { color: #0d6efd !important; border-color: #0d6efd !important; }
-.btn-primary.icon-btn:hover { background: #cfe2ff !important; color: #084298 !important; border-color: #084298 !important; }
-.btn-danger.icon-btn { color: #dc3545 !important; border-color: #dc3545 !important; }
-.btn-danger.icon-btn:hover { background: #f8d7da !important; color: #842029 !important; border-color: #842029 !important; }
+.icon-btn:hover {
+  background: #e7f1ff !important;
+  border-color: #1d6fa5 !important;
+  color: #1d6fa5 !important;
+}
+.icon-btn:active { transform: scale(.98); }
+.btn-primary.icon-btn {
+  color: #0d6efd !important;
+  border-color: #0d6efd !important;
+}
+.btn-primary.icon-btn:hover {
+  background: #cfe2ff !important;
+  color: #084298 !important;
+  border-color: #084298 !important;
+}
+.btn-danger.icon-btn {
+  color: #dc3545 !important;
+  border-color: #dc3545 !important;
+}
+.btn-danger.icon-btn:hover {
+  background: #f8d7da !important;
+  color: #842029 !important;
+  border-color: #842029 !important;
+}
 
 /* ===== Selector “Mostrar” ===== */
 #registrosPorPagina {
@@ -130,68 +157,81 @@ img, video { max-width: 100%; height: auto; }
 #registrosPorPagina:focus {
   border-color: #0056b3;
   outline: 0;
-  box-shadow: 0 0 5px rgba(0,86,179,.5);
+  box-shadow: 0 0 5px rgba(0,86,179,.35);
 }
 
-/* ===== Paginación ===== */
-#paginacion {
-  margin-top: 20px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
+/* ===== Paginación compacta ««  [n]  »» ===== */
+#paginacion { display: flex; justify-content: center; margin-top: 16px; }
+#paginacion .pagination { list-style: none; margin: 0; padding: 0; }
+#paginacion .pagination-compact { display: inline-flex; gap: 12px; }
+
+#paginacion .pagination-compact .page-link {
+  min-width: 42px;
+  height: 42px;
+  padding: 0;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;   /* gris borde */
+  background: #f1f5f9;         /* gris claro */
+  color: #6b7280;              /* gris texto */
+  font-weight: 700;
+  line-height: 1;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, transform .05s ease;
+  text-decoration: none;
 }
-#paginacion button {
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: .9rem;
-  cursor: pointer;
-  transition: all .2s ease-in-out;
-  color: #333;
+#paginacion .pagination-compact .page-link:hover {
+  background: #e2e8f0;
+  color: #374151;
+  border-color: #d1d5db;
 }
-#paginacion button:hover { background: #0056b3; color: #fff; border-color: #0056b3; }
-#paginacion button.btn-primary { background: #0056b3; color: #fff; border-color: #0056b3; font-weight: 600; }
-#paginacion button:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; border-color: #dee2e6; }
+#paginacion .pagination-compact .page-item.active .page-link {
+  background: #0056b3;         /* azul Bootstrap */
+  color: #fff;
+  border-color: #0056b3;
+}
+#paginacion .pagination-compact .page-item.disabled .page-link {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  pointer-events: none;
+  opacity: .9;
+}
+#paginacion .pagination-compact .page-link:active { transform: scale(.98); }
 
 /* ===== Modal ===== */
 dialog {
-  width: 350px;
-  max-width: 90%;
+  width: 380px;
+  max-width: 92%;
   border: 0;
   border-radius: 10px;
   padding: 20px 25px;
   box-shadow: 0 2px 12px rgba(0,0,0,.2);
   background: #fff;
 }
-dialog h2, dialog h3 {
-  font-size: 20px;
-  margin-bottom: 15px;
-  font-weight: 700;
-  text-align: center;
-}
+dialog::backdrop { background: rgba(0,0,0,.35); }
+dialog h2 { font-size: 20px; margin-bottom: 15px; font-weight: 700; text-align: center; }
 dialog form { display: flex; flex-direction: column; gap: 12px; }
+dialog .form-label { font-weight: 600; }
 dialog input, dialog select {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #ced4da;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 1rem;
+  transition: border-color .3s ease, box-shadow .3s ease;
 }
 dialog input:focus, dialog select:focus {
   outline: 0;
   border-color: #0056b3;
-  box-shadow: 0 0 5px rgba(0,86,179,.5);
+  box-shadow: 0 0 5px rgba(0,86,179,.35);
 }
-dialog .d-flex.justify-content-between { gap: 10px; }
-dialog button { flex: 1; }
 
 /* ===== Responsive ===== */
 @media (max-width: 992px) {
-  .card, .crud-container { padding: 20px; }
-  .card h2, .crud-container h2 { font-size: 20px; }
+  .card { padding: 20px; }
+  .card h2 { font-size: 20px; }
 
   .btn-add {
     padding: 8px 14px;
@@ -209,7 +249,6 @@ dialog button { flex: 1; }
 }
 
 @media (max-width: 576px) {
-  .crud-header,
   .d-flex.justify-content-between.align-items-center.mb-4 {
     flex-direction: column;
     align-items: stretch;

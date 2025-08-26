@@ -1,24 +1,40 @@
-// APIs
-const API_URL = 'https://retoolapi.dev/35dv6Q/data'; // Mantenimientos
-const VEHICULOS_API_URL = 'https://retoolapi.dev/4XQf28/anadirvehiculo'; // Vehículos (ajústalo si usas otro)
+/* =========================================================
+ *  MANTENIMIENTO.JS — CRUD + paginación + combobox simple
+ *  - Fecha no futura (max = hoy)
+ *  - Código autogenerado (readonly)
+ *  - Select de vehículos (con optgroups, SIN buscador)
+ *  - Orden de campos según BD:
+ *    idMantenimiento, descripcionTrabajo, fechaRealizacion, codigoMantenimiento, idVehiculo
+ * =======================================================*/
 
-// Elementos del DOM
-const tablaMantenimiento = document.getElementById("tablaMantenimiento");
-const frmAgregar = document.getElementById("frmAgregarMantenimiento");
-const frmEditar = document.getElementById("frmEditarMantenimiento");
+// ======================= APIs =======================
+const API_URL = 'https://retoolapi.dev/35dv6Q/data';                    // Mantenimientos
+const VEHICULOS_API_URL = 'https://retoolapi.dev/4XQf28/anadirvehiculo'; // Vehículos
 
-// Modales
-const modalAgregar = document.getElementById("mdAgregarMantenimiento");
-const modalEditar = document.getElementById("mdEditarMantenimiento");
+// ======================= DOM ========================
+const tablaMantenimiento   = document.getElementById("tablaMantenimiento");
+const frmAgregar           = document.getElementById("frmAgregarMantenimiento");
+const frmEditar            = document.getElementById("frmEditarMantenimiento");
 
-// Selects de vehículos
-const selVehiculo = document.getElementById("selVehiculo");
-const selVehiculoEditar = document.getElementById("selVehiculoEditar");
+const modalAgregar         = document.getElementById("mdAgregarMantenimiento");
+const modalEditar          = document.getElementById("mdEditarMantenimiento");
 
-// Diccionario idVehiculo -> nombre/placa/modelo
+const selVehiculo          = document.getElementById("selVehiculo");
+const selVehiculoEditar    = document.getElementById("selVehiculoEditar");
+
+const inputBuscar          = document.getElementById("buscar");
+const registrosSelect      = document.getElementById("registrosPorPagina");
+const paginacionDiv        = document.getElementById("paginacion");
+
+// =================== Estado (paginación) ===================
 let vehiculosMap = {};
+let vehiculosList = []; // {id, placa, marca, modelo, label}
+let listaMantenimientos = [];
+let filtrados = [];
+let paginaActual = 1;
+let porPagina = Number(registrosSelect?.value || 10);
 
-// ---------- Utilidades ----------
+// =================== Utilidades ===================
 function toISODate(value) {
   if (!value) return "";
   try {
@@ -26,101 +42,142 @@ function toISODate(value) {
     if (isNaN(d.getTime())) return value;
     const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
     return iso.split("T")[0];
-  } catch (e) {
-    return value;
-  }
+  } catch { return value; }
 }
 
-// Extrae el número de un código (ej. "MTTO-0012" -> 12)
-function extraerNumeroCodigo(cod = "") {
-  const m = String(cod).match(/(\d+)/);
-  return m ? parseInt(m[1], 10) : null;
-}
-
-// Formatea con prefijo y ceros (13 -> "MTTO-0013")
-function formatearCodigo(n) {
-  return `MTTO-${String(n).padStart(4, "0")}`;
-}
-
-// Genera el siguiente código según el máximo existente
-async function generarCodigoMantenimiento() {
-  try {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error("No se pudo leer mantenimientos");
-    const lista = await res.json();
-
-    let max = 0;
-    lista.forEach(item => {
-      const n = extraerNumeroCodigo(item.codigoMantenimiento);
-      if (n && n > max) max = n;
-    });
-
-    return formatearCodigo(max + 1 || 1);
-  } catch (e) {
-    console.error("No fue posible calcular el código. Se usará fallback.", e);
-    const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
-    return `MTTO-${stamp}`;
-  }
-}
-
-// Limita un input date a hoy o futuro
-function setMinHoy(input) {
+// Fecha: máximo hoy (no futura)
+function setMaxHoy(input) {
   if (!input) return;
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  input.min = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000).toISOString().split("T")[0];
+  input.max = new Date(hoy.getTime() - hoy.getTimezoneOffset() * 60000)
+    .toISOString()
+    .split("T")[0];
 }
 
-// ---------- Cargar vehículos ----------
+// Generador de código: MT-YYYYMMDD-###
+function generarCodigoAut() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const rnd = Math.floor(Math.random() * 900) + 100; // 100-999
+  return `MT-${yyyy}${mm}${dd}-${rnd}`;
+}
+
+// =================== Validaciones ===================
+function validarDescripcion(desc) {
+  const val = String(desc ?? "").trim();
+  if (val.length === 0) return true;                 // opcional
+  return val.length >= 5 && val.length <= 500;
+}
+function validarFechaNoFutura(fecha) {
+  const f = new Date(fecha);
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  if (isNaN(f.getTime())) return false;
+  f.setHours(0, 0, 0, 0);
+  return f <= hoy;
+}
+function validarIdVehiculo(id) {
+  return id !== "" && id !== null && id !== undefined && !Number.isNaN(Number(id));
+}
+function validarCodigo(cod) {
+  return /^[A-Z0-9\-_.]{3,50}$/.test(String(cod || ""));
+}
+function validarFormulario(m) {
+  if (!validarIdVehiculo(m.idVehiculo)) {
+    Swal.fire("Error", "Seleccione un vehículo.", "warning"); return false;
+  }
+  if (!m.codigoMantenimiento || !validarCodigo(m.codigoMantenimiento)) {
+    Swal.fire("Error", "Código de mantenimiento inválido o vacío.", "warning"); return false;
+  }
+  if (!validarDescripcion(m.descripcionTrabajo)) {
+    Swal.fire("Error", "Si escribe una descripción, debe tener entre 5 y 500 caracteres.", "warning"); return false;
+  }
+  if (!validarFechaNoFutura(m.fechaRealizacion)) {
+    Swal.fire("Error", "La fecha no puede ser futura.", "warning"); return false;
+  }
+  return true;
+}
+
+// =============== Vehículos (normalización y rendering) ===============
+function normalizaVehiculo(v) {
+  const id     = v.id ?? v.idVehiculo ?? "";
+  const placa  = v.placa || v.Placa || "";
+  const modelo = v.modelo || v.Modelo || "";
+  const marca  = v.marca  || v.Marca  || "";
+  const label  = (placa || modelo || marca)
+      ? `${placa}${placa && (modelo || marca) ? " - " : ""}${marca} ${modelo}`.trim()
+      : `Vehículo #${id}`;
+  return { id, placa, modelo, marca, label };
+}
+function ordenarVehiculos(a, b) {
+  const byMarca  = (a.marca  || "").localeCompare(b.marca  || undefined, 'es', {sensitivity:'base'});
+  if (byMarca !== 0) return byMarca;
+  const byModelo = (a.modelo || "").localeCompare(b.modelo || undefined, 'es', {sensitivity:'base'});
+  if (byModelo !== 0) return byModelo;
+  return (a.placa || "").localeCompare(b.placa || undefined, 'es', {sensitivity:'base'});
+}
+function agruparPorMarca(list) {
+  const grupos = {};
+  list.forEach(v => {
+    const key = v.marca || 'Sin marca';
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(v);
+  });
+  Object.keys(grupos).forEach(k => grupos[k].sort(ordenarVehiculos));
+  return grupos;
+}
+function renderSelectConGrupos(selectEl, list) {
+  if (!selectEl) return;
+  const grupos = agruparPorMarca(list);
+  let html = '<option value="" disabled selected>Seleccione un vehículo</option>';
+  Object.keys(grupos).sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'})).forEach(marca => {
+    html += `<optgroup label="${marca}">`;
+    grupos[marca].forEach(v => { html += `<option value="${v.id}">${v.label}</option>`; });
+    html += `</optgroup>`;
+  });
+  selectEl.innerHTML = html;
+}
+
+// =================== Cargar Vehículos ===================
 async function cargarVehiculos() {
   try {
+    if (selVehiculo)       selVehiculo.innerHTML       = '<option disabled selected>Cargando vehículos…</option>';
+    if (selVehiculoEditar) selVehiculoEditar.innerHTML = '<option disabled selected>Cargando vehículos…</option>';
+
     const res = await fetch(VEHICULOS_API_URL);
     if (!res.ok) throw new Error("No se pudo obtener vehículos");
-    const lista = await res.json();
+    const listaRaw = await res.json();
+
+    const seen = new Set();
+    vehiculosList = listaRaw.map(normalizaVehiculo)
+      .filter(v => v.id !== "" && !seen.has(v.id) && seen.add(v.id))
+      .sort(ordenarVehiculos);
 
     vehiculosMap = {};
-    const options = ['<option value="" disabled selected>Seleccione un vehículo</option>'];
+    vehiculosList.forEach(v => { vehiculosMap[v.id] = v.label; });
 
-    lista.forEach(v => {
-      const id = v.id ?? v.idVehiculo ?? "";
-      const placa = v.placa || v.Placa || "";
-      const modelo = v.modelo || v.Modelo || "";
-      const marca  = v.marca  || v.Marca  || "";
-      const nombre = (placa || modelo || marca)
-        ? `${placa}${placa && (modelo || marca) ? " - " : ""}${marca} ${modelo}`.trim()
-        : `Vehículo #${id}`;
-
-      if (id !== "") {
-        vehiculosMap[id] = nombre;
-        options.push(`<option value="${id}">${nombre}</option>`);
-      }
-    });
-
-    if (selVehiculo) selVehiculo.innerHTML = options.join("");
-    if (selVehiculoEditar) selVehiculoEditar.innerHTML = options.join("");
+    renderSelectConGrupos(selVehiculo, vehiculosList);
+    renderSelectConGrupos(selVehiculoEditar, vehiculosList);
   } catch (err) {
     console.error("Error al cargar vehículos:", err);
     vehiculosMap = {};
+    vehiculosList = [];
     if (selVehiculo) selVehiculo.innerHTML = '<option value="" disabled selected>Sin vehículos</option>';
     if (selVehiculoEditar) selVehiculoEditar.innerHTML = '<option value="" disabled selected>Sin vehículos</option>';
   }
 }
 
-// ---------- Modales ----------
+// =================== Modales ===================
 async function abrirModalAgregar() {
   if (frmAgregar) frmAgregar.reset();
   await cargarVehiculos();
 
-  // Autogenerar código (si el input existe)
   const inputCodigo = document.getElementById("txtCodigoMantenimiento");
-  if (inputCodigo) {
-    inputCodigo.value = await generarCodigoMantenimiento();
-    inputCodigo.readOnly = true;
-  }
+  if (inputCodigo) { inputCodigo.value = generarCodigoAut(); inputCodigo.readOnly = true; }
 
-  // Fecha: hoy o futura
-  const inputFecha = document.getElementById("txtFechaRealizacion");
-  setMinHoy(inputFecha);
+  setMaxHoy(document.getElementById("txtFechaRealizacion"));
 
   if (modalAgregar) modalAgregar.showModal();
 }
@@ -133,61 +190,31 @@ function cerrarModalEditar() {
   if (modalEditar) modalEditar.close();
 }
 
-// ---------- Validaciones ----------
-function validarDescripcion(desc) {
-  return typeof desc === "string" && desc.trim().length >= 5 && desc.trim().length <= 500;
-}
-// Solo HOY o FUTURA
-function validarFecha(fecha) {
-  const f = new Date(fecha);
-  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-  return !isNaN(f.getTime()) && f >= hoy;
-}
-function validarIdVehiculo(id) {
-  return id !== "" && id !== null && id !== undefined;
-}
-function validarFormulario(m) {
-  if (!validarIdVehiculo(m.idVehiculo)) {
-    Swal.fire("Error", "Seleccione un vehículo.", "warning");
-    return false;
-  }
-  if (!m.codigoMantenimiento || m.codigoMantenimiento.trim().length === 0) {
-    Swal.fire("Error", "No se generó el código de mantenimiento.", "warning");
-    return false;
-  }
-  if (!validarDescripcion(m.descripcionTrabajo)) {
-    Swal.fire("Error", "La descripción debe tener entre 5 y 500 caracteres.", "warning");
-    return false;
-  }
-  if (!validarFecha(m.fechaRealizacion)) {
-    Swal.fire("Error", "La fecha debe ser hoy o futura.", "warning");
-    return false;
-  }
-  return true;
-}
-
-// ---------- Render ----------
+// =================== Render & Paginación ===================
 function filaHTML(m) {
   const id = m.id ?? m.idMantenimiento ?? "";
-  const codigo = m.codigoMantenimiento ?? "";
-  const idVehiculo = m.idVehiculo ?? "";
   const descripcion = m.descripcionTrabajo ?? "";
   const fecha = toISODate(m.fechaRealizacion);
-
+  const codigo = m.codigoMantenimiento ?? "";
+  const idVehiculo = m.idVehiculo ?? "";
   const nombreVehiculo = vehiculosMap[idVehiculo] || `Vehículo #${idVehiculo}`;
+  const placa = (vehiculosList.find(v=>String(v.id)===String(idVehiculo))?.placa) || '';
 
   return `
     <tr>
       <td>${id}</td>
-      <td>${codigo}</td>
-      <td>${nombreVehiculo}</td>
       <td>${descripcion}</td>
       <td>${fecha}</td>
+      <td>${codigo}</td>
       <td>
-        <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="cargarParaEditarMantenimiento(${id})" title="Editar">
+        ${nombreVehiculo}
+        ${placa ? ` <span class="badge text-bg-light border ms-1">${placa}</span>` : ''}
+      </td>
+      <td>
+        <button class="icon-btn btn-primary me-2" onclick="cargarParaEditarMantenimiento(${id})" title="Editar">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarMantenimiento(${id})" title="Eliminar">
+        <button class="icon-btn btn-danger" onclick="eliminarMantenimiento(${id})" title="Eliminar">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -195,21 +222,78 @@ function filaHTML(m) {
   `;
 }
 
-function mostrarMantenimientos(lista) {
+function aplicarFiltro() {
+  const q = (inputBuscar?.value || "").toLowerCase().trim();
+  if (!q) { filtrados = [...listaMantenimientos]; }
+  else {
+    filtrados = listaMantenimientos.filter(m => {
+      const texto = `${m.id ?? m.idMantenimiento ?? ""} ${m.descripcionTrabajo ?? ""} ${toISODate(m.fechaRealizacion)} ${m.codigoMantenimiento ?? ""} ${vehiculosMap[m.idVehiculo ?? ""] || ""}`.toLowerCase();
+      return texto.includes(q);
+    });
+  }
+  paginaActual = 1;
+}
+
+function renderizarTabla() {
   if (!tablaMantenimiento) return;
-  tablaMantenimiento.innerHTML = "";
-  lista.forEach(m => {
-    tablaMantenimiento.innerHTML += filaHTML(m);
+  aplicarFiltro();
+
+  const total = filtrados.length;
+  const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+  if (paginaActual < 1) paginaActual = 1;
+
+  const start = (paginaActual - 1) * porPagina;
+  const end = start + porPagina;
+  const slice = filtrados.slice(start, end);
+
+  if (!slice.length) {
+    tablaMantenimiento.innerHTML = `<tr><td colspan="6" class="text-center">Sin resultados</td></tr>`;
+  } else {
+    tablaMantenimiento.innerHTML = slice.map(filaHTML).join("");
+  }
+  renderPaginacion();
+}
+
+function renderPaginacion(){
+  if(!paginacionDiv) return;
+  const total = filtrados.length;
+  const totalPaginas = Math.max(1, Math.ceil(total / porPagina));
+
+  const btn = (label, disabled, onClick, extra='') =>
+    `<button class="btn ${extra}" ${disabled?'disabled':''} data-action="${onClick}">${label}</button>`;
+
+  let html = "";
+  html += btn("«", paginaActual===1, "prev");
+  for(let p=1; p<=totalPaginas; p++){
+    html += btn(p, false, `page-${p}`, ` ${p===paginaActual?'btn-primary':''} `);
+  }
+  html += btn("»", paginaActual===totalPaginas, "next");
+  paginacionDiv.innerHTML = html;
+
+  paginacionDiv.querySelectorAll("button[data-action]").forEach(b=>{
+    const action = b.getAttribute("data-action");
+    b.addEventListener("click", ()=>{
+      if(action==="prev" && paginaActual>1){ paginaActual--; renderizarTabla(); }
+      else if(action==="next"){
+        const totalPag = Math.max(1, Math.ceil(filtrados.length / porPagina));
+        if(paginaActual<totalPag){ paginaActual++; renderizarTabla(); }
+      }else if(action?.startsWith("page-")){
+        paginaActual = parseInt(action.split("-")[1],10) || 1;
+        renderizarTabla();
+      }
+    });
   });
 }
 
-// ---------- CRUD ----------
+// =================== CRUD ===================
 async function cargarMantenimiento() {
   try {
     const res = await fetch(API_URL);
     if (!res.ok) throw new Error("Fetch mantenimientos falló");
-    const data = await res.json();
-    mostrarMantenimientos(data);
+    listaMantenimientos = await res.json();
+    paginaActual = 1;
+    renderizarTabla();
   } catch (error) {
     console.error("Error al cargar mantenimientos:", error);
     Swal.fire("Error", "No se pudieron cargar los mantenimientos.", "error");
@@ -221,30 +305,29 @@ if (frmAgregar) {
   frmAgregar.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Si por alguna razón quedó vacío, generarlo aquí también
     let codigo = (document.getElementById("txtCodigoMantenimiento")?.value || "").trim();
     if (!codigo) {
-      codigo = await generarCodigoMantenimiento();
-      if (document.getElementById("txtCodigoMantenimiento")) {
-        document.getElementById("txtCodigoMantenimiento").value = codigo;
-      }
+      codigo = generarCodigoAut();
+      const codeInput = document.getElementById("txtCodigoMantenimiento");
+      if (codeInput) codeInput.value = codigo;
     }
 
     const nuevo = {
-      idVehiculo: Number(document.getElementById("selVehiculo").value),
+      descripcionTrabajo: (document.getElementById("txtDescripcionTrabajo").value || "").trim(),
+      fechaRealizacion: document.getElementById("txtFechaRealizacion").value,
       codigoMantenimiento: codigo,
-      descripcionTrabajo: document.getElementById("txtDescripcionTrabajo").value.trim(),
-      fechaRealizacion: document.getElementById("txtFechaRealizacion").value
+      idVehiculo: Number(document.getElementById("selVehiculo").value)
     };
 
     if (!validarFormulario(nuevo)) return;
 
     try {
-      await fetch(API_URL, {
+      const resp = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nuevo)
       });
+      if (!resp.ok) throw new Error("POST falló");
       cerrarModalAgregar();
       await cargarMantenimiento();
       Swal.fire("Agregado", "El mantenimiento fue agregado correctamente.", "success");
@@ -265,13 +348,12 @@ async function cargarParaEditarMantenimiento(id) {
     await cargarVehiculos();
 
     document.getElementById("txtIdEditarMantenimiento").value = data.id ?? data.idMantenimiento ?? "";
-    document.getElementById("selVehiculoEditar").value = (data.idVehiculo ?? "").toString();
-    document.getElementById("txtCodigoMantenimientoEditar").value = data.codigoMantenimiento ?? "";
     document.getElementById("txtDescripcionTrabajoEditar").value = data.descripcionTrabajo ?? "";
     document.getElementById("txtFechaRealizacionEditar").value = toISODate(data.fechaRealizacion);
+    document.getElementById("txtCodigoMantenimientoEditar").value = data.codigoMantenimiento ?? "";
+    document.getElementById("selVehiculoEditar").value = (data.idVehiculo ?? "").toString();
 
-    // Fecha en edición: hoy o futura
-    setMinHoy(document.getElementById("txtFechaRealizacionEditar"));
+    setMaxHoy(document.getElementById("txtFechaRealizacionEditar"));
 
     if (modalEditar) modalEditar.showModal();
   } catch (error) {
@@ -287,21 +369,21 @@ if (frmEditar) {
     const id = document.getElementById("txtIdEditarMantenimiento").value;
 
     const editado = {
-      idVehiculo: Number(document.getElementById("selVehiculoEditar").value),
-      // código no editable (ya viene del input readonly)
+      descripcionTrabajo: (document.getElementById("txtDescripcionTrabajoEditar").value || "").trim(),
+      fechaRealizacion: document.getElementById("txtFechaRealizacionEditar").value,
       codigoMantenimiento: document.getElementById("txtCodigoMantenimientoEditar").value.trim(),
-      descripcionTrabajo: document.getElementById("txtDescripcionTrabajoEditar").value.trim(),
-      fechaRealizacion: document.getElementById("txtFechaRealizacionEditar").value
+      idVehiculo: Number(document.getElementById("selVehiculoEditar").value)
     };
 
     if (!validarFormulario(editado)) return;
 
     try {
-      await fetch(`${API_URL}/${id}`, {
+      const resp = await fetch(`${API_URL}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editado)
       });
+      if (!resp.ok) throw new Error("PUT falló");
       cerrarModalEditar();
       await cargarMantenimiento();
       Swal.fire("Actualizado", "El mantenimiento fue actualizado correctamente.", "success");
@@ -325,7 +407,8 @@ async function eliminarMantenimiento(id) {
 
   if (result.isConfirmed) {
     try {
-      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      const resp = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      if (!resp.ok) throw new Error("DELETE falló");
       await cargarMantenimiento();
       Swal.fire("Eliminado", "El mantenimiento fue eliminado.", "success");
     } catch (error) {
@@ -335,22 +418,28 @@ async function eliminarMantenimiento(id) {
   }
 }
 
-// Buscar
+// =================== Búsqueda & Eventos ===================
 function buscarMantenimiento() {
-  const texto = document.getElementById("buscar").value.toLowerCase();
-  const filas = tablaMantenimiento.getElementsByTagName("tr");
-  Array.from(filas).forEach((fila) => {
-    const contenido = fila.textContent.toLowerCase();
-    fila.style.display = contenido.includes(texto) ? "" : "none";
-  });
+  paginaActual = 1;
+  renderizarTabla();
 }
 
-// Inicializar
-document.addEventListener("DOMContentLoaded", () => {
-  cargarVehiculos().then(() => cargarMantenimiento());
+// =================== Inicializar ===================
+document.addEventListener("DOMContentLoaded", async () => {
+  if (registrosSelect) {
+    registrosSelect.addEventListener("change", () => {
+      porPagina = Number(registrosSelect.value || 10);
+      paginaActual = 1;
+      renderizarTabla();
+    });
+  }
+  if (inputBuscar) inputBuscar.addEventListener("input", buscarMantenimiento);
+
+  await cargarVehiculos();
+  await cargarMantenimiento();
 });
 
-// Exponer funciones globales (para onclick en HTML)
+// =================== Exponer globales ===================
 window.cargarParaEditarMantenimiento = cargarParaEditarMantenimiento;
 window.eliminarMantenimiento = eliminarMantenimiento;
 window.buscarMantenimiento = buscarMantenimiento;
