@@ -1,136 +1,140 @@
-/* =========================================================
-   HISTORIALCONTROLLER.JS — conectado al backend Spring
-   ========================================================= */
+import { getHistorial, deleteHistorial } from "../Services/HistorialService.js";
 
-const API_URL = "http://localhost:8080/api/historial"; // Ajusta el puerto si tu backend corre en otro
-
-// ======================= DOM =======================
 const tablaHistorial = document.getElementById("tablaHistorial");
 const pagWrap = document.getElementById("paginacion");
-const buscador = document.getElementById("buscadorHistorial");
+const inputBuscar = document.getElementById("buscarHistorial");
+const selectPageSize = document.getElementById("registrosPorPagina");
 
-// ======================= VARIABLES =================
-let historialCache = [];
-let paginaActual = 1;
-const tamPagina = 5; // Registros por página
-let filtroTexto = "";
+let paginaActual = 0;
+let tamPagina = selectPageSize ? parseInt(selectPageSize.value, 10) : 10;
+let historialData = [];
+let totalPages = 1;
 
-// ======================= RENDER TABLA =================
-function renderTabla() {
-  const filtrados = historialCache.filter(h =>
-    Object.values(h).some(v => String(v).toLowerCase().includes(filtroTexto))
-  );
+async function cargarHistorial() {
+  try {
+    const response = await getHistorial(paginaActual, tamPagina);
+    
+    if (response && response.content) {
+      historialData = response.content;
+      totalPages = response.totalPages;
+      renderHistorial(historialData);
+      renderPaginacion(totalPages);
+    } else {
+      tablaHistorial.innerHTML = '<tr><td colspan="7" class="text-center">No hay registros de historial</td></tr>';
+      pagWrap.innerHTML = '';
+    }
+  } catch (error) {
+    console.error('Error cargando historial:', error);
+    tablaHistorial.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar los datos</td></tr>';
+    pagWrap.innerHTML = '';
+  }
+}
 
-  const inicio = (paginaActual - 1) * tamPagina;
-  const fin = inicio + tamPagina;
-  const pagina = filtrados.slice(inicio, fin);
+function renderHistorial(historial) {
+  if (!tablaHistorial) return;
+  
+  tablaHistorial.innerHTML = '';
 
-  tablaHistorial.innerHTML = "";
+  if (historial.length === 0) {
+    tablaHistorial.innerHTML = '<tr><td colspan="7" class="text-center">No se encontraron registros</td></tr>';
+    return;
+  }
 
-  pagina.forEach(h => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${h.idHistorial}</td>
-      <td>${h.fechaIngreso || "-"}</td>
-      <td>${h.fechaSalida || "-"}</td>
-      <td>${h.trabajoRealizado || ""}</td>
-      <td>${h.observaciones || ""}</td>
-      <td>${h.idVehiculo || ""}</td>
+  historial.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="text-center">${item.id || 'undefined'}</td>
+      <td class="text-center">${item.fechaIngreso || '-'}</td>
+      <td class="text-center">${item.fechaSalida || '-'}</td>
+      <td>${item.trabajoRealizado || ''}</td>
+      <td>${item.observaciones || ''}</td>
+      <td class="text-center">${item.idVehiculo || ''}</td>
       <td class="text-center">
-        <button class="btn btn-sm btn-warning me-1" onclick="editarHistorial(${h.idHistorial})">
-          <i class="bi bi-pencil"></i>
-        </button>
-        <button class="btn btn-sm btn-danger" onclick="eliminarHistorial(${h.idHistorial})">
+        <button class="btn btn-sm btn-danger" onclick="eliminarRegistro(${item.id || 0})">
           <i class="bi bi-trash"></i>
         </button>
       </td>
     `;
-    tablaHistorial.appendChild(row);
+    tablaHistorial.appendChild(tr);
   });
-
-  renderPaginacion(filtrados.length);
 }
 
-// ======================= RENDER PAGINACIÓN =================
-function renderPaginacion(totalRegistros) {
-  pagWrap.innerHTML = "";
-  const totalPaginas = Math.ceil(totalRegistros / tamPagina);
-  if (totalPaginas <= 1) return;
+function renderPaginacion(totalPages) {
+  if (!pagWrap) return;
+  
+  pagWrap.innerHTML = '';
 
-  for (let i = 1; i <= totalPaginas; i++) {
-    const btn = document.createElement("button");
-    btn.textContent = i;
-    btn.className = `btn btn-sm ${i === paginaActual ? "btn-primary" : "btn-outline-primary"}`;
+  if (totalPages <= 1) return;
+
+  for (let i = 0; i < totalPages; i++) {
+    const btn = document.createElement('button');
+    btn.className = `btn btn-sm ${i === paginaActual ? 'btn-primary' : 'btn-outline-primary'} me-1`;
+    btn.textContent = i + 1;
     btn.onclick = () => {
       paginaActual = i;
-      renderTabla();
+      cargarHistorial();
     };
     pagWrap.appendChild(btn);
   }
 }
 
-// ======================= CARGAR HISTORIAL =================
-async function loadHistorial() {
-  try {
-    const res = await fetch(`${API_URL}/consultar?page=0&size=50`);
-    if (!res.ok) throw new Error("Error HTTP " + res.status);
-
-    const json = await res.json();
-    console.log("Respuesta del backend:", json);
-
-    // ⚠️ Los registros están en json.data.content
-    historialCache = json.data.content || [];
-    renderTabla();
-  } catch (err) {
-    console.error("Error al cargar historial:", err);
-    Swal.fire("Error", "No se pudo cargar el historial", "error");
+window.eliminarRegistro = async function(id) {
+  if (!id || id === 0) {
+    Swal.fire('Error', 'ID de registro inválido', 'error');
+    return;
   }
-}
 
-// ======================= ELIMINAR =================
-async function eliminarHistorial(id) {
-  Swal.fire({
-    title: "¿Eliminar registro?",
-    text: "Esta acción no se puede deshacer",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Sí, eliminar",
-    cancelButtonText: "Cancelar"
-  }).then(async (result) => {
+  try {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás revertir esta acción!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
     if (result.isConfirmed) {
-      try {
-        const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-        if (!res.ok) throw new Error("Error HTTP " + res.status);
-
-        historialCache = historialCache.filter(h => h.idHistorial !== id);
-        renderTabla();
-        Swal.fire("Eliminado", "Registro eliminado con éxito", "success");
-      } catch (err) {
-        console.error("Error al eliminar:", err);
-        Swal.fire("Error", "No se pudo eliminar el registro", "error");
-      }
+      await deleteHistorial(id);
+      
+      Swal.fire(
+        'Eliminado!',
+        'El registro ha sido eliminado correctamente.',
+        'success'
+      );
+      
+      cargarHistorial();
     }
+  } catch (error) {
+    console.error('Error al eliminar:', error);
+    Swal.fire(
+      'Error!',
+      'No se pudo eliminar el registro. El endpoint de eliminar no existe en la API.',
+      'error'
+    );
+  }
+};
+
+if (inputBuscar) {
+  inputBuscar.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const filtered = historialData.filter(item => 
+      Object.values(item).some(value => 
+        value && String(value).toLowerCase().includes(searchTerm)
+      )
+    );
+    renderHistorial(filtered);
   });
 }
 
-// ======================= EDITAR (placeholder) =================
-function editarHistorial(id) {
-  Swal.fire("Info", `Funcionalidad de editar en construcción (ID: ${id})`, "info");
-}
-
-// ======================= EVENTOS =================
-if (buscador) {
-  buscador.addEventListener("input", e => {
-    filtroTexto = e.target.value.toLowerCase();
-    paginaActual = 1;
-    renderTabla();
+if (selectPageSize) {
+  selectPageSize.addEventListener('change', (e) => {
+    tamPagina = parseInt(e.target.value, 10);
+    paginaActual = 0;
+    cargarHistorial();
   });
 }
 
-// ======================= INICIO =================
-document.addEventListener("DOMContentLoaded", () => {
-  loadHistorial();
-});
-
-window.eliminarHistorial = eliminarHistorial;
-window.editarHistorial = editarHistorial;
+document.addEventListener('DOMContentLoaded', cargarHistorial);

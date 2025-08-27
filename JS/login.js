@@ -1,7 +1,5 @@
  const usuarios = [
-      { email: 'admin@sasa.com', password: '1234' },
-      { email: 'usuario@sasa.com', password: '5678' },
-      { email: 'cliente@sasa.com', password: 'abcd' }
+      { email: 'admin@sasa.com', password: '1234' },  
     ];
 
     document.getElementById('loginForm').addEventListener('submit', function (e) {

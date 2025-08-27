@@ -1,43 +1,61 @@
-// ===============================
-// HistorialService.js (solo lectura + eliminar)
-// ===============================
 const API_BASE = "http://localhost:8080/api/historial";
 
-// -------- Utilidad base para fetch --------
-async function fetchJsonOrThrow(url, options = {}) {
-  const res = await fetch(url, options);
-  const text = await res.text();
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
+export async function getHistorial(page = 0, size = 10) {
   try {
-    return text ? JSON.parse(text) : null;
-  } catch {
-    return text;
+    const response = await fetch(`${API_BASE}/consultar?page=${page}&size=${size}`);
+    if (!response.ok) throw new Error('Error en la respuesta del servidor');
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching historial:', error);
+    throw error;
   }
 }
 
-// -------- Normalización de respuesta --------
-function normalizeResponse(json) {
-  if (!json) return { content: [], totalPages: 1, totalElements: 0 };
-  if (json.data && json.data.content) return json.data;      // Spring pageable
-  if (json.content) return json;                             // Directo
-  if (Array.isArray(json)) return { content: json, totalPages: 1, totalElements: json.length };
-  return { content: [], totalPages: 1, totalElements: 0 };
-}
-
-// ===============================
-// LISTAR HISTORIAL (paginado)
-// ===============================
-export async function getHistorial(page = 0, size = 10) {
-  const s = Math.min(size, 100);
-  const url = `${API_BASE}/consultar?page=${page}&size=${s}`;
-  const json = await fetchJsonOrThrow(url);
-  return normalizeResponse(json);
-}
-
-// ===============================
-// ELIMINAR HISTORIAL
-// ===============================
 export async function deleteHistorial(id) {
-  const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
-  return json?.data ?? json;
+  try {
+    const response = await fetch(`${API_BASE}/eliminar/${id}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error eliminando historial:', error);
+    throw error;
+  }
+}
+
+export async function getHistorialPorVehiculo(idVehiculo) {
+  try {
+    const response = await fetch(`${API_BASE}/vehiculo/${idVehiculo}`);
+    if (!response.ok) throw new Error('Error en la respuesta del servidor');
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching historial por vehículo:', error);
+    throw error;
+  }
+}
+
+export async function registrarHistorial(historialData) {
+  try {
+    const response = await fetch(`${API_BASE}/registrar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(historialData)
+    });
+    if (!response.ok) throw new Error('Error en la respuesta del servidor');
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error registrando historial:', error);
+    throw error;
+  }
 }
