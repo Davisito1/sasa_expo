@@ -36,28 +36,23 @@
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
-      <input type="text" id="buscar" class="search-input form-control" placeholder="Buscar..." onkeyup="BuscarFactura()" />
+      <input type="text" id="buscar" class="search-input form-control" placeholder="Buscar..." />
     </div>
     <div class="topbar-right">
       <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
       <span class="ms-2">Usuario</span>
       <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
-      <div class="user-menu" id="userMenu">
-        <a href="#">Perfil <i class="fas fa-id-badge float-end"></i></a>
-        <a href="#">Configuración <i class="fas fa-cog float-end"></i></a>
-        <a href="#" id="logoutBtn">Cerrar sesión <i class="fas fa-sign-out-alt float-end"></i></a>
-      </div>
     </div>
   </div>
 
   <!-- Contenido principal -->
-  <div class="content">
-    <div class="card">
+  <main class="content">
+    <section class="card">
       <h2 class="mb-4">Facturas</h2>
 
       <!-- Encabezado de acciones -->
       <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <button class="btn-add" onclick="abrirModalAgregar()">
+        <button id="btnAddFactura" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mdAgregarFactura">
           <i class="fas fa-plus me-2"></i> Nueva Factura
         </button>
 
@@ -73,60 +68,9 @@
         </div>
       </div>
 
-      <!-- Modal Agregar Factura -->
-      <dialog id="mdAgregarFactura">
-        <h2 class="text-center">Agregar Factura</h2>
-        <form id="frmAgregarFactura" class="d-flex flex-column gap-3" novalidate>
-          <input type="date" id="fechaFacturaAdd" required class="form-control" />
-          <div id="errorFechaFactura" class="text-danger small"></div>
-
-          <input type="number" id="txtMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
-          <div id="errorMontoFactura" class="text-danger small"></div>
-
-          <select id="selEmpleadoAdd" class="form-select" required>
-            <option value="" selected disabled>Seleccione un empleado</option>
-          </select>
-          <div id="errorEmpleadoFactura" class="text-danger small"></div>
-
-          <select id="selMantenimientoAdd" class="form-select" required>
-            <option value="" selected disabled>Seleccione un mantenimiento</option>
-          </select>
-          <div id="errorMantenimientoFactura" class="text-danger small"></div>
-
-          <div class="d-flex justify-content-between mt-3">
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <button type="button" onclick="cerrarModalAgregar()" class="btn btn-secondary">Cerrar</button>
-          </div>
-        </form>
-      </dialog>
-
-      <!-- Modal Editar Factura -->
-      <dialog id="mdEditarFactura">
-        <h2 class="text-center">Editar Factura</h2>
-        <form id="frmEditarFactura" class="d-flex flex-column gap-3" novalidate>
-          <input type="hidden" id="txtIdFactura" />
-
-          <input type="date" id="fechaFacturaEdit" required class="form-control" />
-          <input type="number" id="txtEditarMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
-
-          <select id="selEmpleadoEdit" class="form-select" required>
-            <option value="" selected disabled>Seleccione un empleado</option>
-          </select>
-
-          <select id="selMantenimientoEdit" class="form-select" required>
-            <option value="" selected disabled>Seleccione un mantenimiento</option>
-          </select>
-
-          <div class="d-flex justify-content-between mt-3">
-            <button type="submit" class="btn btn-success">Actualizar</button>
-            <button type="button" onclick="cerrarModalEditar()" class="btn btn-secondary">Cerrar</button>
-          </div>
-        </form>
-      </dialog>
-
       <!-- Tabla -->
       <div class="table-responsive">
-        <table class="table">
+        <table class="table table-bordered table-striped align-middle">
           <thead>
             <tr>
               <th>ID Factura</th>
@@ -137,17 +81,80 @@
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody id="tablaFacturas"></tbody>
+          <tbody id="tablaFacturas">
+            <!-- Datos dinámicos -->
+          </tbody>
         </table>
       </div>
 
       <!-- Paginación -->
       <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2"></div>
+    </section>
+  </main>
+
+  <!-- Modal Agregar Factura -->
+  <div class="modal fade" id="mdAgregarFactura" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="frmAgregarFactura">
+          <div class="modal-header">
+            <h5 class="modal-title">Agregar Factura</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <input type="date" id="fechaFacturaAdd" required class="form-control" />
+            <input type="number" id="txtMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
+
+            <select id="selEmpleadoAdd" class="form-select" required>
+              <option value="" selected disabled>Seleccione un empleado</option>
+            </select>
+
+            <select id="selMantenimientoAdd" class="form-select" required>
+              <option value="" selected disabled>Seleccione un mantenimiento</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- JS -->
-  <script src="../JS/facturas.js"></script>
-  <script src="../JS/dashboard.js"></script>
+  <!-- Modal Editar Factura -->
+  <div class="modal fade" id="mdEditarFactura" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="frmEditarFactura">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar Factura</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <input type="hidden" id="txtIdFactura" />
+            <input type="date" id="fechaFacturaEdit" required class="form-control" />
+            <input type="number" id="txtEditarMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
+
+            <select id="selEmpleadoEdit" class="form-select" required>
+              <option value="" selected disabled>Seleccione un empleado</option>
+            </select>
+
+            <select id="selMantenimientoEdit" class="form-select" required>
+              <option value="" selected disabled>Seleccione un mantenimiento</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap + JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../JS/Controllers/FacturasController.js"></script>
 </body>
 </html>

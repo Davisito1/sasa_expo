@@ -1,7 +1,5 @@
-// 📌 VehiculosController.js
 import { getVehiculos, createVehiculo, updateVehiculo, deleteVehiculo } from "../Services/VehiculosServices.js";
 
-// 🔹 APIs relacionadas
 const CLIENTES_API = "http://localhost:8080/apiCliente";
 const ESTADOS_API  = "http://localhost:8080/api/estadoVehiculo";
 
@@ -10,35 +8,32 @@ const vehiculoForm = document.getElementById("vehiculoForm");
 const btnAddVehiculo = document.getElementById("btnAddVehiculo");
 const modalVehiculo = new bootstrap.Modal(document.getElementById("vehiculoModal"));
 
-const inputBuscar = document.getElementById("buscar"); // 🔎 buscador en la topbar
+const inputBuscar = document.getElementById("buscar");
+const paginacionWrap = document.getElementById("paginacion");
+const selectPageSize = document.getElementById("registrosPorPagina");
 
 let clientesCache = [];
 let estadosCache = [];
-let vehiculosCache = []; // 🔹 guardamos todos los registros para filtrar
+let vehiculosCache = [];
 
-// =====================================================
-// 🔹 Helper para normalizar respuestas
-// =====================================================
+let paginaActual = 1;
+let tamPagina = parseInt(selectPageSize.value, 10);
+let filtroTexto = "";
+
 function parseResponse(apiResponse) {
   if (Array.isArray(apiResponse)) return apiResponse;
-  if (apiResponse.data?.content) return apiResponse.data.content;
-  if (apiResponse.content) return apiResponse.content;
-  if (apiResponse.data) return apiResponse.data;
+  if (apiResponse?.data?.content) return apiResponse.data.content;
+  if (apiResponse?.content) return apiResponse.content;
+  if (apiResponse?.data) return apiResponse.data;
   return [];
 }
 
-// =====================================================
-// 🔹 Cargar datos iniciales
-// =====================================================
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarClientes();
   await cargarEstados();
   await loadVehiculos();
 });
 
-// =====================================================
-// 🔹 Botón abrir modal
-// =====================================================
 btnAddVehiculo.addEventListener("click", () => {
   vehiculoForm.reset();
   document.getElementById("vehiculoId").value = "";
@@ -46,14 +41,9 @@ btnAddVehiculo.addEventListener("click", () => {
   modalVehiculo.show();
 });
 
-// =====================================================
-// 🔹 Guardar Vehículo
-// =====================================================
 vehiculoForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const id = document.getElementById("vehiculoId").value;
-
   const vehiculo = {
     marca: document.getElementById("marca").value.trim(),
     modelo: document.getElementById("modelo").value.trim(),
@@ -63,7 +53,6 @@ vehiculoForm.addEventListener("submit", async (e) => {
     idCliente: parseInt(document.getElementById("idCliente").value),
     idEstado: parseInt(document.getElementById("idEstado").value)
   };
-
   try {
     if (id) {
       await updateVehiculo(id, vehiculo);
@@ -73,44 +62,69 @@ vehiculoForm.addEventListener("submit", async (e) => {
       Swal.fire("Éxito", "Vehículo agregado correctamente", "success");
     }
     modalVehiculo.hide();
-    loadVehiculos();
+    loadVehiculos(true);
   } catch (error) {
     console.error("Error al guardar vehículo:", error);
     Swal.fire("Error", "No se pudo guardar el vehículo", "error");
   }
 });
 
-// =====================================================
-// 🔹 Cargar y mostrar vehículos
-// =====================================================
-async function loadVehiculos() {
+async function loadVehiculos(reset = false) {
   try {
     const vehiculos = await getVehiculos();
-    vehiculosCache = vehiculos; // guardamos todos
-    renderVehiculos(vehiculosCache);
+    vehiculosCache = Array.isArray(vehiculos) ? vehiculos : parseResponse(vehiculos);
+    if (reset) paginaActual = 1;
+    renderListaYPaginacion();
   } catch (err) {
     console.error("Error al cargar vehículos:", err);
     Swal.fire("Error", "No se pudieron cargar los vehículos", "error");
   }
 }
 
+function filtrar(lista) {
+  if (!filtroTexto) return lista;
+  const t = filtroTexto.toLowerCase();
+  return lista.filter(v =>
+    (v.marca ?? "").toLowerCase().includes(t) ||
+    (v.modelo ?? "").toLowerCase().includes(t) ||
+    (v.placa ?? "").toLowerCase().includes(t) ||
+    ((v.vin ?? "").toLowerCase().includes(t)) ||
+    ((v.nombreCliente ?? "") + " " + (v.apellidoCliente ?? "")).toLowerCase().includes(t) ||
+    (v.nombreEstado ?? "").toLowerCase().includes(t)
+  );
+}
+
+function paginar(lista) {
+  const total = lista.length;
+  const totalPaginas = Math.max(1, Math.ceil(total / tamPagina));
+  const inicio = (paginaActual - 1) * tamPagina;
+  const items = lista.slice(inicio, inicio + tamPagina);
+  return { items, totalPaginas };
+}
+
 function renderVehiculos(lista) {
   tablaVehiculos.innerHTML = "";
-
   lista.forEach(v => {
-    const cliente = clientesCache.find(c => (c.id || c.idCliente) === v.idCliente);
-    const estado = estadosCache.find(e => (e.id || e.idEstado) === v.idEstado);
+    const clienteCache = clientesCache.find(c => (c.id || c.idCliente) === (v.idCliente ?? v.cliente?.idCliente));
+    const estadoCache  = estadosCache.find(e => (e.id || e.idEstado) === (v.idEstado ?? v.estado?.idEstado));
+
+    const nombreCliente =
+      (v.nombreCliente || v.cliente?.nombre || clienteCache?.nombre || "") +
+      (v.apellidoCliente || v.cliente?.apellido || clienteCache?.apellido ? " " + (v.apellidoCliente || v.cliente?.apellido || clienteCache?.apellido) : "");
+
+    const nombreEstado =
+      v.nombreEstado || v.estado?.nombreEstado || estadoCache?.nombreEstado || "";
 
     const row = `
       <tr>
-        <td>${v.id || v.idVehiculo}</td>
-        <td>${v.marca}</td>
-        <td>${v.modelo}</td>
-        <td>${v.anio}</td>
-        <td>${v.placa}</td>
+        <td>${v.id || v.idVehiculo || ""}</td>
+        <td>${v.marca ?? ""}</td>
+        <td>${v.modelo ?? ""}</td>
+        <td>${v.anio ?? ""}</td>
+        <td>${v.placa ?? ""}</td>
         <td>${v.vin || "-"}</td>
-        <td>${cliente ? cliente.nombre + " " + cliente.apellido : v.idCliente}</td>
-        <td>${estado ? estado.nombreEstado : v.idEstado}</td>
+        <td>${nombreCliente.trim() || (v.idCliente ?? "")}</td>
+        <td>${nombreEstado || (v.idEstado ?? "")}</td>
         <td class="text-center">
           <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editVehiculo(${v.id || v.idVehiculo})">
             <i class="bi bi-pencil-square"></i>
@@ -121,57 +135,59 @@ function renderVehiculos(lista) {
         </td>
       </tr>
     `;
-    tablaVehiculos.innerHTML += row;
+    tablaVehiculos.insertAdjacentHTML("beforeend", row);
   });
 }
 
-// =====================================================
-// 🔹 Buscador en tiempo real
-// =====================================================
-inputBuscar.addEventListener("keyup", () => {
-  const texto = inputBuscar.value.toLowerCase();
+function renderPaginacion(totalPaginas) {
+  paginacionWrap.innerHTML = "";
+  if (totalPaginas <= 1) return;
+  for (let p = 1; p <= totalPaginas; p++) {
+    const btn = document.createElement("button");
+    btn.className = `btn ${p === paginaActual ? "btn-primary" : "btn-outline-primary"} btn-sm`;
+    btn.textContent = p;
+    btn.onclick = () => {
+      paginaActual = p;
+      renderListaYPaginacion();
+    };
+    paginacionWrap.appendChild(btn);
+  }
+}
 
-  const filtrados = vehiculosCache.filter(v =>
-    v.marca.toLowerCase().includes(texto) ||
-    v.modelo.toLowerCase().includes(texto) ||
-    v.placa.toLowerCase().includes(texto) ||
-    (v.vin && v.vin.toLowerCase().includes(texto)) ||
-    clientesCache.some(c => (c.id || c.idCliente) === v.idCliente &&
-                            (`${c.nombre} ${c.apellido}`).toLowerCase().includes(texto)) ||
-    estadosCache.some(e => (e.id || e.idEstado) === v.idEstado &&
-                           e.nombreEstado.toLowerCase().includes(texto))
-  );
+function renderListaYPaginacion() {
+  const listaFiltrada = filtrar(vehiculosCache);
+  const { items, totalPaginas } = paginar(listaFiltrada);
+  renderVehiculos(items);
+  renderPaginacion(totalPaginas);
+}
 
-  renderVehiculos(filtrados);
+inputBuscar.addEventListener("input", e => {
+  filtroTexto = e.target.value;
+  paginaActual = 1;
+  renderListaYPaginacion();
 });
 
-// =====================================================
-// 🔹 Editar
-// =====================================================
-window.editVehiculo = async (id) => {
-  try {
-    const v = vehiculosCache.find(veh => (veh.id || veh.idVehiculo) === id);
-    if (!v) return;
+selectPageSize.addEventListener("change", () => {
+  tamPagina = parseInt(selectPageSize.value, 10);
+  paginaActual = 1;
+  renderListaYPaginacion();
+});
 
-    document.getElementById("vehiculoId").value = v.id || v.idVehiculo;
-    document.getElementById("marca").value = v.marca;
-    document.getElementById("modelo").value = v.modelo;
-    document.getElementById("anio").value = v.anio;
-    document.getElementById("placa").value = v.placa;
-    document.getElementById("vin").value = v.vin || "";
-    document.getElementById("idCliente").value = v.idCliente;
-    document.getElementById("idEstado").value = v.idEstado;
-
-    document.getElementById("vehiculoModalLabel").innerText = "Editar Vehículo";
-    modalVehiculo.show();
-  } catch (error) {
-    console.error("Error al editar vehículo:", error);
-  }
+window.editVehiculo = (id) => {
+  const v = vehiculosCache.find(veh => (veh.id || veh.idVehiculo) === id);
+  if (!v) return;
+  document.getElementById("vehiculoId").value = v.id || v.idVehiculo;
+  document.getElementById("marca").value = v.marca ?? "";
+  document.getElementById("modelo").value = v.modelo ?? "";
+  document.getElementById("anio").value = v.anio ?? "";
+  document.getElementById("placa").value = v.placa ?? "";
+  document.getElementById("vin").value = v.vin || "";
+  document.getElementById("idCliente").value = v.idCliente ?? v.cliente?.idCliente ?? "";
+  document.getElementById("idEstado").value  = v.idEstado  ?? v.estado?.idEstado  ?? "";
+  document.getElementById("vehiculoModalLabel").innerText = "Editar Vehículo";
+  modalVehiculo.show();
 };
 
-// =====================================================
-// 🔹 Eliminar
-// =====================================================
 window.removeVehiculo = async (id) => {
   Swal.fire({
     title: "¿Estás seguro?",
@@ -195,18 +211,17 @@ window.removeVehiculo = async (id) => {
   });
 };
 
-// =====================================================
-// 🔹 Cargar clientes
-// =====================================================
 async function cargarClientes() {
   try {
     const res = await fetch(`${CLIENTES_API}/consultar?page=0&size=50`);
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error(`Clientes HTTP ${res.status}: ${msg}`);
+    }
     const data = await res.json();
-
     clientesCache = parseResponse(data);
     const selectCliente = document.getElementById("idCliente");
     selectCliente.innerHTML = '<option value="">Seleccione un Cliente</option>';
-
     clientesCache.forEach(c => {
       const option = document.createElement("option");
       option.value = c.id || c.idCliente;
@@ -215,21 +230,21 @@ async function cargarClientes() {
     });
   } catch (error) {
     console.error("Error al cargar clientes:", error);
+    Swal.fire("Error", "No se pudieron cargar los clientes", "error");
   }
 }
 
-// =====================================================
-// 🔹 Cargar estados
-// =====================================================
 async function cargarEstados() {
   try {
     const res = await fetch(`${ESTADOS_API}/consultar?page=0&size=50`);
+    if (!res.ok) {
+      const msg = await res.text();
+      throw new Error(`Estados HTTP ${res.status}: ${msg}`);
+    }
     const data = await res.json();
-
     estadosCache = parseResponse(data);
     const selectEstado = document.getElementById("idEstado");
     selectEstado.innerHTML = '<option value="">Seleccione un Estado</option>';
-
     estadosCache.forEach(e => {
       const option = document.createElement("option");
       option.value = e.id || e.idEstado;
@@ -238,5 +253,6 @@ async function cargarEstados() {
     });
   } catch (error) {
     console.error("Error al cargar estados:", error);
+    Swal.fire("Error", "No se pudieron cargar los estados", "error");
   }
 }

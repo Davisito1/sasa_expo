@@ -1,18 +1,12 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  // ===============================
-  // 📌 APIs reales
-  // ===============================
-  const API_VEHICULOS = "http://localhost:8080/apiVehiculo";
-  const API_CLIENTES = "http://localhost:8080/apiCliente";
-  const API_ESTADOS = "http://localhost:8080/api/estadoVehiculo";
-  const API_CITAS = "https://retoolapi.dev/K3dg6S/citas";
-  const API_HISTORIAL = "https://retoolapi.dev/80QQcT/HistorialAPI";
-  const API_EMPLEADOS = "https://retoolapi.dev/mm42wr/empleados";
-  const API_PAGOS = "https://retoolapi.dev/Tym5QB/pagos";
+  const API_VEHICULOS = "http://localhost:8080/apiVehiculo/consultar";
+  const API_CLIENTES  = "http://localhost:8080/apiCliente/consultar?page=0&size=100";
+  const API_ESTADOS   = "http://localhost:8080/api/estadoVehiculo/listar";
+  const API_CITAS     = "http://localhost:8080/apiCitas/listar";
+  const API_HISTORIAL = "http://localhost:8080/api/historial/consultar?page=0&size=100";
+  const API_EMPLEADOS = "http://localhost:8080/apiEmpleados/consultar?page=0&size=100";
+  const API_PAGOS     = "http://localhost:8080/apiPagos/consultar";
 
-  // ===============================
-  // 📅 Fecha y hora
-  // ===============================
   function mostrarFechaYHora() {
     const f = new Date();
     document.getElementById("fechaActual").textContent =
@@ -30,9 +24,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   mostrarFechaYHora();
   setInterval(mostrarFechaYHora, 60000);
 
-  // ===============================
-  // ⏰ Saludo dinámico
-  // ===============================
   function mostrarSaludo() {
     const hora = new Date().getHours();
     let saludo = "Hola";
@@ -43,34 +34,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   mostrarSaludo();
 
-  // ===============================
-  // 🔢 Función totalizar
-  // ===============================
   const totalizar = async (url, id) => {
     try {
       const res = await fetch(url);
       const data = await res.json();
-      document.getElementById(id).textContent = data.length;
-      return data;
+
+      let registros = [];
+
+      if (Array.isArray(data)) {
+        registros = data;
+      } else if (data.content) {
+        registros = data.content;
+      } else if (data.data?.content) {
+        registros = data.data.content;
+      } else if (Array.isArray(data.data)) {
+        registros = data.data;
+      } else if (typeof data.data?.totalElements === "number") {
+        // Para paginación (ej. empleados)
+        registros = Array.from({ length: data.data.totalElements });
+      }
+
+      const el = document.getElementById(id);
+      if (el) el.textContent = registros.length;
+
+      return registros;
     } catch (err) {
       console.error("Error cargando " + id, err);
-      document.getElementById(id).textContent = "0";
+      const el = document.getElementById(id);
+      if (el) el.textContent = "0";
       return [];
     }
   };
 
-  // ===============================
-  // 📊 Cargar datos iniciales
-  // ===============================
   const vehiculos = await totalizar(API_VEHICULOS, "vehiculosTotal");
-  const citas = await totalizar(API_CITAS, "citasTotal");
+  const clientes  = await totalizar(API_CLIENTES, "clientesTotal");
+  const citas     = await totalizar(API_CITAS, "citasTotal");
   await totalizar(API_HISTORIAL, "historialTotal");
   await totalizar(API_EMPLEADOS, "empleadosTotal");
-  const pagos = await totalizar(API_PAGOS, "pagosTotal");
+  const pagos     = await totalizar(API_PAGOS, "pagosTotal");
 
-  // ===============================
-  // 📊 Vehículos por marca
-  // ===============================
   const marcas = {};
   vehiculos.forEach((v) => {
     const marca = (v.marca || v.Marca || "Otra").trim();
@@ -93,9 +95,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // ===============================
-  // 📊 Ingresos mensuales (ejemplo)
-  // ===============================
   new Chart(document.getElementById("graficaIngresosMensuales"), {
     type: "line",
     data: {
@@ -114,20 +113,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     options: { responsive: true, maintainAspectRatio: true },
   });
 
-  // ===============================
-  // 📂 Botón historial
-  // ===============================
   document.getElementById("verHistorialBtn").addEventListener("click", () => {
     window.location.href = "../historial/historial.html";
   });
 
-  // ===============================
-  // 📅 Botón citas de hoy
-  // ===============================
   window.verCitasHoy = async function () {
     try {
       const res = await fetch(API_CITAS);
-      const data = await res.json();
+      const response = await res.json();
+      const data = response.data || response;
       const hoy = new Date().toISOString().split("T")[0];
       const citasHoy = data.filter((c) => c.fecha === hoy);
 
@@ -136,36 +130,44 @@ document.addEventListener("DOMContentLoaded", async () => {
           .map(
             (c) => `
           <p><strong>Hora:</strong> ${c.hora} - <strong>Estado:</strong> ${c.estado}</p>
-          <p><strong>Descripción:</strong> ${c.descripcion || "Sin descripción"}</p><hr>
         `
           )
-          .join("");
-        Swal.fire({ title: "Citas de hoy", html, icon: "info" });
+          .join("<hr>");
+        Swal.fire({
+          title: "Citas de hoy",
+          html,
+          icon: "info",
+          confirmButtonText: "Cerrar",
+          confirmButtonColor: "#C91A1A"
+        });
       } else {
-        Swal.fire("Sin citas hoy", "No hay citas registradas para hoy.", "warning");
+        Swal.fire({
+          title: "Sin citas hoy",
+          text: "No hay citas registradas para hoy.",
+          icon: "warning",
+          confirmButtonText: "Ok",
+          confirmButtonColor: "#C91A1A"
+        });
       }
     } catch (error) {
-      Swal.fire("Error", "No se pudo cargar la información de citas.", "error");
+      Swal.fire({
+        title: "Error",
+        text: "No se pudo cargar la información de citas.",
+        icon: "error",
+        confirmButtonText: "Cerrar",
+        confirmButtonColor: "#C91A1A"
+      });
       console.error(error);
     }
   };
 
-  // ===============================
-  // 👥 Selector de clientes
-  // ===============================
   try {
-    const res = await fetch(`${API_CLIENTES}/consultar?page=0&size=50`);
-    const json = await res.json();
-
-    // ✅ Manejo de estructura con paginación
-    const clientes = json.data?.content || [];
-
     const select = document.getElementById("selectCliente");
     const info = document.getElementById("infoCliente");
 
     clientes.forEach((c) => {
       const opt = document.createElement("option");
-      opt.value = c.idCliente || c.id; // soporta ambos
+      opt.value = c.idCliente || c.id;
       opt.textContent = `${c.nombre} ${c.apellido}`;
       select.appendChild(opt);
     });
@@ -177,47 +179,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      // 🚗 Vehículos
       const vehiculosCliente = vehiculos.filter((v) => v.idCliente === idCliente);
-
-      // 📅 Citas
       const citasCliente = citas.filter((c) => c.idCliente === idCliente).length;
-
-      // 💳 Pagos
       const pagosCliente = pagos.filter((p) => p.idCliente === idCliente).length;
 
-      // Mostrar en tarjeta
       info.textContent = `Vehículos: ${vehiculosCliente.length} | Citas: ${citasCliente} | Pagos: ${pagosCliente}`;
-
-      // 🚨 SweetAlert con detalle
-      if (vehiculosCliente.length > 0) {
-        const htmlVehiculos = vehiculosCliente
-          .map(
-            (v) => `
-            <p>
-              <strong>${v.marca} ${v.modelo}</strong> (${v.anio})<br>
-              <span style="color:gray;">Placa:</span> ${v.placa}
-            </p>
-          `
-          )
-          .join("<hr>");
-
-        Swal.fire({
-          title: "Vehículos del cliente",
-          html: htmlVehiculos,
-          icon: "info",
-          confirmButtonText: "Cerrar",
-          confirmButtonColor: "#C91A1A"
-        });
-      } else {
-        Swal.fire({
-          title: "Sin vehículos",
-          text: "Este cliente no tiene vehículos registrados.",
-          icon: "warning",
-          confirmButtonText: "Ok",
-          confirmButtonColor: "#C91A1A"
-        });
-      }
     });
   } catch (error) {
     console.error("Error cargando clientes:", error);
