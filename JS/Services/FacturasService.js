@@ -1,4 +1,6 @@
-
+// ===============================
+// FacturasService.js
+// ===============================
 const API_BASE = "http://localhost:8080/apiFactura";
 
 // -------- Utilidad base para fetch --------
@@ -13,27 +15,45 @@ async function fetchJsonOrThrow(url, options = {}) {
   }
 }
 
-
+// -------- Normalización de paginación --------
 function normalizePage(json) {
-  if (json?.data?.content) return json.data;
-  if (json?.content) return json;
-  if (Array.isArray(json)) return { content: json, totalPages: 1 };
+  if (json?.data?.content) {
+    return {
+      content: json.data.content,
+      totalPages: json.data.totalPages ?? 1
+    };
+  }
+  if (json?.content) {
+    return {
+      content: json.content,
+      totalPages: json.totalPages ?? 1
+    };
+  }
+  if (Array.isArray(json)) {
+    return { content: json, totalPages: 1 };
+  }
   return { content: [], totalPages: 0 };
 }
 
-
+// ===============================
+// LISTAR PAGINADO
+// ===============================
 export async function getFacturas(page = 0, size = 10) {
   const json = await fetchJsonOrThrow(`${API_BASE}/consultar?page=${page}&size=${size}`);
   return normalizePage(json);
 }
 
-
+// ===============================
+// OBTENER POR ID
+// ===============================
 export async function getFacturaById(id) {
   const json = await fetchJsonOrThrow(`${API_BASE}/${id}`);
   return json?.data ?? json;
 }
 
-
+// ===============================
+// CREAR
+// ===============================
 export async function createFactura(data) {
   const payload = {
     fecha: data.fecha,
@@ -52,7 +72,9 @@ export async function createFactura(data) {
   return json?.data ?? json;
 }
 
-
+// ===============================
+// ACTUALIZAR
+// ===============================
 export async function updateFactura(id, data) {
   const payload = {
     fecha: data.fecha,
@@ -71,7 +93,9 @@ export async function updateFactura(id, data) {
   return json?.data ?? json;
 }
 
-
+// ===============================
+// ELIMINAR
+// ===============================
 export async function deleteFactura(id) {
   const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
   return json?.data ?? json;

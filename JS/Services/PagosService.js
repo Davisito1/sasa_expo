@@ -39,15 +39,13 @@ export async function getPagoById(id) {
   return json?.data ?? json;
 }
 
-// ===============================
-// CREAR
-// ===============================
+
 export async function createPago(data) {
   const payload = {
     fecha: data.fecha,
     monto: data.monto,
     idFactura: data.idFactura,
-    metodoPago: data.metodoPago
+    idMetodoPago: data.idMetodoPago   // ✅ corregido
   };
 
   const body = {
@@ -60,15 +58,12 @@ export async function createPago(data) {
   return json?.data ?? json;
 }
 
-// ===============================
-// ACTUALIZAR
-// ===============================
 export async function updatePago(id, data) {
   const payload = {
     fecha: data.fecha,
     monto: data.monto,
     idFactura: data.idFactura,
-    metodoPago: data.metodoPago
+    idMetodoPago: data.idMetodoPago   // ✅ corregido
   };
 
   const body = {
@@ -81,9 +76,7 @@ export async function updatePago(id, data) {
   return json?.data ?? json;
 }
 
-// ===============================
-// ELIMINAR
-// ===============================
+
 export async function deletePago(id) {
   const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
   return json?.data ?? json;

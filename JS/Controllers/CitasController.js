@@ -23,6 +23,7 @@ const inputHora = document.getElementById("hora");
 const selectEstado = document.getElementById("estado");
 const selectCliente = document.getElementById("cliente");
 
+// ======================= ESTADO =======================
 let citasCache = [];
 let clientesCache = [];
 let paginaActual = 1;
@@ -67,7 +68,7 @@ function renderTabla(citas) {
     // 🔹 Resolver nombre de cliente
     let nombreCliente = "—";
     if (cita.cliente?.nombre) {
-      nombreCliente = cita.cliente.nombre;
+      nombreCliente = `${cita.cliente.nombre} ${cita.cliente.apellido ?? ""}`;
     } else if (cita.idCliente) {
       const c = clientesCache.find(cli => (cli.id || cli.idCliente) === cita.idCliente);
       if (c) nombreCliente = `${c.nombre} ${c.apellido}`;
@@ -81,10 +82,10 @@ function renderTabla(citas) {
       <td>${cita.estado}</td>
       <td>${nombreCliente}</td>
       <td class="text-center">
-        <button class="btn btn-sm btn-primary me-2" onclick="editarCita(${cita.id})">
+        <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editarCita(${cita.id})">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <button class="btn btn-sm btn-danger" onclick="eliminarCita(${cita.id})">
+        <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarCita(${cita.id})">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -134,25 +135,28 @@ window.abrirModalAgregar = async function () {
 
 // 🔹 Editar
 window.editarCita = async function (id) {
-  const cita = await getCitaById(id);
-  if (!cita) return Swal.fire("Error","No se encontró la cita","error");
+  try {
+    const cita = await getCitaById(id);
+    if (!cita) return Swal.fire("Error","No se encontró la cita","error");
 
-  citaForm.reset();
-  modalLabel.textContent = "Editar Cita";
-  inputId.value = cita.id;
+    citaForm.reset();
+    modalLabel.textContent = "Editar Cita";
+    inputId.value = cita.id;
 
-  const hoy = new Date().toISOString().split("T")[0];
-  inputFecha.setAttribute("min", hoy);
+    const hoy = new Date().toISOString().split("T")[0];
+    inputFecha.setAttribute("min", hoy);
+    inputFecha.value = (cita.fecha < hoy) ? hoy : cita.fecha;
+    inputHora.value = cita.hora;
+    selectEstado.value = cita.estado;
 
-  // Si la fecha está en el pasado, forzar a hoy
-  inputFecha.value = (cita.fecha < hoy) ? hoy : cita.fecha;
-  inputHora.value = cita.hora;
-  selectEstado.value = cita.estado;
+    await cargarClientes();
+    selectCliente.value = cita.idCliente ?? cita.cliente?.idCliente;
 
-  await cargarClientes();
-  selectCliente.value = cita.idCliente ?? cita.cliente?.idCliente;
-
-  citaModal.show();
+    citaModal.show();
+  } catch (err) {
+    console.error("Error al cargar cita:", err);
+    Swal.fire("Error", "No se pudo cargar la cita", "error");
+  }
 };
 
 // 🔹 Eliminar
@@ -165,9 +169,15 @@ window.eliminarCita = async function (id) {
     cancelButtonText: "Cancelar"
   }).then(r => r.isConfirmed);
   if (!ok) return;
-  await deleteCita(id);
-  Swal.fire("Eliminada", "Cita borrada", "success");
-  cargarTabla(true);
+
+  try {
+    await deleteCita(id);
+    Swal.fire("Eliminada", "Cita borrada", "success");
+    cargarTabla(true);
+  } catch (err) {
+    console.error("Error al eliminar cita:", err);
+    Swal.fire("Error", "No se pudo eliminar", "error");
+  }
 };
 
 // 🔹 Guardar
@@ -191,10 +201,9 @@ citaForm.addEventListener("submit", async (e) => {
     }
     citaModal.hide();
 
-    // 🔹 Refrescar clientes y citas para mostrar los cambios
+    // 🔹 Refrescar clientes y citas
     await cargarClientes();
     await cargarTabla(true);
-
   } catch (err) {
     console.error("Error al guardar cita:", err);
     Swal.fire("Error", "No se pudo guardar la cita", "error");

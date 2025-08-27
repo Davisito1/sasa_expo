@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const API_ESTADOS   = "http://localhost:8080/api/estadoVehiculo/listar";
   const API_CITAS     = "http://localhost:8080/apiCitas/listar";
   const API_HISTORIAL = "http://localhost:8080/api/historial/consultar?page=0&size=100";
-  const API_EMPLEADOS = "http://localhost:8080/apiEmpleados/consultar?page=0&size=100";
   const API_PAGOS     = "http://localhost:8080/apiPagos/consultar";
 
   function mostrarFechaYHora() {
@@ -70,7 +69,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const clientes  = await totalizar(API_CLIENTES, "clientesTotal");
   const citas     = await totalizar(API_CITAS, "citasTotal");
   await totalizar(API_HISTORIAL, "historialTotal");
-  await totalizar(API_EMPLEADOS, "empleadosTotal");
   const pagos     = await totalizar(API_PAGOS, "pagosTotal");
 
   const marcas = {};

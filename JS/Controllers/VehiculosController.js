@@ -16,10 +16,13 @@ let clientesCache = [];
 let estadosCache = [];
 let vehiculosCache = [];
 
-let paginaActual = 1;
+let paginaActual = 0;    // 🔹 API empieza desde 0
 let tamPagina = parseInt(selectPageSize.value, 10);
-let filtroTexto = "";
+let totalPaginas = 1;
 
+// ============================
+// Utils
+// ============================
 function parseResponse(apiResponse) {
   if (Array.isArray(apiResponse)) return apiResponse;
   if (apiResponse?.data?.content) return apiResponse.data.content;
@@ -28,10 +31,13 @@ function parseResponse(apiResponse) {
   return [];
 }
 
+// ============================
+// Init
+// ============================
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarClientes();
   await cargarEstados();
-  await loadVehiculos();
+  await loadVehiculos(true);
 });
 
 btnAddVehiculo.addEventListener("click", () => {
@@ -41,18 +47,24 @@ btnAddVehiculo.addEventListener("click", () => {
   modalVehiculo.show();
 });
 
+// ============================
+// Submit form
+// ============================
 vehiculoForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("vehiculoId").value;
+  const vinValue = document.getElementById("vin").value.trim();
+
   const vehiculo = {
     marca: document.getElementById("marca").value.trim(),
     modelo: document.getElementById("modelo").value.trim(),
     anio: parseInt(document.getElementById("anio").value),
     placa: document.getElementById("placa").value.trim(),
-    vin: document.getElementById("vin").value.trim(),
+    vin: vinValue === "" ? null : vinValue,
     idCliente: parseInt(document.getElementById("idCliente").value),
     idEstado: parseInt(document.getElementById("idEstado").value)
   };
+
   try {
     if (id) {
       await updateVehiculo(id, vehiculo);
@@ -69,37 +81,20 @@ vehiculoForm.addEventListener("submit", async (e) => {
   }
 });
 
+// ============================
+// Cargar y renderizar
+// ============================
 async function loadVehiculos(reset = false) {
   try {
-    const vehiculos = await getVehiculos();
-    vehiculosCache = Array.isArray(vehiculos) ? vehiculos : parseResponse(vehiculos);
-    if (reset) paginaActual = 1;
+    if (reset) paginaActual = 0;
+    const result = await getVehiculos(paginaActual, tamPagina, "idVehiculo", "asc");
+    vehiculosCache = result.content ?? [];
+    totalPaginas = result.totalPages ?? 1;
     renderListaYPaginacion();
   } catch (err) {
     console.error("Error al cargar vehículos:", err);
     Swal.fire("Error", "No se pudieron cargar los vehículos", "error");
   }
-}
-
-function filtrar(lista) {
-  if (!filtroTexto) return lista;
-  const t = filtroTexto.toLowerCase();
-  return lista.filter(v =>
-    (v.marca ?? "").toLowerCase().includes(t) ||
-    (v.modelo ?? "").toLowerCase().includes(t) ||
-    (v.placa ?? "").toLowerCase().includes(t) ||
-    ((v.vin ?? "").toLowerCase().includes(t)) ||
-    ((v.nombreCliente ?? "") + " " + (v.apellidoCliente ?? "")).toLowerCase().includes(t) ||
-    (v.nombreEstado ?? "").toLowerCase().includes(t)
-  );
-}
-
-function paginar(lista) {
-  const total = lista.length;
-  const totalPaginas = Math.max(1, Math.ceil(total / tamPagina));
-  const inicio = (paginaActual - 1) * tamPagina;
-  const items = lista.slice(inicio, inicio + tamPagina);
-  return { items, totalPaginas };
 }
 
 function renderVehiculos(lista) {
@@ -139,40 +134,25 @@ function renderVehiculos(lista) {
   });
 }
 
-function renderPaginacion(totalPaginas) {
+function renderPaginacion() {
   paginacionWrap.innerHTML = "";
-  if (totalPaginas <= 1) return;
-  for (let p = 1; p <= totalPaginas; p++) {
+  for (let p = 0; p < totalPaginas; p++) {
     const btn = document.createElement("button");
-    btn.className = `btn ${p === paginaActual ? "btn-primary" : "btn-outline-primary"} btn-sm`;
-    btn.textContent = p;
-    btn.onclick = () => {
-      paginaActual = p;
-      renderListaYPaginacion();
-    };
+    btn.className = `btn btn-sm ${p === paginaActual ? "btn-primary" : "btn-outline-primary"}`;
+    btn.textContent = (p + 1);
+    btn.onclick = () => { paginaActual = p; loadVehiculos(); };
     paginacionWrap.appendChild(btn);
   }
 }
 
 function renderListaYPaginacion() {
-  const listaFiltrada = filtrar(vehiculosCache);
-  const { items, totalPaginas } = paginar(listaFiltrada);
-  renderVehiculos(items);
-  renderPaginacion(totalPaginas);
+  renderVehiculos(vehiculosCache);
+  renderPaginacion();
 }
 
-inputBuscar.addEventListener("input", e => {
-  filtroTexto = e.target.value;
-  paginaActual = 1;
-  renderListaYPaginacion();
-});
-
-selectPageSize.addEventListener("change", () => {
-  tamPagina = parseInt(selectPageSize.value, 10);
-  paginaActual = 1;
-  renderListaYPaginacion();
-});
-
+// ============================
+// Editar y eliminar
+// ============================
 window.editVehiculo = (id) => {
   const v = vehiculosCache.find(veh => (veh.id || veh.idVehiculo) === id);
   if (!v) return;
@@ -211,13 +191,12 @@ window.removeVehiculo = async (id) => {
   });
 };
 
+// ============================
+// Cargar combos
+// ============================
 async function cargarClientes() {
   try {
     const res = await fetch(`${CLIENTES_API}/consultar?page=0&size=50`);
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(`Clientes HTTP ${res.status}: ${msg}`);
-    }
     const data = await res.json();
     clientesCache = parseResponse(data);
     const selectCliente = document.getElementById("idCliente");
@@ -237,10 +216,6 @@ async function cargarClientes() {
 async function cargarEstados() {
   try {
     const res = await fetch(`${ESTADOS_API}/consultar?page=0&size=50`);
-    if (!res.ok) {
-      const msg = await res.text();
-      throw new Error(`Estados HTTP ${res.status}: ${msg}`);
-    }
     const data = await res.json();
     estadosCache = parseResponse(data);
     const selectEstado = document.getElementById("idEstado");
@@ -256,3 +231,17 @@ async function cargarEstados() {
     Swal.fire("Error", "No se pudieron cargar los estados", "error");
   }
 }
+
+// ============================
+// Eventos de búsqueda y tamaño
+// ============================
+inputBuscar.addEventListener("input", () => {
+  paginaActual = 0;
+  loadVehiculos(true);
+});
+
+selectPageSize.addEventListener("change", () => {
+  tamPagina = parseInt(selectPageSize.value, 10);
+  paginaActual = 0;
+  loadVehiculos(true);
+});

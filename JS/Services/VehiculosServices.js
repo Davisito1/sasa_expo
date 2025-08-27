@@ -1,114 +1,69 @@
 // VehiculosServices.js
 const API_BASE = "http://localhost:8080/apiVehiculo";
 
+// -------- Utilidad base --------
 async function fetchJsonOrThrow(url, options = {}) {
   const res = await fetch(url, options);
-  const text = await res.text(); // lee texto SIEMPRE para poder mostrar el error real
-  if (!res.ok) {
-    throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
-  }
-  try {
-    return text ? JSON.parse(text) : null;
-  } catch {
-    return text;
-  }
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
+  try { return text ? JSON.parse(text) : null; } catch { return text; }
 }
 
-function normalizeList(json) {
-  if (Array.isArray(json)) return json;
-  if (json?.data?.content) return json.data.content;      // {status, data: Page}
-  if (json?.content) return json.content;                  // Page directo
-  if (json?.data && Array.isArray(json.data)) return json.data; // {status, data:[...]}
-  return [];
+// -------- Normalización --------
+function normalizePage(json) {
+  if (!json) return { content: [], totalPages: 0, totalElements: 0 };
+  if (json.data && json.data.content) return json.data;   // {status, data: Page}
+  if (json.content) return json;                          // Page directo
+  if (Array.isArray(json.data)) return { content: json.data, totalPages: 1, totalElements: json.data.length };
+  if (Array.isArray(json)) return { content: json, totalPages: 1, totalElements: json.length };
+  return { content: [], totalPages: 0, totalElements: 0 };
 }
 
-// =============== READ ===============
-export async function getVehiculos(page = 0, size = 50) {
-  // tu backend expone /consultar (paginado)
-  const json = await fetchJsonOrThrow(`${API_BASE}/consultar?page=${page}&size=${size}`);
-  return normalizeList(json);
+// =============== READ (paginado + orden) ===============
+export async function getVehiculos(page = 0, size = 10, sortBy = "idVehiculo", sortDir = "asc") {
+  const url = `${API_BASE}/consultar?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`;
+  const json = await fetchJsonOrThrow(url);
+  return normalizePage(json);
 }
 
 // =============== CREATE ===============
 export async function createVehiculo(data) {
-  // intenta primero payload plano (idCliente, idEstado)
-  const bodyPlano = {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  };
-
-  // si el backend espera objetos anidados:
-  const dataAnidado = {
+  const payload = {
     ...data,
-    cliente: data.idCliente ? { idCliente: data.idCliente } : undefined,
-    estado:  data.idEstado  ? { idEstado:  data.idEstado  } : undefined,
+    idCliente: data.idCliente,
+    idEstado:  data.idEstado
   };
-  delete dataAnidado.idCliente;
-  delete dataAnidado.idEstado;
 
-  const bodyAnidado = {
+  const body = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dataAnidado),
+    body: JSON.stringify(payload),
   };
 
-  // probar /registrar y /crear
-  try {
-    const j = await fetchJsonOrThrow(`${API_BASE}/registrar`, bodyPlano);
-    return j?.data ?? j;
-  } catch (e1) {
-    try {
-      const j2 = await fetchJsonOrThrow(`${API_BASE}/registrar`, bodyAnidado);
-      return j2?.data ?? j2;
-    } catch (e2) {
-      try {
-        const j3 = await fetchJsonOrThrow(`${API_BASE}/crear`, bodyPlano);
-        return j3?.data ?? j3;
-      } catch (e3) {
-        const j4 = await fetchJsonOrThrow(`${API_BASE}/crear`, bodyAnidado);
-        return j4?.data ?? j4;
-      }
-    }
-  }
+  const json = await fetchJsonOrThrow(`${API_BASE}/registrar`, body);
+  return json?.data ?? json;
 }
 
 // =============== UPDATE ===============
 export async function updateVehiculo(id, data) {
-  // SOLO usamos /actualizar/{id} (tu backend lo tiene).
-  // Igual que en create: intentamos plano y luego anidado para compatibilidad.
-  const bodyPlano = {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  };
-
-  const dataAnidado = {
+  const payload = {
     ...data,
-    cliente: data.idCliente ? { idCliente: data.idCliente } : undefined,
-    estado:  data.idEstado  ? { idEstado:  data.idEstado  } : undefined,
+    idCliente: data.idCliente,
+    idEstado:  data.idEstado
   };
-  delete dataAnidado.idCliente;
-  delete dataAnidado.idEstado;
 
-  const bodyAnidado = {
+  const body = {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dataAnidado),
+    body: JSON.stringify(payload),
   };
 
-  try {
-    const j = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, bodyPlano);
-    return j?.data ?? j;
-  } catch (e1) {
-    // si fue 400 por formato, intentamos anidado
-    const j2 = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, bodyAnidado);
-    return j2?.data ?? j2;
-  }
+  const json = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, body);
+  return json?.data ?? json;
 }
 
 // =============== DELETE ===============
 export async function deleteVehiculo(id) {
-  const j = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
-  return j?.data ?? j;
+  const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
+  return json?.data ?? json;
 }

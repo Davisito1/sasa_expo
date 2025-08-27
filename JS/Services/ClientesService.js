@@ -54,7 +54,6 @@ export async function createCliente(data) {
     fechaNacimiento: data.fechaNacimiento,
     genero: data.genero,
     correo: data.correo,
-    contrasena: data.contrasena
   };
 
   const body = {
@@ -78,7 +77,6 @@ export async function updateCliente(id, data) {
     fechaNacimiento: data.fechaNacimiento,
     genero: data.genero,
     correo: data.correo,
-    contrasena: data.contrasena && data.contrasena.trim() !== "" ? data.contrasena : undefined
   };
 
   const body = {

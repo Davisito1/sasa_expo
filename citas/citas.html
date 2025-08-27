@@ -51,7 +51,7 @@
       <h2 class="mb-4">Citas</h2>
 
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <button id="btnAddCita" class="btn btn-primary" onclick="abrirModalAgregar()">
+        <button class="btn btn-primary" onclick="abrirModalAgregar()">
           <i class="fas fa-plus me-2"></i> Nueva Cita
         </button>
 
@@ -69,7 +69,7 @@
       <!-- Tabla -->
       <div class="table-responsive">
         <table class="table table-bordered table-striped align-middle">
-          <thead>
+          <thead class="table-light text-center">
             <tr>
               <th>ID</th>
               <th>Fecha</th>
@@ -90,7 +90,7 @@
   </main>
 
   <!-- Modal Agregar/Editar Cita -->
-  <div class="modal fade" id="citaModal" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="citaModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form id="citaForm">
@@ -99,16 +99,11 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body d-flex flex-column gap-3">
-            <!-- ID oculto -->
             <input type="hidden" id="citaId" name="citaId" />
 
-            <!-- Fecha -->
             <input type="date" id="fecha" name="fecha" required class="form-control" />
-
-            <!-- Hora -->
             <input type="time" id="hora" name="hora" required class="form-control" min="07:00" max="16:00" />
 
-            <!-- Estado -->
             <select id="estado" name="estado" required class="form-select">
               <option value="" disabled selected>Seleccione estado</option>
               <option>Pendiente</option>
@@ -116,7 +111,6 @@
               <option>Cancelada</option>
             </select>
 
-            <!-- Cliente -->
             <select id="cliente" name="cliente" required class="form-select">
               <option value="" disabled selected>Seleccione cliente</option>
               <!-- Se carga dinámicamente -->

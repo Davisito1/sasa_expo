@@ -39,7 +39,6 @@ let mantenimientosCache = [];
 let paginaActual = 0;
 let tamPagina = parseInt(selectPageSize.value, 10);
 
-// ======================= HELPERS =======================
 function renderTabla(facturas) {
   tablaFacturas.innerHTML = "";
   if (!facturas || facturas.length === 0) {
@@ -47,6 +46,9 @@ function renderTabla(facturas) {
       `<tr><td colspan="6" class="text-center">No hay registros</td></tr>`;
     return;
   }
+
+  // 🔹 Ordenar por ID ascendente (1, 2, 3…)
+  facturas.sort((a, b) => a.id - b.id);
 
   facturas.forEach(f => {
     const empleado = f.nombreEmpleado || empleadosCache.find(e => e.id === f.idEmpleado)?.nombres || "—";
@@ -72,6 +74,7 @@ function renderTabla(facturas) {
   });
 }
 
+
 function renderPaginacion(pageData) {
   pagWrap.innerHTML = "";
   if (!pageData || pageData.totalPages <= 1) return;
@@ -95,7 +98,6 @@ async function cargarCombos() {
   empleadosCache = (await getEmpleados()).content ?? [];
   mantenimientosCache = (await getMantenimientos()).content ?? [];
 
-  // llenar selects
   [selEmpleadoAdd, selEmpleadoEdit].forEach(sel => {
     sel.innerHTML = '<option value="" disabled selected>Seleccione un empleado</option>';
     empleadosCache.forEach(e => {
