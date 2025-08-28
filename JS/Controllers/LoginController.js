@@ -4,7 +4,7 @@ import { login, getUsuarioLogueado, logout } from '../Services/LoginService.js';
 document.addEventListener('DOMContentLoaded', function() {
   const usuario = getUsuarioLogueado();
   if (usuario) {
-    console.log('👤 Usuario ya logueado:', usuario);
+    console.log(' Usuario ya logueado:', usuario);
     window.location.href = '../dashboard/index.html';
   }
 });
@@ -33,13 +33,13 @@ document.getElementById('loginForm').addEventListener('submit', async function (
   loginButton.disabled = true;
 
   try {
-    console.log('🔄 Iniciando proceso de login...');
+    console.log('Iniciando proceso de login...');
     const respuesta = await login(usuarioIngresado, passwordIngresado);
 
     if (respuesta.status === "success") {
       // Guardar usuario en localStorage
       localStorage.setItem('user', JSON.stringify(respuesta.data));
-      console.log('💾 Usuario guardado en localStorage:', respuesta.data);
+      console.log(' Usuario guardado en localStorage:', respuesta.data);
       
       Swal.fire({
         icon: 'success',

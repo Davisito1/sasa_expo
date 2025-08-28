@@ -1,0 +1,97 @@
+.welcome-body {
+  background: #f4f1f1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.welcome-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  padding: 50px;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.welcome-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: #222;
+}
+.hero h1 span {
+  color: var(--sasa-primary-700);
+}
+.hero p {
+  font-size: 1.1rem;
+  color: var(--sasa-muted);
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.actions a {
+  display: inline-block;
+  padding: 14px 32px;
+  font-weight: 700;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.btn-sasa {
+  background: var(--sasa-primary-700);
+  color: #fff;
+}
+.btn-sasa:hover {
+  background: #7e0d0d;
+}
+
+.btn-outline-sasa {
+  border: 2px solid var(--sasa-primary-700);
+  color: var(--sasa-primary-700);
+  background: transparent;
+}
+.btn-outline-sasa:hover {
+  background: var(--sasa-primary-700);
+  color: #fff;
+}
+
+.art img {
+  width: 350px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 18px 28px rgba(0,0,0,0.15));
+  border-radius: 15px;
+}
+
+@media (max-width: 900px) {
+  .welcome-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .art img {
+    width: 250px;
+    margin-top: 25px;
+  }
+}

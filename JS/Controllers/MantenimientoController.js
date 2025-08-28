@@ -7,7 +7,6 @@ import {
 
 const VEHICULOS_API = "http://localhost:8080/apiVehiculo/consultar";
 
-// ======================= DOM =======================
 const tabla = document.getElementById("tablaMantenimiento");
 const pagWrap = document.getElementById("paginacion");
 const inputBuscar = document.getElementById("buscar");
@@ -22,14 +21,12 @@ const txtFecha = document.getElementById("fechaRealizacion");
 const txtCodigo = document.getElementById("codigoMantenimiento");
 const selVeh = document.getElementById("idVehiculo");
 
-// ======================= ESTADO =======================
 let vehiculosCache = [];
 let mantenimientosCache = [];
 let paginaActual = 1;
 let tamPagina = parseInt(selectSize?.value ?? "10", 10);
 let totalPaginas = 1;
 
-// ======================= UTILS =======================
 function getVehiculoTexto(idVehiculo) {
   const v = vehiculosCache.find(v => v.id === idVehiculo || v.idVehiculo === idVehiculo);
   return v ? `${v.marca} - ${v.modelo} (${v.anio})` : "—";
@@ -39,14 +36,11 @@ function getDescripcionTexto(desc) {
   return desc && desc.trim() !== "" ? desc : "Sin descripción";
 }
 
-// ======================= VEHÍCULOS =======================
 async function cargarVehiculos() {
   try {
     const res = await fetch(`${VEHICULOS_API}?page=0&size=100`);
     const json = await res.json();
-
     vehiculosCache = Array.isArray(json?.data?.content) ? json.data.content : [];
-
     selVeh.innerHTML = '<option value="" disabled selected>Seleccione vehículo</option>';
     vehiculosCache.forEach(v => {
       const opt = document.createElement("option");
@@ -60,14 +54,12 @@ async function cargarVehiculos() {
   }
 }
 
-// ======================= RENDER TABLA =======================
 function renderTabla(data) {
   tabla.innerHTML = "";
   if (!data || data.length === 0) {
     tabla.innerHTML = `<tr><td colspan="6" class="text-center">No hay registros</td></tr>`;
     return;
   }
-
   data.forEach(m => {
     const id = m.id ?? m.idMantenimiento;
     const tr = document.createElement("tr");
@@ -79,10 +71,10 @@ function renderTabla(data) {
       <td>${getVehiculoTexto(m.idVehiculo ?? m.vehiculo?.idVehiculo)}</td>
       <td class="text-center">
         <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editarMantenimiento(${id})">
-          <i class="bi bi-pencil-square"></i>
+          <i class="bi bi-pencil-square text-white"></i>
         </button>
         <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarMantenimiento(${id})">
-          <i class="bi bi-trash"></i>
+          <i class="bi bi-trash text-white"></i>
         </button>
       </td>
     `;
@@ -90,7 +82,6 @@ function renderTabla(data) {
   });
 }
 
-// ======================= PAGINACIÓN =======================
 function renderPaginacion() {
   pagWrap.innerHTML = "";
   for (let p = 1; p <= totalPaginas; p++) {
@@ -105,16 +96,13 @@ function renderPaginacion() {
   }
 }
 
-// ======================= CARGA DE MANTENIMIENTOS =======================
 async function loadMantenimientos(reset = false) {
   try {
     const res = await getMantenimientos(paginaActual - 1, tamPagina, inputBuscar.value);
     const data = res?.content ?? res?.data?.content ?? res?.data ?? [];
     mantenimientosCache = Array.isArray(data) ? data : [];
-
     totalPaginas = res?.totalPages ?? 1;
     if (reset) paginaActual = 1;
-
     renderTabla(mantenimientosCache);
     renderPaginacion();
   } catch (err) {
@@ -123,7 +111,6 @@ async function loadMantenimientos(reset = false) {
   }
 }
 
-// ======================= CRUD =======================
 window.abrirModalAgregar = async () => {
   form.reset();
   txtId.value = "";
@@ -145,7 +132,6 @@ window.editarMantenimiento = async (id) => {
     txtCodigo.value = m.codigoMantenimiento;
     await cargarVehiculos();
     selVeh.value = m.idVehiculo ?? m.vehiculo?.idVehiculo;
-
     mantenimientoModal.show();
   } catch (err) {
     console.error("Error en editarMantenimiento:", err);
@@ -163,7 +149,6 @@ window.eliminarMantenimiento = async (id) => {
     confirmButtonColor: "#d33"
   }).then(r => r.isConfirmed);
   if (!ok) return;
-
   try {
     await deleteMantenimiento(id);
     Swal.fire("Eliminado", "Mantenimiento borrado", "success");
@@ -177,10 +162,30 @@ window.eliminarMantenimiento = async (id) => {
 form.addEventListener("submit", async e => {
   e.preventDefault();
 
+  if (!txtDesc.value || txtDesc.value.trim().length < 5) {
+    return Swal.fire("Error", "La descripción debe tener al menos 5 caracteres", "error");
+  }
+  if (/^\d+$/.test(txtDesc.value.trim())) {
+    return Swal.fire("Error", "La descripción no puede ser solo números", "error");
+  }
+  if (!txtFecha.value) {
+    return Swal.fire("Error", "Debe seleccionar una fecha", "error");
+  }
+  const hoy = new Date().toISOString().split("T")[0];
+  if (txtFecha.value < hoy) {
+    return Swal.fire("Error", "La fecha no puede ser anterior a hoy", "error");
+  }
+  if (!txtCodigo.value) {
+    return Swal.fire("Error", "El código es obligatorio", "error");
+  }
+  if (!selVeh.value) {
+    return Swal.fire("Error", "Debe seleccionar un vehículo", "error");
+  }
+
   const dto = {
-    descripcion: txtDesc.value,
+    descripcion: txtDesc.value.trim(),
     fechaRealizacion: txtFecha.value,
-    codigoMantenimiento: txtCodigo.value,
+    codigoMantenimiento: txtCodigo.value.trim(),
     idVehiculo: parseInt(selVeh.value, 10)
   };
 
@@ -200,7 +205,6 @@ form.addEventListener("submit", async e => {
   }
 });
 
-// ======================= EVENTOS =======================
 inputBuscar.addEventListener("input", () => {
   paginaActual = 1;
   loadMantenimientos(true);
@@ -212,7 +216,6 @@ selectSize.addEventListener("change", () => {
   loadMantenimientos(true);
 });
 
-// ======================= INIT =======================
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarVehiculos();
   await loadMantenimientos(true);

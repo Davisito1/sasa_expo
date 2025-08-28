@@ -2,9 +2,9 @@ const API_BASE = "http://localhost:8080/apiUsuario";
 
 export async function login(nombreUsuario, password) {
   try {
-    console.log('🔍 Intentando login con:', { nombreUsuario, password });
+    console.log(' Intentando login con:', { nombreUsuario, password });
     
-    // ✅ SOLUCIÓN TEMPORAL: Usar usuarios de prueba
+    //  SOLUCIÓN TEMPORAL: Usar usuarios de prueba
     const usuariosSimulados = [
       {
         "id": 1,
@@ -48,7 +48,7 @@ export async function login(nombreUsuario, password) {
     }
 
   } catch (error) {
-    console.error('❌ Error en login:', error);
+    console.error(' Error en login:', error);
     throw error;
   }
 }

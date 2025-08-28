@@ -9,7 +9,6 @@ import {
 import { getEmpleados } from "../Services/EmpleadosService.js";
 import { getMantenimientos } from "../Services/MantenimientoService.js";
 
-// ======================= DOM =======================
 const tablaFacturas = document.getElementById("tablaFacturas");
 const pagWrap = document.getElementById("paginacion");
 const selectPageSize = document.getElementById("registrosPorPagina");
@@ -20,13 +19,11 @@ const frmEdit = document.getElementById("frmEditarFactura");
 const modalAdd = new bootstrap.Modal(document.getElementById("mdAgregarFactura"));
 const modalEdit = new bootstrap.Modal(document.getElementById("mdEditarFactura"));
 
-// Campos agregar
 const fechaAdd = document.getElementById("fechaFacturaAdd");
 const montoAdd = document.getElementById("txtMontoFactura");
 const selEmpleadoAdd = document.getElementById("selEmpleadoAdd");
 const selMantenimientoAdd = document.getElementById("selMantenimientoAdd");
 
-// Campos editar
 const idEdit = document.getElementById("txtIdFactura");
 const fechaEdit = document.getElementById("fechaFacturaEdit");
 const montoEdit = document.getElementById("txtEditarMontoFactura");
@@ -46,14 +43,10 @@ function renderTabla(facturas) {
       `<tr><td colspan="6" class="text-center">No hay registros</td></tr>`;
     return;
   }
-
-  // 🔹 Ordenar por ID ascendente (1, 2, 3…)
   facturas.sort((a, b) => a.id - b.id);
-
   facturas.forEach(f => {
     const empleado = f.nombreEmpleado || empleadosCache.find(e => e.id === f.idEmpleado)?.nombres || "—";
     const mantenimiento = f.descripcionMantenimiento || mantenimientosCache.find(m => m.id === f.idMantenimiento)?.descripcion || "—";
-
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${f.id}</td>
@@ -74,11 +67,9 @@ function renderTabla(facturas) {
   });
 }
 
-
 function renderPaginacion(pageData) {
   pagWrap.innerHTML = "";
   if (!pageData || pageData.totalPages <= 1) return;
-
   for (let i = 0; i < pageData.totalPages; i++) {
     const btn = document.createElement("button");
     btn.textContent = i + 1;
@@ -91,13 +82,9 @@ function renderPaginacion(pageData) {
   }
 }
 
-// ======================= CRUD =======================
-
-// Cargar combos empleados/mantenimientos
 async function cargarCombos() {
   empleadosCache = (await getEmpleados()).content ?? [];
   mantenimientosCache = (await getMantenimientos()).content ?? [];
-
   [selEmpleadoAdd, selEmpleadoEdit].forEach(sel => {
     sel.innerHTML = '<option value="" disabled selected>Seleccione un empleado</option>';
     empleadosCache.forEach(e => {
@@ -107,7 +94,6 @@ async function cargarCombos() {
       sel.appendChild(opt);
     });
   });
-
   [selMantenimientoAdd, selMantenimientoEdit].forEach(sel => {
     sel.innerHTML = '<option value="" disabled selected>Seleccione un mantenimiento</option>';
     mantenimientosCache.forEach(m => {
@@ -119,7 +105,6 @@ async function cargarCombos() {
   });
 }
 
-// Cargar tabla
 async function cargarTabla() {
   const data = await getFacturas(paginaActual, tamPagina);
   facturasCache = data.content;
@@ -127,19 +112,16 @@ async function cargarTabla() {
   renderPaginacion(data);
 }
 
-// Abrir modal editar
 window.editarFactura = async function (id) {
   try {
     const f = await getFacturaById(id);
     if (!f) return Swal.fire("Error", "Factura no encontrada", "error");
-
     idEdit.value = f.id;
     fechaEdit.value = f.fecha;
     montoEdit.value = f.montoTotal;
     await cargarCombos();
     selEmpleadoEdit.value = f.idEmpleado;
     selMantenimientoEdit.value = f.idMantenimiento;
-
     modalEdit.show();
   } catch (err) {
     console.error("Error cargando factura", err);
@@ -147,7 +129,6 @@ window.editarFactura = async function (id) {
   }
 };
 
-// Eliminar
 window.eliminarFactura = async function (id) {
   const ok = await Swal.fire({
     title: "¿Eliminar factura?",
@@ -156,7 +137,6 @@ window.eliminarFactura = async function (id) {
     confirmButtonText: "Sí, eliminar",
     cancelButtonText: "Cancelar"
   }).then(r => r.isConfirmed);
-
   if (!ok) return;
   try {
     await deleteFactura(id);
@@ -167,11 +147,15 @@ window.eliminarFactura = async function (id) {
   }
 };
 
-// ======================= FORMS =======================
-
-// Guardar nueva
 frmAdd.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (!fechaAdd.value) return Swal.fire("Error","La fecha es obligatoria","error");
+  const hoy = new Date().toISOString().split("T")[0];
+  if (fechaAdd.value < hoy) return Swal.fire("Error","La fecha no puede ser pasada","error");
+  if (!montoAdd.value || isNaN(montoAdd.value) || parseFloat(montoAdd.value) <= 0) 
+    return Swal.fire("Error","El monto debe ser un número positivo","error");
+  if (!selEmpleadoAdd.value) return Swal.fire("Error","Seleccione un empleado","error");
+  if (!selMantenimientoAdd.value) return Swal.fire("Error","Seleccione un mantenimiento","error");
   const dto = {
     fecha: fechaAdd.value,
     montoTotal: parseFloat(montoAdd.value),
@@ -189,9 +173,15 @@ frmAdd.addEventListener("submit", async (e) => {
   }
 });
 
-// Actualizar existente
 frmEdit.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (!fechaEdit.value) return Swal.fire("Error","La fecha es obligatoria","error");
+  const hoy = new Date().toISOString().split("T")[0];
+  if (fechaEdit.value < hoy) return Swal.fire("Error","La fecha no puede ser pasada","error");
+  if (!montoEdit.value || isNaN(montoEdit.value) || parseFloat(montoEdit.value) <= 0) 
+    return Swal.fire("Error","El monto debe ser un número positivo","error");
+  if (!selEmpleadoEdit.value) return Swal.fire("Error","Seleccione un empleado","error");
+  if (!selMantenimientoEdit.value) return Swal.fire("Error","Seleccione un mantenimiento","error");
   const dto = {
     fecha: fechaEdit.value,
     montoTotal: parseFloat(montoEdit.value),
@@ -209,7 +199,6 @@ frmEdit.addEventListener("submit", async (e) => {
   }
 });
 
-// ======================= INIT =======================
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarCombos();
   await cargarTabla();

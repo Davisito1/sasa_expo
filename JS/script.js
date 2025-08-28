@@ -49,7 +49,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       } else if (Array.isArray(data.data)) {
         registros = data.data;
       } else if (typeof data.data?.totalElements === "number") {
-        // Para paginación (ej. empleados)
         registros = Array.from({ length: data.data.totalElements });
       }
 
@@ -161,7 +160,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try {
     const select = document.getElementById("selectCliente");
-    const info = document.getElementById("infoCliente");
 
     clientes.forEach((c) => {
       const opt = document.createElement("option");
@@ -172,16 +170,31 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     select.addEventListener("change", () => {
       const idCliente = parseInt(select.value);
-      if (!idCliente) {
-        info.textContent = "Seleccione un cliente para ver información";
-        return;
-      }
+      if (!idCliente) return;
 
+      const cliente = clientes.find(c => (c.idCliente || c.id) === idCliente);
       const vehiculosCliente = vehiculos.filter((v) => v.idCliente === idCliente);
-      const citasCliente = citas.filter((c) => c.idCliente === idCliente).length;
-      const pagosCliente = pagos.filter((p) => p.idCliente === idCliente).length;
+      const citasCliente = citas.filter((c) => c.idCliente === idCliente);
+      const pagosCliente = pagos.filter((p) => p.idCliente === idCliente);
 
-      info.textContent = `Vehículos: ${vehiculosCliente.length} | Citas: ${citasCliente} | Pagos: ${pagosCliente}`;
+      const html = `
+        <div style="text-align:left">
+          <p><strong>Vehículos:</strong> ${vehiculosCliente.length}</p>
+          <ul>${vehiculosCliente.map(v => `<li>${v.marca} ${v.modelo} (${v.placa || "sin placa"})</li>`).join("") || "<li>Ninguno</li>"}</ul>
+          <p><strong>Citas:</strong> ${citasCliente.length}</p>
+          <ul>${citasCliente.map(c => `<li>${c.fecha} - ${c.descripcion || "sin descripción"}</li>`).join("") || "<li>Ninguna</li>"}</ul>
+          <p><strong>Pagos:</strong> ${pagosCliente.length}</p>
+          <ul>${pagosCliente.map(p => `<li>Monto: $${p.monto} - ${p.fecha}</li>`).join("") || "<li>Ninguno</li>"}</ul>
+        </div>
+      `;
+
+      Swal.fire({
+        title: `${cliente?.nombre || ""} ${cliente?.apellido || ""}`,
+        html,
+        icon: "info",
+        confirmButtonColor: "#C91A1A",
+        width: 600
+      });
     });
   } catch (error) {
     console.error("Error cargando clientes:", error);

@@ -8,7 +8,6 @@ import {
 
 import { getClientes } from "../Services/ClientesService.js";
 
-// ======================= DOM =======================
 const tablaCitas = document.getElementById("tablaCitas");
 const pagWrap = document.getElementById("paginacion");
 const selectPageSize = document.getElementById("registrosPorPagina");
@@ -23,13 +22,11 @@ const inputHora = document.getElementById("hora");
 const selectEstado = document.getElementById("estado");
 const selectCliente = document.getElementById("cliente");
 
-// ======================= ESTADO =======================
 let citasCache = [];
 let clientesCache = [];
 let paginaActual = 1;
 let tamPagina = parseInt(selectPageSize.value, 10);
 
-// ======================= HELPERS =======================
 function parseResponse(apiResponse) {
   if (Array.isArray(apiResponse)) return apiResponse;
   if (apiResponse?.data?.content) return apiResponse.data.content;
@@ -38,7 +35,6 @@ function parseResponse(apiResponse) {
   return [];
 }
 
-// ======================= CLIENTES =======================
 async function cargarClientes() {
   try {
     const res = await getClientes(0, 100);
@@ -56,7 +52,6 @@ async function cargarClientes() {
   }
 }
 
-// ======================= TABLA =======================
 function renderTabla(citas) {
   tablaCitas.innerHTML = "";
   if (!citas || citas.length === 0) {
@@ -65,7 +60,6 @@ function renderTabla(citas) {
   }
 
   citas.forEach(cita => {
-    // 🔹 Resolver nombre de cliente
     let nombreCliente = "—";
     if (cita.cliente?.nombre) {
       nombreCliente = `${cita.cliente.nombre} ${cita.cliente.apellido ?? ""}`;
@@ -94,7 +88,6 @@ function renderTabla(citas) {
   });
 }
 
-// ======================= PAGINACIÓN =======================
 function renderPaginacion(totalPaginas) {
   pagWrap.innerHTML = "";
   for (let p = 1; p <= totalPaginas; p++) {
@@ -109,7 +102,6 @@ function renderPaginacion(totalPaginas) {
   }
 }
 
-// ======================= CARGAR TABLA =======================
 async function cargarTabla(reset = false) {
   const res = await getCitasPaginado(paginaActual - 1, tamPagina);
   citasCache = parseResponse(res);
@@ -118,40 +110,30 @@ async function cargarTabla(reset = false) {
   renderPaginacion(res.totalPages ?? 1);
 }
 
-// ======================= CRUD =======================
-
-// 🔹 Abrir modal Agregar
 window.abrirModalAgregar = async function () {
   citaForm.reset();
   inputId.value = "";
   modalLabel.textContent = "Agregar Cita";
-
   const hoy = new Date().toISOString().split("T")[0];
   inputFecha.setAttribute("min", hoy);
-
   await cargarClientes();
   citaModal.show();
 };
 
-// 🔹 Editar
 window.editarCita = async function (id) {
   try {
     const cita = await getCitaById(id);
     if (!cita) return Swal.fire("Error","No se encontró la cita","error");
-
     citaForm.reset();
     modalLabel.textContent = "Editar Cita";
     inputId.value = cita.id;
-
     const hoy = new Date().toISOString().split("T")[0];
     inputFecha.setAttribute("min", hoy);
     inputFecha.value = (cita.fecha < hoy) ? hoy : cita.fecha;
     inputHora.value = cita.hora;
     selectEstado.value = cita.estado;
-
     await cargarClientes();
     selectCliente.value = cita.idCliente ?? cita.cliente?.idCliente;
-
     citaModal.show();
   } catch (err) {
     console.error("Error al cargar cita:", err);
@@ -159,7 +141,6 @@ window.editarCita = async function (id) {
   }
 };
 
-// 🔹 Eliminar
 window.eliminarCita = async function (id) {
   const ok = await Swal.fire({
     title: "¿Eliminar cita?",
@@ -169,7 +150,6 @@ window.eliminarCita = async function (id) {
     cancelButtonText: "Cancelar"
   }).then(r => r.isConfirmed);
   if (!ok) return;
-
   try {
     await deleteCita(id);
     Swal.fire("Eliminada", "Cita borrada", "success");
@@ -180,9 +160,25 @@ window.eliminarCita = async function (id) {
   }
 };
 
-// 🔹 Guardar
 citaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  const hoy = new Date().toISOString().split("T")[0];
+  if (!inputFecha.value || inputFecha.value < hoy) 
+    return Swal.fire("Error", "Seleccione una fecha válida", "error");
+  
+  if (!inputHora.value) 
+    return Swal.fire("Error", "Seleccione una hora", "error");
+
+  const horaNum = parseInt(inputHora.value.split(":")[0], 10);
+  if (horaNum < 7 || horaNum > 16) 
+    return Swal.fire("Error", "La hora debe estar entre 07:00 y 16:00", "error");
+
+  if (!selectEstado.value) 
+    return Swal.fire("Error", "Seleccione un estado", "error");
+
+  if (!selectCliente.value) 
+    return Swal.fire("Error", "Seleccione un cliente", "error");
 
   const dto = {
     fecha: inputFecha.value,
@@ -200,8 +196,6 @@ citaForm.addEventListener("submit", async (e) => {
       Swal.fire("Éxito", "Cita registrada", "success");
     }
     citaModal.hide();
-
-    // 🔹 Refrescar clientes y citas
     await cargarClientes();
     await cargarTabla(true);
   } catch (err) {
@@ -210,7 +204,6 @@ citaForm.addEventListener("submit", async (e) => {
   }
 });
 
-// ======================= INIT =======================
 selectPageSize.addEventListener("change", () => {
   tamPagina = parseInt(selectPageSize.value, 10);
   paginaActual = 1;

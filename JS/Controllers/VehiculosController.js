@@ -15,14 +15,10 @@ const selectPageSize = document.getElementById("registrosPorPagina");
 let clientesCache = [];
 let estadosCache = [];
 let vehiculosCache = [];
-
-let paginaActual = 0;    // 🔹 API empieza desde 0
+let paginaActual = 0;
 let tamPagina = parseInt(selectPageSize.value, 10);
 let totalPaginas = 1;
 
-// ============================
-// Utils
-// ============================
 function parseResponse(apiResponse) {
   if (Array.isArray(apiResponse)) return apiResponse;
   if (apiResponse?.data?.content) return apiResponse.data.content;
@@ -31,9 +27,6 @@ function parseResponse(apiResponse) {
   return [];
 }
 
-// ============================
-// Init
-// ============================
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarClientes();
   await cargarEstados();
@@ -47,22 +40,33 @@ btnAddVehiculo.addEventListener("click", () => {
   modalVehiculo.show();
 });
 
-// ============================
-// Submit form
-// ============================
 vehiculoForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const id = document.getElementById("vehiculoId").value;
+  const marca = document.getElementById("marca").value.trim();
+  const modelo = document.getElementById("modelo").value.trim();
+  const anio = document.getElementById("anio").value.trim();
+  const placa = document.getElementById("placa").value.trim();
   const vinValue = document.getElementById("vin").value.trim();
+  const idCliente = document.getElementById("idCliente").value;
+  const idEstado = document.getElementById("idEstado").value;
+
+  if (!marca || marca.length < 2) return Swal.fire("Error", "La marca debe tener al menos 2 caracteres", "error");
+  if (!modelo || modelo.length < 2) return Swal.fire("Error", "El modelo debe tener al menos 2 caracteres", "error");
+  if (!anio || isNaN(anio) || anio < 1900 || anio > new Date().getFullYear()) return Swal.fire("Error", "Ingrese un año válido", "error");
+  if (!placa || placa.length < 5) return Swal.fire("Error", "La placa debe tener al menos 5 caracteres", "error");
+  if (vinValue && vinValue.length !== 17) return Swal.fire("Error", "El VIN debe tener 17 caracteres o dejarse vacío", "error");
+  if (!idCliente) return Swal.fire("Error", "Debe seleccionar un cliente", "error");
+  if (!idEstado) return Swal.fire("Error", "Debe seleccionar un estado", "error");
 
   const vehiculo = {
-    marca: document.getElementById("marca").value.trim(),
-    modelo: document.getElementById("modelo").value.trim(),
-    anio: parseInt(document.getElementById("anio").value),
-    placa: document.getElementById("placa").value.trim(),
+    marca,
+    modelo,
+    anio: parseInt(anio),
+    placa,
     vin: vinValue === "" ? null : vinValue,
-    idCliente: parseInt(document.getElementById("idCliente").value),
-    idEstado: parseInt(document.getElementById("idEstado").value)
+    idCliente: parseInt(idCliente),
+    idEstado: parseInt(idEstado)
   };
 
   try {
@@ -81,9 +85,6 @@ vehiculoForm.addEventListener("submit", async (e) => {
   }
 });
 
-// ============================
-// Cargar y renderizar
-// ============================
 async function loadVehiculos(reset = false) {
   try {
     if (reset) paginaActual = 0;
@@ -150,12 +151,9 @@ function renderListaYPaginacion() {
   renderPaginacion();
 }
 
-// ============================
-// Editar y eliminar
-// ============================
 window.editVehiculo = (id) => {
   const v = vehiculosCache.find(veh => (veh.id || veh.idVehiculo) === id);
-  if (!v) return;
+  if (!v) return Swal.fire("Error", "Vehículo no encontrado", "error");
   document.getElementById("vehiculoId").value = v.id || v.idVehiculo;
   document.getElementById("marca").value = v.marca ?? "";
   document.getElementById("modelo").value = v.modelo ?? "";
@@ -191,9 +189,6 @@ window.removeVehiculo = async (id) => {
   });
 };
 
-// ============================
-// Cargar combos
-// ============================
 async function cargarClientes() {
   try {
     const res = await fetch(`${CLIENTES_API}/consultar?page=0&size=50`);
@@ -232,9 +227,6 @@ async function cargarEstados() {
   }
 }
 
-// ============================
-// Eventos de búsqueda y tamaño
-// ============================
 inputBuscar.addEventListener("input", () => {
   paginaActual = 0;
   loadVehiculos(true);

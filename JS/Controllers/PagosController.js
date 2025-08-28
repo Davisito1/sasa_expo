@@ -17,18 +17,15 @@ let pagosCache = [];
 let facturasCache = [];
 let metodosCache = [];
 
-// ======================= Render tabla =======================
 function renderTabla(lista) {
   tabla.innerHTML = "";
   if (!lista.length) {
     tabla.innerHTML = `<tr><td colspan="6" class="text-center">No hay registros</td></tr>`;
     return;
   }
-
   lista.forEach(p => {
     const factura = facturasCache.find(f => f.id === p.idFactura);
-    const metodo = metodosCache.find(m => m.idMetodoPago === p.idMetodoPago || m.id === p.idMetodoPago);
-
+    const metodo = metodosCache.find(m => (m.idMetodoPago ?? m.id) === p.idMetodoPago);
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${p.idPago ?? p.id}</td>
@@ -44,7 +41,6 @@ function renderTabla(lista) {
   });
 }
 
-// ======================= Cargar combos =======================
 async function cargarCombos() {
   const facturasResp = await getFacturas(0, 50);
   facturasCache = facturasResp?.content ?? facturasResp ?? [];
@@ -52,18 +48,17 @@ async function cargarCombos() {
   facturasCache.forEach(f => {
     selectFactura.innerHTML += `<option value="${f.id}">Factura #${f.id} - $${f.montoTotal}</option>`;
   });
-
   metodosCache = await getMetodosPago();
   selectMetodo.innerHTML = `<option value="" disabled selected>Seleccione método</option>`;
   metodosCache.forEach(m => {
-    selectMetodo.innerHTML += `<option value="${m.idMetodoPago ?? m.id}">${m.metodo}</option>`;
+    const idMetodo = m.idMetodoPago ?? m.id;
+    selectMetodo.innerHTML += `<option value="${idMetodo}">${m.metodo}</option>`;
   });
 }
 
-// ======================= CRUD =======================
 window.editarPago = (id) => {
   const p = pagosCache.find(x => (x.idPago ?? x.id) === id);
-  if (!p) return;
+  if (!p) return Swal.fire("Error", "Pago no encontrado", "error");
   modalLabel.textContent = "Editar Pago";
   inputId.value = p.idPago ?? p.id;
   inputFecha.value = p.fecha;
@@ -75,7 +70,7 @@ window.editarPago = (id) => {
 
 window.eliminarPago = async (id) => {
   const ok = await Swal.fire({
-    title: "¿Eliminar?",
+    title: "¿Eliminar pago?",
     text: "Esta acción no se puede deshacer",
     icon: "warning",
     showCancelButton: true,
@@ -83,17 +78,49 @@ window.eliminarPago = async (id) => {
     cancelButtonText: "Cancelar"
   }).then(r => r.isConfirmed);
   if (!ok) return;
-
-  await deletePago(id);
-  Swal.fire("Eliminado", "Pago eliminado", "success");
-  cargarTabla();
+  try {
+    await deletePago(id);
+    Swal.fire("Eliminado", "Pago eliminado correctamente", "success");
+    cargarTabla();
+  } catch (err) {
+    console.error("Error eliminando pago", err);
+    Swal.fire("Error", "No se pudo eliminar el pago", "error");
+  }
 };
 
 frmPago.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  if (!inputFecha.value) 
+    return Swal.fire("Error", "La fecha es obligatoria", "error");
+
+  const hoy = new Date().toISOString().split("T")[0];
+  if (inputFecha.value < hoy) 
+    return Swal.fire("Error", "La fecha del pago no puede ser pasada", "error");
+
+  if (!inputMonto.value || isNaN(inputMonto.value) || parseFloat(inputMonto.value) <= 0) 
+    return Swal.fire("Error", "El monto debe ser un número positivo", "error");
+
+  if (!selectFactura.value) 
+    return Swal.fire("Error", "Debe seleccionar una factura", "error");
+
+  if (!selectMetodo.value) 
+    return Swal.fire("Error", "Debe seleccionar un método de pago", "error");
+
+  const facturaSeleccionada = facturasCache.find(f => f.id === parseInt(selectFactura.value, 10));
+  if (!facturaSeleccionada) 
+    return Swal.fire("Error", "Factura no encontrada", "error");
+
+  const pagosDeFactura = pagosCache.filter(p => p.idFactura === facturaSeleccionada.id && (p.idPago ?? p.id) !== parseInt(inputId.value || 0));
+  const totalPagado = pagosDeFactura.reduce((sum, p) => sum + p.monto, 0);
+  const nuevoMonto = parseFloat(inputMonto.value);
+  if (totalPagado + nuevoMonto > facturaSeleccionada.montoTotal) {
+    return Swal.fire("Error", `El pago excede el monto total de la factura. Restante: $${(facturaSeleccionada.montoTotal - totalPagado).toFixed(2)}`, "error");
+  }
+
   const dto = {
     fecha: inputFecha.value,
-    monto: parseFloat(inputMonto.value),
+    monto: nuevoMonto,
     idFactura: parseInt(selectFactura.value, 10),
     idMetodoPago: parseInt(selectMetodo.value, 10),
   };
@@ -101,20 +128,19 @@ frmPago.addEventListener("submit", async (e) => {
   try {
     if (inputId.value) {
       await updatePago(inputId.value, dto);
-      Swal.fire("Éxito", "Pago actualizado", "success");
+      Swal.fire("Éxito", "Pago actualizado correctamente", "success");
     } else {
       await createPago(dto);
-      Swal.fire("Éxito", "Pago registrado", "success");
+      Swal.fire("Éxito", "Pago registrado correctamente", "success");
     }
     pagoModal.hide();
     cargarTabla();
   } catch (err) {
-    Swal.fire("Error", "No se pudo guardar el pago", "error");
     console.error("Error guardando pago", err);
+    Swal.fire("Error", "No se pudo guardar el pago", "error");
   }
 });
 
-// ======================= Init =======================
 async function cargarTabla() {
   pagosCache = await getPagos();
   renderTabla(pagosCache);
