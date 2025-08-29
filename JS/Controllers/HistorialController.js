@@ -1,24 +1,32 @@
+// ==================== IMPORTAR SERVICIOS ====================
+// Servicios de historial: obtener y eliminar
 import { getHistorial, deleteHistorial } from "../Services/HistorialService.js";
 
-const tablaHistorial = document.getElementById("tablaHistorial");
-const pagWrap = document.getElementById("paginacion");
-const inputBuscar = document.getElementById("buscarHistorial");
-const selectPageSize = document.getElementById("registrosPorPagina");
+// ==================== DOM ====================
+// Referencias a elementos de la interfaz
+const tablaHistorial  = document.getElementById("tablaHistorial");     // tabla donde se muestran registros
+const pagWrap         = document.getElementById("paginacion");        // contenedor de botones de paginación
+const inputBuscar     = document.getElementById("buscarHistorial");   // input de búsqueda
+const selectPageSize  = document.getElementById("registrosPorPagina");// select para cambiar tamaño de página
 
-let paginaActual = 0;
-let tamPagina = selectPageSize ? parseInt(selectPageSize.value, 10) : 10;
+// ==================== VARIABLES GLOBALES ====================
+// Control de paginación y datos en memoria
+let paginaActual  = 0;
+let tamPagina     = selectPageSize ? parseInt(selectPageSize.value, 10) : 10;
 let historialData = [];
-let totalPages = 1;
+let totalPages    = 1;
 
+// ==================== CARGAR HISTORIAL ====================
+// Llama a la API para traer historial y lo dibuja en la tabla
 async function cargarHistorial() {
   try {
     const response = await getHistorial(paginaActual, tamPagina);
     
     if (response && response.content) {
       historialData = response.content;
-      totalPages = response.totalPages;
-      renderHistorial(historialData);
-      renderPaginacion(totalPages);
+      totalPages    = response.totalPages;
+      renderHistorial(historialData);   // dibujar tabla
+      renderPaginacion(totalPages);     // dibujar paginación
     } else {
       tablaHistorial.innerHTML = '<tr><td colspan="7" class="text-center">No hay registros de historial</td></tr>';
       pagWrap.innerHTML = '';
@@ -30,6 +38,8 @@ async function cargarHistorial() {
   }
 }
 
+// ==================== RENDERIZAR TABLA ====================
+// Construye las filas de la tabla con los registros del historial
 function renderHistorial(historial) {
   if (!tablaHistorial) return;
   
@@ -50,6 +60,7 @@ function renderHistorial(historial) {
       <td>${item.observaciones || ''}</td>
       <td class="text-center">${item.idVehiculo || ''}</td>
       <td class="text-center">
+        <!-- Botón eliminar -->
         <button class="btn btn-sm btn-danger" onclick="eliminarRegistro(${item.id || 0})">
           <i class="bi bi-trash"></i>
         </button>
@@ -59,6 +70,8 @@ function renderHistorial(historial) {
   });
 }
 
+// ==================== RENDERIZAR PAGINACIÓN ====================
+// Dibuja botones de página según el total
 function renderPaginacion(totalPages) {
   if (!pagWrap) return;
   
@@ -78,6 +91,8 @@ function renderPaginacion(totalPages) {
   }
 }
 
+// ==================== ELIMINAR REGISTRO ====================
+// Llamada al servicio para eliminar un registro de historial
 window.eliminarRegistro = async function(id) {
   if (!id || id === 0) {
     Swal.fire('Error', 'ID de registro inválido', 'error');
@@ -105,7 +120,7 @@ window.eliminarRegistro = async function(id) {
         'success'
       );
       
-      cargarHistorial();
+      cargarHistorial(); // refresca la tabla
     }
   } catch (error) {
     console.error('Error al eliminar:', error);
@@ -117,6 +132,8 @@ window.eliminarRegistro = async function(id) {
   }
 };
 
+// ==================== BUSCAR EN TABLA ====================
+// Filtra en memoria los registros al escribir en el input
 if (inputBuscar) {
   inputBuscar.addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();
@@ -129,6 +146,8 @@ if (inputBuscar) {
   });
 }
 
+// ==================== CAMBIO DE PAGE SIZE ====================
+// Cambiar cantidad de registros por página
 if (selectPageSize) {
   selectPageSize.addEventListener('change', (e) => {
     tamPagina = parseInt(e.target.value, 10);
@@ -137,4 +156,6 @@ if (selectPageSize) {
   });
 }
 
+// ==================== INICIO ====================
+// Cargar historial al abrir la página
 document.addEventListener('DOMContentLoaded', cargarHistorial);

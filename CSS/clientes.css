@@ -1,23 +1,23 @@
-/* =========================================================
-   CLIENTES - Estilo igual al de Mantenimiento (tonos azules)
-   ========================================================= */
+
 :root {
-  --primary: #0056b3;
-  --primary-hover: #155d85;
-  --soft: #f8f9fa;
-  --border: #dee2e6;
-  --text: #333;
-  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --primary: #0056b3;       /* Azul principal */
+  --primary-hover: #155d85; /* Azul más oscuro al pasar el mouse */
+  --soft: #f8f9fa;          /* Fondo claro */
+  --border: #dee2e6;        /* Gris claro para bordes */
+  --text: #333;             /* Texto gris oscuro */
+  --shadow: 0 2px 8px rgba(0,0,0,0.1); /* Sombra suave */
 }
 
-/* CONTENEDOR */
+/* ======================
+   CONTENEDOR PRINCIPAL
+   ====================== */
 .card {
-  background: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  margin: 30px auto;
-  box-shadow: var(--shadow);
-  max-width: 1200px;
+  background: #fff;           /* Fondo blanco */
+  padding: 30px;              /* Espaciado interno */
+  border-radius: 10px;        /* Bordes redondeados */
+  margin: 30px auto;          /* Separación y centrado */
+  box-shadow: var(--shadow);  /* Sombra ligera */
+  max-width: 1200px;          /* Máximo ancho */
 }
 .card h2 {
   font-size: 1.35rem;
@@ -26,10 +26,12 @@
   color: var(--text);
 }
 .d-flex.justify-content-between.align-items-center.mb-4 {
-  margin-bottom: 20px;
+  margin-bottom: 20px;        /* Espaciado debajo de la barra de acciones */
 }
 
-/* BUSCADOR */
+/* ======================
+   BUSCADOR (input)
+   ====================== */
 .search-input {
   padding: 8px 12px;
   border: 1px solid var(--border);
@@ -39,12 +41,14 @@
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .search-input:focus {
-  border-color: var(--primary);
+  border-color: var(--primary);                  /* Azul al enfocar */
   outline: none;
-  box-shadow: 0 0 5px rgba(0,86,179,0.5);
+  box-shadow: 0 0 5px rgba(0,86,179,0.5);        /* Halo azul */
 }
 
-/* BOTÓN AGREGAR */
+/* ======================
+   BOTÓN AGREGAR CLIENTE
+   ====================== */
 .btn-add {
   background: var(--primary);
   color: #fff;
@@ -54,21 +58,23 @@
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
+  gap: .5rem;                                   /* espacio entre ícono y texto */
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 .btn-add:hover { background: var(--primary-hover); }
 
-/* SELECT REGISTROS */
+/* ======================
+   SELECT (Registros por página)
+   ====================== */
 #registrosPorPagina {
-  appearance: none;
+  appearance: none;                             /* Quita estilo nativo */
   background: #fff;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,..."); /* Flecha ↓ personalizada */
   background-repeat: no-repeat;
   background-position: right 10px center;
   background-size: 12px 12px;
-  padding: 6px 35px 6px 10px;
+  padding: 6px 35px 6px 10px;                  /* Espacio derecho por icono */
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: .95rem;
@@ -81,11 +87,13 @@
   box-shadow: 0 0 5px rgba(0,86,179,0.5);
 }
 
-/* TABLA */
+/* ======================
+   TABLA DE CLIENTES
+   ====================== */
 .table-responsive {
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow);                   /* efecto "card" */
 }
 .table {
   width: 100%;
@@ -107,9 +115,11 @@
   border: 1px solid var(--border);
   color: var(--text);
 }
-.table tbody tr:hover { background: #e7f1ff; }
+.table tbody tr:hover { background: #e7f1ff; } /* azul clarito en hover */
 
-/* ACCIONES */
+/* ======================
+   ACCIONES (botones de fila: editar / eliminar)
+   ====================== */
 table tbody td button.icon-btn {
   padding: .35rem .6rem;
   font-size: .875rem;
@@ -144,9 +154,11 @@ table tbody td button.icon-btn i { font-size: 1.05rem; pointer-events: none; }
   color: #fff;
   border-color: #b02a37;
 }
-table td:last-child { white-space: nowrap; }
+table td:last-child { white-space: nowrap; } /* Evita que se partan los botones */
 
-/* PAGINACIÓN */
+/* ======================
+   PAGINACIÓN
+   ====================== */
 #paginacion {
   margin-top: 20px;
   display: flex;
@@ -182,7 +194,9 @@ table td:last-child { white-space: nowrap; }
   border-color: var(--border);
 }
 
-/* MODALES */
+/* ======================
+   MODALES (dialog nativo)
+   ====================== */
 dialog {
   width: 350px;
   max-width: 90%;
@@ -224,7 +238,7 @@ dialog button[type="submit"] {
 }
 dialog button[type="submit"]:hover { background: var(--primary-hover); }
 dialog button[type="button"] {
-  background: #6c757d;
+  background: #6c757d; /* gris cancelar */
   color: white;
   padding: 10px 0;
   border: none;
@@ -233,7 +247,9 @@ dialog button[type="button"] {
 }
 dialog button[type="button"]:hover { background: #5a6268; }
 
-/* RESPONSIVE */
+/* ======================
+   RESPONSIVE (adaptación móviles)
+   ====================== */
 @media (max-width: 992px) {
   .card { padding: 20px; }
   .card h2 { font-size: 20px; text-align: center; }
@@ -258,5 +274,5 @@ dialog button[type="button"]:hover { background: #5a6268; }
   dialog .d-flex.justify-content-between.mt-3 {
     flex-direction: column; gap: 10px;
   }
-  dialog button { width: 100%; }
+  dialog button { width: 100%; } /* Botones full-width en móviles */
 }

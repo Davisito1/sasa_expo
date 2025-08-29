@@ -1,71 +1,79 @@
 /* ======================
-   Tarjeta / contenedor
+   TARJETA / CONTENEDOR PRINCIPAL
    ====================== */
 .card {
-  background-color: #fff;
-  padding: 24px;
-  border-radius: 12px;
-  margin: 30px auto;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  max-width: 1200px;
+  background-color: #fff;              /* Fondo blanco para resaltar contenido */
+  padding: 24px;                       /* Espaciado interno amplio */
+  border-radius: 12px;                 /* Bordes redondeados */
+  margin: 30px auto;                   /* Centrado con margen vertical */
+  box-shadow: 0 2px 10px rgba(0,0,0,.06); /* Sombra ligera para dar relieve */
+  max-width: 1200px;                   /* No crece más de 1200px en pantallas grandes */
 }
 .card h2 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  text-align: center;
+  font-size: 1.35rem;                  /* Título mediano */
+  font-weight: 700;                    /* Negrita fuerte */
+  text-align: center;                  /* Centrado horizontal */
 }
 
-/* Encabezado de acciones */
-.d-flex.justify-content-between.align-items-center.mb-4{
-  margin-bottom: 20px;
-  gap: 12px;
-  flex-wrap: wrap;
+/* ======================
+   ENCABEZADO DE ACCIONES (ej: buscador + botón)
+   ====================== */
+.d-flex.justify-content-between.align-items-center.mb-4 {
+  margin-bottom: 20px; /* espacio inferior respecto a la tabla */
+  gap: 12px;           /* separación entre elementos */
+  flex-wrap: wrap;     /* permite que se bajen en pantallas pequeñas */
 }
 
-/* Botón principal (+) */
+/* ======================
+   BOTÓN PRINCIPAL (+ Agregar)
+   ====================== */
 .btn-add {
-  background-color: #0056b3;
-  color: #fff;
-  border-radius: 10px;
-  padding: 10px 16px;
-  border: none;
-  font-weight: 600;
-  transition: transform .08s ease, background-color .25s ease;
-  display: inline-flex;
+  background-color: #0056b3;           /* Azul principal */
+  color: #fff;                         /* Texto blanco */
+  border-radius: 10px;                 /* Bordes suavizados */
+  padding: 10px 16px;                  /* Botón más grande que el normal */
+  border: none;                        /* Sin borde extra */
+  font-weight: 600;                    /* Texto en semi-negrita */
+  transition: transform .08s ease, background-color .25s ease; /* animación en hover/active */
+  display: inline-flex;                /* Alinea ícono + texto */
   align-items: center;
-  gap: .5rem;
-  cursor: pointer;
+  gap: .5rem;                          /* espacio entre ícono y texto */
+  cursor: pointer;                     /* manita */
 }
-.btn-add:hover { background-color: #004a9c; }
-.btn-add:active { transform: scale(.98); }
+.btn-add:hover { background-color: #004a9c; } /* Azul más oscuro en hover */
+.btn-add:active { transform: scale(.98); }   /* efecto "click" */
 
-/* Buscador en topbar */
+/* ======================
+   BUSCADOR (input text)
+   ====================== */
 .search-input {
   padding: 8px 12px;
-  border: 1px solid #ced4da;
+  border: 1px solid #ced4da;           /* gris bootstrap */
   border-radius: 8px;
-  width: 100%;
+  width: 100%;                         /* ocupa todo el ancho disponible */
   transition: border-color .2s ease, box-shadow .2s ease;
 }
-.search-input:focus{
-  border-color: #1d6fa5;
+.search-input:focus {
+  border-color: #1d6fa5;               /* azul SASA al enfocar */
   outline: none;
-  box-shadow: 0 0 0 .2rem rgba(29,111,165,.12);
+  box-shadow: 0 0 0 .2rem rgba(29,111,165,.12); /* halo azul */
 }
 
-/* ========== Select (COMBOBOX SIMPLE estilizado) ========== */
+/* ======================
+   SELECT / COMBOBOX ESTILIZADO
+   ====================== */
 select.form-select,
 dialog select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
+  -webkit-appearance: none;  /* elimina estilos nativos (Safari/Chrome) */
+  -moz-appearance: none;     /* elimina estilos nativos (Firefox) */
   appearance: none;
   background-color: #fff;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16'%3E%3Cpath fill='%236b7280' d='M3.2 5.5l4.8 4.8 4.8-4.8.8.8-5.6 5.6L2.4 6.3z'/%3E%3C/svg%3E");
+  /* Icono de flecha ↓ insertado como SVG en background */
+  background-image: url("data:image/svg+xml,%3Csvg ... %3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 14px 14px;
-  padding: 10px 38px 10px 12px;
+  padding: 10px 38px 10px 12px;        /* espacio extra a la derecha por la flecha */
   border: 1px solid #ced4da;
   border-radius: 10px;
   font-size: .95rem;
@@ -77,41 +85,49 @@ dialog select:focus {
   outline: none;
   box-shadow: 0 0 0 .2rem rgba(29,111,165,.12);
 }
-select.form-select option[disabled][selected] { color: #6b7280; }
+select.form-select option[disabled][selected] { color: #6b7280; } /* texto gris en "Seleccione..." */
 
-/* Tabla */
+/* ======================
+   TABLA ESTILIZADA
+   ====================== */
 .table-responsive {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,.06);
+  border-radius: 12px;                 /* redondear contenedor */
+  overflow: hidden;                    /* oculta bordes de scroll */
+  box-shadow: 0 0 10px rgba(0,0,0,.06);/* sombra ligera */
   background: #fff;
   padding: 8px;
 }
-.table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+.table {
+  width: 100%;
+  border-collapse: collapse;           /* bordes compartidos */
+  margin-bottom: 0;
+}
 .table thead th,
 .tabla-encabezado th {
-  background-color: #f7f8fa;
-  border-bottom: 2px solid #e9ecef;
+  background-color: #f7f8fa;           /* gris claro */
+  border-bottom: 2px solid #e9ecef;    /* línea divisoria */
   font-weight: 700;
   text-align: center;
   vertical-align: middle;
   padding: 12px 14px;
   font-size: .92rem;
-  color: #0f172a;
+  color: #0f172a;                      /* texto casi negro */
 }
 .table tbody td {
   vertical-align: middle;
   padding: 12px 14px;
   text-align: center;
-  border: 1px solid #eef0f3;
+  border: 1px solid #eef0f3;           /* línea sutil entre celdas */
   font-size: .95rem;
 }
-.table tbody tr:hover { background-color: #f5faff; }
+.table tbody tr:hover { background-color: #f5faff; } /* azul claro en hover */
 
-/* Acciones (icon buttons) */
-.table td:last-child { white-space: nowrap; }
+/* ======================
+   BOTONES DE ACCIÓN EN TABLA (editar / eliminar)
+   ====================== */
+.table td:last-child { white-space: nowrap; } /* evita que se rompa en varias líneas */
 .icon-btn {
-  display: inline-flex;
+  display: inline-flex;                 /* ícono + acción */
   align-items: center;
   justify-content: center;
   padding: 6px 10px;
@@ -121,24 +137,41 @@ select.form-select option[disabled][selected] { color: #6b7280; }
   border: 1.5px solid #ced4da !important;
   color: #333 !important;
   cursor: pointer;
-  transition: background-color .25s ease, color .25s ease, border-color .25s ease, transform .08s ease, box-shadow .25s ease;
+  transition: background-color .25s ease, color .25s ease,
+              border-color .25s ease, transform .08s ease, box-shadow .25s ease;
 }
-.icon-btn i { font-size: 1.05rem; pointer-events: none; }
+.icon-btn i { font-size: 1.05rem; pointer-events: none; } /* ícono no intercepta clicks */
 .icon-btn:hover {
-  background-color: #e7f1ff !important;
+  background-color: #e7f1ff !important; /* azulito */
   border-color: #1d6fa5 !important;
   color: #1d6fa5 !important;
   box-shadow: 0 0 0 .2rem rgba(29,111,165,.10);
 }
 .icon-btn:active { transform: scale(.98); }
-.btn-primary.icon-btn { color: #0056b3 !important; border-color: #0056b3 !important; }
-.btn-primary.icon-btn:hover { background-color: #cfe2ff !important; color: #004a9c !important; border-color: #004a9c !important; }
-.btn-danger.icon-btn { color: #dc3545 !important; border-color: #dc3545 !important; }
-.btn-danger.icon-btn:hover { background-color: #f8d7da !important; color: #842029 !important; border-color: #842029 !important; }
 
-/* Paginación (UL/LI Bootstrap) con estilo de mantenimiento */
+/* Variantes según tipo */
+.btn-primary.icon-btn {
+  color: #0056b3 !important; border-color: #0056b3 !important;
+}
+.btn-primary.icon-btn:hover {
+  background-color: #cfe2ff !important;
+  color: #004a9c !important;
+  border-color: #004a9c !important;
+}
+.btn-danger.icon-btn {
+  color: #dc3545 !important; border-color: #dc3545 !important;
+}
+.btn-danger.icon-btn:hover {
+  background-color: #f8d7da !important;
+  color: #842029 !important;
+  border-color: #842029 !important;
+}
+
+/* ======================
+   PAGINACIÓN (basada en Bootstrap)
+   ====================== */
 #pagination,
-nav .pagination{
+nav .pagination {
   margin-top: 20px;
   display: flex;
   gap: 8px;
@@ -147,60 +180,54 @@ nav .pagination{
   align-items: center;
 }
 
-.pagination .page-item{ margin: 0; }
-
-.pagination .page-link{
+.pagination .page-link {
   background: #fff;
   border: 1px solid #dee2e6;
-  border-radius: 8px !important; /* igual que botones de mantenimiento */
+  border-radius: 8px !important;        /* redondear botones */
   padding: 6px 12px;
   font-size: .9rem;
   color: #333;
-  transition: background-color .25s ease, color .25s ease, border-color .25s ease, transform .08s ease, box-shadow .25s ease;
+  transition: all .25s ease;
 }
-
-.pagination .page-link:hover{
+.pagination .page-link:hover {
   background-color: #0056b3;
   color: #fff;
   border-color: #0056b3;
   box-shadow: 0 0 0 .2rem rgba(29,111,165,.10);
 }
+.pagination .page-link:active { transform: scale(.98); }
+.pagination .page-link:focus { outline: none; box-shadow: 0 0 0 .2rem rgba(29,111,165,.10); }
 
-.pagination .page-link:active{ transform: scale(.98); }
-.pagination .page-link:focus{ outline: none; box-shadow: 0 0 0 .2rem rgba(29,111,165,.10); }
-
-.pagination .page-item.active .page-link{
+.pagination .page-item.active .page-link {
   background-color: #0056b3;
   color: #fff;
   border-color: #0056b3;
   font-weight: 600;
 }
-
-.pagination .page-item.disabled .page-link{
+.pagination .page-item.disabled .page-link {
   background: #e9ecef;
   color: #6c757d;
   cursor: not-allowed;
   border-color: #dee2e6;
 }
-
-/* Evitar radios raros por reglas de Bootstrap en first/last */
+/* Corrige Bootstrap: que el primero/último también tengan bordes redondeados */
 .pagination .page-item:first-child .page-link,
-.pagination .page-item:last-child .page-link{
+.pagination .page-item:last-child .page-link {
   border-radius: 8px !important;
 }
 
-
-/* Dialog / modal */
+/* ======================
+   MODAL / DIALOG HTML NATIVO
+   ====================== */
 dialog {
-  width: 680px;
-  max-width: 92%;
+  width: 680px; max-width: 92%;
   border: none;
   border-radius: 14px;
   padding: 22px 24px;
   box-shadow: 0 8px 32px rgba(0,0,0,.18);
   background-color: #fff;
 }
-dialog::backdrop { background: rgba(0,0,0,.3); }
+dialog::backdrop { background: rgba(0,0,0,.3); } /* fondo oscurecido */
 dialog h2, dialog h3 {
   font-size: 1.2rem;
   margin-bottom: 14px;
@@ -228,20 +255,26 @@ dialog textarea:focus {
   box-shadow: 0 0 0 .2rem rgba(29,111,165,.12);
 }
 
-/* Responsive */
-@media (max-width: 992px){
-  .card{ padding: 20px; }
-  .card h2{ font-size: 1.15rem; }
-  .table-responsive{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .table thead th, .table tbody td{ padding: 10px; font-size: .9rem; white-space: nowrap; }
+/* ======================
+   RESPONSIVE ADAPTATIVO
+   ====================== */
+@media (max-width: 992px) {
+  .card { padding: 20px; }
+  .card h2 { font-size: 1.15rem; }
+  .table-responsive { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .table thead th, .table tbody td {
+    padding: 10px;
+    font-size: .9rem;
+    white-space: nowrap; /* evita cortes feos en columnas */
+  }
 }
-@media (max-width: 576px){
-  .d-flex.justify-content-between.align-items-center.mb-4{
+@media (max-width: 576px) {
+  .d-flex.justify-content-between.align-items-center.mb-4 {
     flex-direction: column; align-items: stretch; gap: 10px;
   }
-  .search-input{ width: 100%; }
-  #registrosPorPagina{ width: 100%; }
-  dialog{ width: 94%; max-width: 420px; padding: 16px; }
-  dialog .d-flex.justify-content-between.mt-3{ flex-direction: column; }
-  dialog button{ width: 100%; }
+  .search-input { width: 100%; }
+  #registrosPorPagina { width: 100%; }
+  dialog { width: 94%; max-width: 420px; padding: 16px; }
+  dialog .d-flex.justify-content-between.mt-3 { flex-direction: column; }
+  dialog button { width: 100%; } /* botones full-width en móviles */
 }

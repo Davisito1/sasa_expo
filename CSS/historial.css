@@ -1,68 +1,78 @@
-/* Estilo para contenedor principal */
+/* =============================
+   CONTENEDOR PRINCIPAL HISTORIAL
+   ============================= */
 .historial-container {
-  background-color: white;
-  padding: 30px;
-  border-radius: 10px;
-  margin: 30px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: white;                 /* Fondo blanco para contraste */
+  padding: 30px;                           /* Espaciado interno amplio */
+  border-radius: 10px;                     /* Bordes redondeados */
+  margin: 30px;                            /* Separación externa */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);/* Sombra ligera tipo card */
 }
 
 .historial-container h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-  font-weight: bold;
+  font-size: 24px;                         /* Tamaño de título principal */
+  margin-bottom: 20px;                     /* Espaciado inferior */
+  font-weight: bold;                       /* Negrita para jerarquía */
 }
 
-/* Tabla de historial */
+/* =============================
+   TABLA DE HISTORIAL
+   ============================= */
 .tabla-historial,
 .table {
-  width: 100%;
-  border-collapse: collapse;
+  width: 100%;                             /* Ocupa todo el ancho del contenedor */
+  border-collapse: collapse;               /* Elimina doble borde entre celdas */
 }
 
 .tabla-historial thead,
 .table thead {
-  background-color: #f0f0f0;
+  background-color: #f0f0f0;               /* Fondo gris claro para encabezados */
 }
 
 .tabla-historial th,
 .tabla-historial td,
 .table th,
 .table td {
-  text-align: center;
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
+  text-align: center;                      /* Centra contenido en celdas */
+  padding: 12px;                           /* Espaciado interno */
+  border-bottom: 1px solid #ddd;           /* Línea divisoria inferior */
 }
 
-/* Buscar input */
+/* =============================
+   INPUT DE BÚSQUEDA
+   ============================= */
 .search-input {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 6px 10px;                       /* Espacio interno */
+  border: 1px solid #ccc;                  /* Borde gris claro */
+  border-radius: 4px;                      /* Bordes redondeados */
 }
 
-/* Acciones (no se usa pero se conserva el estilo por consistencia) */
+/* =============================
+   BOTONES DE ACCIÓN (icon-btn)
+   ============================= */
 .icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  font-size: 1rem;
-  border-radius: 6px;
-  background-color: white !important;
-  border: 1.5px solid #ced4da !important;
-  color: #333 !important;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  display: inline-flex;                    /* Flex para centrar íconos */
+  align-items: center;                     /* Centrado vertical */
+  justify-content: center;                 /* Centrado horizontal */
+  padding: 6px 10px;                       /* Tamaño compacto */
+  font-size: 1rem;                         /* Tamaño base de fuente */
+  border-radius: 6px;                      /* Bordes redondeados */
+  background-color: white !important;      /* Fondo blanco (sobrescribe Bootstrap) */
+  border: 1.5px solid #ced4da !important;  /* Borde gris definido */
+  color: #333 !important;                  /* Texto/ícono gris oscuro */
+  cursor: pointer;                         /* Manita al pasar */
+  transition: background-color 0.3s ease,  /* Suaviza transición hover */
+              color 0.3s ease,
+              border-color 0.3s ease;
 }
 
 .icon-btn i {
-  font-size: 1.1rem;
-  pointer-events: none;
+  font-size: 1.1rem;                       /* Ícono ligeramente mayor */
+  pointer-events: none;                    /* Ícono no captura clics */
 }
 
 .icon-btn:hover {
-  background-color: #e7f1ff !important;
-  border-color: #1d6fa5 !important;
-  color: #1d6fa5 !important;
+  background-color: #e7f1ff !important;    /* Fondo azul claro en hover */
+  border-color: #1d6fa5 !important;        /* Borde azul en hover */
+  color: #1d6fa5 !important;               /* Texto/ícono azul en hover */
 }

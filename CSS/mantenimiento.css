@@ -1,71 +1,78 @@
 /* ======================
-   Tarjeta / contenedor
+   Tarjeta / contenedor principal
    ====================== */
 .card {
-  background-color: #fff;
-  padding: 24px;
-  border-radius: 12px;
-  margin: 30px auto;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  max-width: 1200px;
+  background-color: #fff;                 /* Fondo blanco */
+  padding: 24px;                          /* Espaciado interno */
+  border-radius: 12px;                    /* Bordes redondeados */
+  margin: 30px auto;                      /* Centrado con margen vertical */
+  box-shadow: 0 2px 10px rgba(0,0,0,.06); /* Sombra ligera */
+  max-width: 1200px;                      /* Ancho máximo */
 }
 .card h2 {
   font-size: 1.35rem;
   font-weight: 700;
-  text-align: center;
+  text-align: center;                     /* Centra el título */
 }
 
-/* Encabezado de acciones */
+/* ======================
+   Encabezado de acciones (buscar, agregar)
+   ====================== */
 .d-flex.justify-content-between.align-items-center.mb-4{
   margin-bottom: 20px;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 12px;        /* Espacio entre elementos */
+  flex-wrap: wrap;  /* Si no cabe en una fila, se acomoda en varias */
 }
 
-/* Botón principal (+) */
+/* ======================
+   Botón principal (+)
+   ====================== */
 .btn-add {
-  background-color: #0056b3;
-  color: #fff;
+  background-color: #0056b3;             /* Azul corporativo */
+  color: #fff;                           /* Texto blanco */
   border-radius: 10px;
   padding: 10px 16px;
   border: none;
   font-weight: 600;
   transition: transform .08s ease, background-color .25s ease;
-  display: inline-flex;
+  display: inline-flex;                  /* Flex interno para ícono + texto */
   align-items: center;
-  gap: .5rem;
+  gap: .5rem;                            /* Espacio entre ícono y texto */
   cursor: pointer;
 }
-.btn-add:hover { background-color: #004a9c; }
-.btn-add:active { transform: scale(.98); }
+.btn-add:hover { background-color: #004a9c; } /* Hover azul más oscuro */
+.btn-add:active { transform: scale(.98); }     /* Efecto al presionar */
 
-/* Buscador en topbar */
+/* ======================
+   Buscador en topbar
+   ====================== */
 .search-input {
   padding: 8px 12px;
   border: 1px solid #ced4da;
   border-radius: 8px;
-  width: 100%;
+  width: 100%;                          /* Ocupa todo el ancho disponible */
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 .search-input:focus{
-  border-color: #1d6fa5;
+  border-color: #1d6fa5;                 /* Borde azul al enfocar */
   outline: none;
   box-shadow: 0 0 0 .2rem rgba(29,111,165,.12);
 }
 
-/* ========== Select (COMBOBOX SIMPLE estilizado) ========== */
+/* ======================
+   Select (combobox estilizado)
+   ====================== */
 select.form-select,
 dialog select {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+  appearance: none;                      /* Quita estilos nativos */
   background-color: #fff;
+  /* Flecha personalizada en SVG */
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16'%3E%3Cpath fill='%236b7280' d='M3.2 5.5l4.8 4.8 4.8-4.8.8.8-5.6 5.6L2.4 6.3z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 14px 14px;
-  padding: 10px 38px 10px 12px;
+  padding: 10px 38px 10px 12px;          /* Espacio a la derecha para la flecha */
   border: 1px solid #ced4da;
   border-radius: 10px;
   font-size: .95rem;
@@ -79,10 +86,12 @@ dialog select:focus {
 }
 select.form-select option[disabled][selected] { color: #6b7280; }
 
-/* Tabla */
+/* ======================
+   Tabla
+   ====================== */
 .table-responsive {
   border-radius: 12px;
-  overflow: hidden;
+  overflow: hidden;                      /* Bordes redondeados aplican a tabla */
   box-shadow: 0 0 10px rgba(0,0,0,.06);
   background: #fff;
   padding: 8px;
@@ -108,7 +117,9 @@ select.form-select option[disabled][selected] { color: #6b7280; }
 }
 .table tbody tr:hover { background-color: #f5faff; }
 
-/* Acciones (icon buttons) */
+/* ======================
+   Acciones (botones ícono editar/eliminar)
+   ====================== */
 .table td:last-child { white-space: nowrap; }
 .icon-btn {
   display: inline-flex;
@@ -131,12 +142,16 @@ select.form-select option[disabled][selected] { color: #6b7280; }
   box-shadow: 0 0 0 .2rem rgba(29,111,165,.10);
 }
 .icon-btn:active { transform: scale(.98); }
+
+/* Variantes por color */
 .btn-primary.icon-btn { color: #0056b3 !important; border-color: #0056b3 !important; }
 .btn-primary.icon-btn:hover { background-color: #cfe2ff !important; color: #004a9c !important; border-color: #004a9c !important; }
 .btn-danger.icon-btn { color: #dc3545 !important; border-color: #dc3545 !important; }
 .btn-danger.icon-btn:hover { background-color: #f8d7da !important; color: #842029 !important; border-color: #842029 !important; }
 
-/* Paginación (idéntica a Empleados) */
+/* ======================
+   Paginación (botones de página)
+   ====================== */
 #paginacion{
   margin-top: 20px;
   display: flex;
@@ -159,7 +174,9 @@ select.form-select option[disabled][selected] { color: #6b7280; }
 #paginacion button.btn-primary{ background-color: #0056b3; color: #fff; border-color: #0056b3; font-weight: 600; }
 #paginacion button:disabled{ background: #e9ecef; color: #6c757d; cursor: not-allowed; border-color: #dee2e6; }
 
-/* Dialog / modal */
+/* ======================
+   Dialog / modal
+   ====================== */
 dialog {
   width: 680px;
   max-width: 92%;
@@ -197,7 +214,9 @@ dialog textarea:focus {
   box-shadow: 0 0 0 .2rem rgba(29,111,165,.12);
 }
 
-/* Responsive */
+/* ======================
+   Responsive (ajustes en pantallas pequeñas)
+   ====================== */
 @media (max-width: 992px){
   .card{ padding: 20px; }
   .card h2{ font-size: 1.15rem; }

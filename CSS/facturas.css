@@ -1,202 +1,247 @@
 /* ===== Base global ===== */
-* { box-sizing: border-box; }
-img, video { max-width: 100%; height: auto; }
+* { box-sizing: border-box; }                  /* Incluye borde y padding en el cálculo de ancho/alto */
+img, video { max-width: 100%; height: auto; } /* Medios responsivos: no exceden el contenedor */
 
 /* ===== Contenedor principal (card) ===== */
 .card,
 .crud-container {
-  background: #fff;
-  padding: 30px;
-  border-radius: 10px;
-  margin: 30px auto;
-  box-shadow: 0 2px 8px rgba(0,0,0,.1);
-  max-width: 1200px;
+  background: #fff;                            /* Fondo blanco para contraste y legibilidad */
+  padding: 30px;                               /* Espaciado interno amplio */
+  border-radius: 10px;                         /* Esquinas redondeadas */
+  margin: 30px auto;                           /* Separación vertical + centrado horizontal (con max-width) */
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);        /* Sombra sutil para efecto de tarjeta */
+  max-width: 1200px;                           /* Evita líneas de texto demasiado largas en desktop */
 }
 .card h2,
 .crud-container h2 {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-align: center;
+  font-size: 24px;                             /* Título principal (≈1.5rem) */
+  font-weight: 700;                            /* Negrita para jerarquía visual */
+  margin-bottom: 20px;                         /* Separación con el contenido siguiente */
+  text-align: center;                          /* Centrado del heading */
 }
 
-/* Encabezado de acciones */
+/* ===== Encabezado de acciones (buscador, select, botón) ===== */
 .crud-header,
 .d-flex.justify-content-between.align-items-center.mb-4 {
-  margin-bottom: 20px;
-  gap: 12px;
-  flex-wrap: wrap;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  margin-bottom: 20px;                         /* Distancia respecto a tabla/listado */
+  gap: 12px;                                   /* Separación entre elementos (ej. input y botón) */
+  flex-wrap: wrap;                             /* En pantallas pequeñas, que bajen de línea */
+  display: flex;                               /* Layout flexible */
+  align-items: center;                         /* Alinea verticalmente al centro */
+  justify-content: space-between;              /* Extremos: buscador a la izq / botón a la derecha (cuando quepa) */
 }
 
 /* ===== Botón principal (Agregar) ===== */
 .btn-add {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: #0056b3 !important;
-  color: #fff !important;
-  padding: 8px 16px;
-  font-size: 14px;
-  border: none !important;
-  border-radius: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background .2s ease-in-out;
+  display: inline-flex;                        /* Para alinear ícono y texto fácilmente */
+  align-items: center;                         /* Centrar verticalmente contenido interno */
+  gap: 6px;                                    /* Espacio entre ícono y label */
+  background: #0056b3 !important;              /* Azul corporativo (forzamos sobre Bootstrap si aplica) */
+  color: #fff !important;                      /* Texto blanco para contraste */
+  padding: 8px 16px;                           /* Área de click cómoda */
+  font-size: 14px;                             /* Tamaño de fuente sobrio */
+  border: none !important;                     /* Sin borde adicional */
+  border-radius: 10px;                         /* Esquinas suaves */
+  font-weight: 500;                            /* Semi-negrita sutil */
+  cursor: pointer;                             /* Manita al pasar */
+  transition: background .2s ease-in-out;      /* Suaviza el cambio de color */
 }
-.btn-add:hover { background: #155d85 !important; }
+.btn-add:hover { background: #155d85 !important; } /* Oscurecer en hover para feedback */
 
 /* ===== Búsqueda ===== */
 .search-input {
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
-  width: 100%;
-  font-size: 1rem;
-  transition: border-color .3s ease;
+  padding: 8px 12px;                           /* Espacio para teclear cómodo */
+  border: 1px solid #ced4da;                   /* Borde gris tipo Bootstrap */
+  border-radius: 5px;                          /* Esquinas suaves */
+  width: 100%;                                 /* Ocupa el ancho de su contenedor (ej. col) */
+  font-size: 1rem;                             /* Tamaño legible */
+  transition: border-color .3s ease;           /* Feedback al foco */
 }
 .search-input:focus {
-  border-color: #0056b3;
-  outline: 0;
-  box-shadow: 0 0 5px rgba(0,86,179,.5);
+  border-color: #0056b3;                       /* Azul al enfocar (coherencia de marca) */
+  outline: 0;                                   /* Quita el outline nativo */
+  box-shadow: 0 0 5px rgba(0,86,179,.5);        /* Halo azul accesible */
 }
 
 /* ===== Tabla ===== */
 .table-responsive {
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,.1);
-  background: #fff;
-  padding: 8px;
+  border-radius: 10px;                         /* Hace que la tabla parezca card */
+  overflow: hidden;                            /* Oculta desbordes (encabezado redondeado real) */
+  box-shadow: 0 0 10px rgba(0,0,0,.1);         /* Relieve sutil */
+  background: #fff;                            /* Fondo consistente */
+  padding: 8px;                                /* Respiración alrededor de la tabla */
 }
-.table { width: 100%; border-collapse: collapse; margin-bottom: 0; }
+.table { 
+  width: 100%;                                 /* Que use todo el ancho del contenedor */
+  border-collapse: collapse;                   /* Une los bordes entre celdas */
+  margin-bottom: 0;                            /* El wrapper ya maneja el espaciado */
+}
 .table thead th {
-  background: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
-  font-weight: 600;
-  text-align: center;
-  vertical-align: middle;
-  padding: 12px 15px;
+  background: #f8f9fa;                         /* Encabezado gris claro */
+  border-bottom: 2px solid #dee2e6;            /* Línea más marcada separando encabezado */
+  font-weight: 600;                            /* Un poco de peso para títulos de columna */
+  text-align: center;                          /* Centrado horizontal */
+  vertical-align: middle;                      /* Centrado vertical */
+  padding: 12px 15px;                          /* Altura y separación del encabezado */
 }
 .table tbody td {
-  vertical-align: middle;
-  padding: 12px 15px;
-  text-align: center;
-  border: 1px solid #dee2e6;
+  vertical-align: middle;                      /* Centra contenido verticalmente (íconos/texto) */
+  padding: 12px 15px;                          /* Espaciado interno coherente con thead */
+  text-align: center;                          /* Centrado visual de datos */
+  border: 1px solid #dee2e6;                   /* Rejilla sutil entre celdas */
 }
 
-/* ===== Botones de acción ===== */
-.table td:last-child { white-space: nowrap; }
+/* ===== Botones de acción (última columna) ===== */
+.table td:last-child { white-space: nowrap; }   /* Evita saltos de línea en botones de acción */
 .icon-btn {
-  display: inline-flex;
+  display: inline-flex;                        /* Facilita centrar ícono/texto */
   align-items: center;
   justify-content: center;
-  gap: .35rem;
-  padding: 6px 10px;
-  font-size: 1rem;
-  border-radius: 6px;
-  background: #fff !important;
-  border: 1.5px solid #ced4da !important;
-  color: #333 !important;
-  cursor: pointer;
-  transition: background .3s, color .3s, border-color .3s;
+  gap: .35rem;                                 /* Separación leve entre ícono y label si lo hubiera */
+  padding: 6px 10px;                           /* Botón compacto (pensado para tabla) */
+  font-size: 1rem;                             /* Tamaño base legible */
+  border-radius: 6px;                          /* Suave, pero menos que el botón principal */
+  background: #fff !important;                 /* Fondo neutro para destacar el borde */
+  border: 1.5px solid #ced4da !important;      /* Borde visible para acciones */
+  color: #333 !important;                      /* Texto/ícono gris oscuro */
+  cursor: pointer;                             /* Manita al pasar */
+  transition: background .3s, color .3s, border-color .3s; /* Feedback en hover */
 }
-.icon-btn i { font-size: 1.1rem; pointer-events: none; }
-.icon-btn:hover { background: #e7f1ff !important; border-color: #1d6fa5 !important; color: #1d6fa5 !important; }
-.btn-primary.icon-btn { color: #0d6efd !important; border-color: #0d6efd !important; }
-.btn-primary.icon-btn:hover { background: #cfe2ff !important; color: #084298 !important; border-color: #084298 !important; }
-.btn-danger.icon-btn { color: #dc3545 !important; border-color: #dc3545 !important; }
-.btn-danger.icon-btn:hover { background: #f8d7da !important; color: #842029 !important; border-color: #842029 !important; }
+.icon-btn i { font-size: 1.1rem; pointer-events: none; } /* Ícono un pelín más grande y no captura clicks */
+.icon-btn:hover { 
+  background: #e7f1ff !important;              /* Azul muy claro al hover */
+  border-color: #1d6fa5 !important;            /* Borde azul activo */
+  color: #1d6fa5 !important;                   /* Ícono/texto azul activo */
+}
+.btn-primary.icon-btn { 
+  color: #0d6efd !important;                   /* Azul Bootstrap */
+  border-color: #0d6efd !important;
+}
+.btn-primary.icon-btn:hover { 
+  background: #cfe2ff !important;              /* Fondo azul claro al hover */
+  color: #084298 !important;                   /* Azul oscuro para contraste */
+  border-color: #084298 !important;
+}
+.btn-danger.icon-btn { 
+  color: #dc3545 !important;                   /* Rojo alerta */
+  border-color: #dc3545 !important;
+}
+.btn-danger.icon-btn:hover { 
+  background: #f8d7da !important;              /* Fondo rojo claro al hover */
+  color: #842029 !important;                   /* Texto rojo oscuro */
+  border-color: #842029 !important;
+}
 
-/* ===== Modal ===== */
+/* ===== Modal (dialog nativo) ===== */
 dialog {
-  width: 350px;
-  max-width: 90%;
-  border: 0;
-  border-radius: 10px;
-  padding: 20px 25px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.2);
-  background: #fff;
+  width: 350px;                                /* Ancho base cómodo para formularios cortos */
+  max-width: 90%;                              /* Respeto en pantallas pequeñas */
+  border: 0;                                   /* Sin borde nativo */
+  border-radius: 10px;                         /* Esquinas suaves */
+  padding: 20px 25px;                          /* Respiración interna */
+  box-shadow: 0 2px 12px rgba(0,0,0,.2);       /* Sombra marcada para superposición */
+  background: #fff;                            /* Fondo blanco */
 }
 dialog h2 {
-  font-size: 20px;
-  margin-bottom: 15px;
-  font-weight: 700;
-  text-align: center;
+  font-size: 20px;                             /* Título algo más pequeño que el de card */
+  margin-bottom: 15px;                         /* Separación del formulario */
+  font-weight: 700;                            /* Negrita para jerarquía */
+  text-align: center;                          /* Centrado del título */
 }
-dialog form { display: flex; flex-direction: column; gap: 12px; }
+dialog form { 
+  display: flex; flex-direction: column; gap: 12px; /* Layout vertical con separación constante */
+}
 dialog input, dialog select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
-  font-size: 1rem;
+  width: 100%;                                 /* Campos ocupan todo el ancho del modal */
+  padding: 8px 12px;                           /* Área de interacción cómoda */
+  border: 1px solid #ced4da;                   /* Borde gris estándar */
+  border-radius: 5px;                          /* Bordes suaves */
+  font-size: 1rem;                             /* Tamaño legible */
 }
 dialog input:focus, dialog select:focus {
-  outline: 0;
-  border-color: #0056b3;
-  box-shadow: 0 0 5px rgba(0,86,179,.5);
+  outline: 0;                                  /* Sin outline nativo */
+  border-color: #0056b3;                       /* Azul marca al foco */
+  box-shadow: 0 0 5px rgba(0,86,179,.5);       /* Halo accesible */
 }
-dialog .d-flex.justify-content-between { gap: 10px; }
-dialog button { flex: 1; }
+dialog .d-flex.justify-content-between { gap: 10px; } /* Espacio entre botones de acción */
+dialog button { flex: 1; }                     /* Botones crecen por igual en el contenedor */
 
 /* ===== Paginación ===== */
 #paginacion {
-  margin-top: 20px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
+  margin-top: 20px;                            /* Separación con la tabla */
+  display: flex;                               /* Layout en fila */
+  gap: 8px;                                    /* Espacio entre botones */
+  flex-wrap: wrap;                             /* Permite salto de línea en móvil */
+  justify-content: center;                     /* Centrado horizontal */
+  align-items: center;                         /* Alineación vertical */
 }
 #paginacion button {
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: .9rem;
-  cursor: pointer;
-  transition: all .2s ease-in-out;
-  color: #333;
+  background: #fff;                            /* Fondo neutro */
+  border: 1px solid #dee2e6;                   /* Borde claro tipo Bootstrap */
+  border-radius: 6px;                          /* Esquinas suaves */
+  padding: 6px 12px;                           /* Área de click adecuada */
+  font-size: .9rem;                            /* Ligeramente más pequeño */
+  cursor: pointer;                             /* Manita (navegación) */
+  transition: all .2s ease-in-out;             /* Suaviza hover/focus */
+  color: #333;                                 /* Texto gris oscuro */
 }
-#paginacion button:hover { background: #0056b3; color: #fff; border-color: #0056b3; }
-#paginacion button.btn-primary { background: #0056b3; color: #fff; border-color: #0056b3; font-weight: 600; }
-#paginacion button:disabled { background: #e9ecef; color: #6c757d; cursor: not-allowed; border-color: #dee2e6; }
+#paginacion button:hover { 
+  background: #0056b3;                         /* Azul marca al hover */
+  color: #fff;                                  /* Texto blanco */
+  border-color: #0056b3;                       /* Borde acompaña */
+}
+#paginacion button.btn-primary { 
+  background: #0056b3;                          /* Página activa resaltada */
+  color: #fff; border-color: #0056b3; 
+  font-weight: 600;                              /* Un poco más de peso */
+}
+#paginacion button:disabled { 
+  background: #e9ecef;                          /* Estado deshabilitado */
+  color: #6c757d;                                /* Texto gris */
+  cursor: not-allowed;                           /* Cursor de "no disponible" */
+  border-color: #dee2e6;                         /* Borde acorde al estado */
+}
 
 /* ===== Responsive ===== */
 @media (max-width: 992px) {
-  .card, .crud-container { padding: 20px; }
-  .card h2, .crud-container h2 { font-size: 20px; }
+  .card, .crud-container { padding: 20px; }      /* Menos padding en tablet */
+  .card h2, .crud-container h2 { font-size: 20px; } /* Título un poco menor */
 
   .btn-add {
-    padding: 8px 14px;
-    font-size: .95rem;
-    width: auto;
-    max-width: 250px;
+    padding: 8px 14px;                           /* Botón más compacto */
+    font-size: .95rem;                           /* Ajuste de tipografía */
+    width: auto;                                 /* Evitar 100% si hereda estilos */
+    max-width: 250px;                            /* Límite en layouts estrechos */
   }
 
-  .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-responsive { 
+    overflow-x: auto;                            /* Scroll horizontal si la tabla no cabe */
+    -webkit-overflow-scrolling: touch;           /* Inercia en iOS */
+  }
   .table thead th, .table tbody td {
-    padding: 10px;
-    font-size: .9rem;
-    white-space: nowrap;
+    padding: 10px;                               /* Celdas más compactas */
+    font-size: .9rem;                            /* Tipografía más pequeña */
+    white-space: nowrap;                         /* Evita saltos de línea bruscos */
   }
 }
 
 @media (max-width: 576px) {
   .crud-header,
   .d-flex.justify-content-between.align-items-center.mb-4 {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
+    flex-direction: column;                      /* Acciones apiladas en móvil */
+    align-items: stretch;                        /* Ocupar 100% del ancho */
+    gap: 10px;                                   /* Separación vertical */
   }
 
-  .search-input { width: 100%; }
-  #registrosPorPagina { width: 100%; }
+  .search-input { width: 100%; }                 /* Buscador full-width */
+  #registrosPorPagina { width: 100%; }           /* Select full-width */
 
-  dialog { width: 92%; max-width: 400px; padding: 16px; }
-  dialog .d-flex.justify-content-between { flex-direction: column; }
-  dialog button { width: 100%; }
+  dialog { 
+    width: 92%; max-width: 400px;                /* Modal más estrecho */
+    padding: 16px;                               /* Menos padding para aprovechar ancho */
+  }
+  dialog .d-flex.justify-content-between { 
+    flex-direction: column;                      /* Botones apilados */
+  }
+  dialog button { width: 100%; }                 /* Botones a lo ancho: más fácil de pulsar */
 }

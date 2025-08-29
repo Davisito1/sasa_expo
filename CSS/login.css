@@ -1,27 +1,28 @@
 :root{
-  --sasa-primary:#C91A1A;   /* rojo SASA */
-  --sasa-primary-600:#A61515;
-  --sasa-primary-700:#8A1313;
-  --sasa-bg:#f6f6f7;
-  --sasa-card:#ffffff;
-  --sasa-text:#1b1b1f;
-  --sasa-muted:#6b7280;
-  --sasa-ring: 0 0 0 0.25rem rgba(201,26,26,.15);
+  /*  Paleta de colores corporativa SASA */
+  --sasa-primary:#C91A1A;        /* Rojo principal */
+  --sasa-primary-600:#A61515;    /* Rojo intermedio (hover) */
+  --sasa-primary-700:#8A1313;    /* Rojo oscuro */
+  --sasa-bg:#f6f6f7;             /* Fondo base neutro */
+  --sasa-card:#ffffff;           /* Fondo de tarjetas / modales */
+  --sasa-text:#1b1b1f;           /* Texto principal */
+  --sasa-muted:#6b7280;          /* Texto secundario / subtítulos */
+  --sasa-ring: 0 0 0 0.25rem rgba(201,26,26,.15); /* Glow rojo en focus */
 }
 
+/* Reset global básico */
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
-/* ANTES: body { ...background radial... }  */
 
-/* AHORA: */
+/* Fondo base genérico de todas las páginas */
 body{
   margin:0;
   color:var(--sasa-text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
-  background: var(--sasa-bg); /* base neutra para todas las páginas */
+  background: var(--sasa-bg);
 }
 
-/* El fondo especial y demás del LOGIN se aplica solo aquí */
+/* Fondo decorativo EXCLUSIVO para pantallas de autenticación */
 .auth-bg{
   background:
     radial-gradient(60rem 60rem at -10% -20%, rgba(201,26,26,.08), transparent 60%),
@@ -29,29 +30,30 @@ body{
     var(--sasa-bg);
 }
 
-
+/* Layout del login: centra la tarjeta */
 .auth-layout{
-  min-height:100dvh;
+  min-height:100dvh;          /* Pantalla completa */
   display:grid;
-  place-items:center;
+  place-items:center;          /* Centrado vertical y horizontal */
   padding:24px;
 }
 
+/* Badge de marca (arriba a la izquierda) */
 .brand-badge{
   position:fixed;
-  top:18px;
-  left:18px;
-  display:flex;
-  align-items:center;
-  gap:10px;
+  top:18px; left:18px;
+  display:flex; align-items:center; gap:10px;
   font-weight:700;
   color:var(--sasa-primary-700);
   opacity:.9;
 }
 .brand-badge img{
-  width:34px;height:34px;object-fit:cover;border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,.15);
+  width:34px; height:34px; object-fit:cover;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
 
+/* Tarjeta del formulario de login */
 .login-card{
   width:100%;
   max-width:420px;
@@ -61,13 +63,14 @@ body{
   box-shadow:
     0 10px 25px rgba(0,0,0,.08),
     0 1px 0 rgba(0,0,0,.05) inset;
-  animation: rise .35s ease-out both;
+  animation: rise .35s ease-out both; /* efecto al aparecer */
 }
 @keyframes rise{
   from{ transform:translateY(8px); opacity:0; }
   to{ transform:translateY(0); opacity:1; }
 }
 
+/* Títulos */
 .title{
   font-size:1.6rem;
   font-weight:800;
@@ -79,6 +82,7 @@ body{
   font-size:.95rem;
 }
 
+/* Campo de entrada con borde elevado */
 .input-elevated{
   border:1px solid #e5e7eb;
   border-radius:12px;
@@ -92,12 +96,15 @@ body{
   background:#fff;
 }
 
+/* Ícono de input-group (ej. correo, usuario) */
 .input-group-text{
   background:transparent;
   border:none;
   border-right:1px solid #e6e6e6;
   color:#555;
 }
+
+/* Inputs internos */
 .form-control{
   border:none;
   background:transparent;
@@ -105,6 +112,7 @@ body{
 }
 .form-control:focus{ box-shadow:none; background:#fff; }
 
+/* Botón para mostrar/ocultar contraseña */
 .btn-eye{
   border:0;
   background:transparent;
@@ -113,17 +121,20 @@ body{
 }
 .btn-eye:hover{ color:#374151; }
 
+/* Links secundarios pequeños (recuperar, registrarse) */
 .small-links a{
   text-decoration:none;
   color: var(--sasa-primary-700);
 }
 .small-links a:hover{ color: var(--sasa-primary); }
 
+/* Botón principal SASA */
 .btn-sasa{
   display:inline-flex; align-items:center; justify-content:center;
   gap:8px;
   background: linear-gradient(180deg, var(--sasa-primary), var(--sasa-primary-700));
-  color:#fff; border:0; border-radius:12px;
+  color:#fff;
+  border:0; border-radius:12px;
   padding:12px 16px;
   font-weight:700;
   letter-spacing:.2px;
@@ -134,10 +145,12 @@ body{
 .btn-sasa:hover{ filter: brightness(1.05); }
 .btn-sasa:active{ transform: translateY(1px); }
 
+/* Spinner y label del botón durante carga */
 .btn-sasa .btn-spinner{ display:none; margin-left:8px; }
-.btn-sasa.loading .btn-label{ opacity: .0; }
+.btn-sasa.loading .btn-label{ opacity: 0; }
 .btn-sasa.loading .btn-spinner{ display:inline-block; }
 
+/* Botón contorno SASA */
 .btn-outline-sasa{
   --bs-btn-color: var(--sasa-primary-700);
   --bs-btn-border-color: var(--sasa-primary-700);
@@ -149,14 +162,14 @@ body{
   border-radius:10px;
 }
 
-/* Validación nativa + estilos */
+/* Estados de validación */
 .was-validated .form-control:invalid,
 .form-control.is-invalid{ background:#fff; }
 .invalid-feedback{ display:none; }
 .was-validated .form-control:invalid ~ .invalid-feedback,
 .form-control.is-invalid ~ .invalid-feedback{ display:block; }
 
-/* Responsivo sutil */
+/* Ajustes responsive */
 @media (max-width:480px){
   .login-card{ padding:22px; border-radius:16px; }
   .title{ font-size:1.45rem; }

@@ -2,242 +2,268 @@
    Tarjeta / contenedor
    ====================== */
 .card {
-  background-color: #fff;
-  padding: 24px;
-  border-radius: 12px;
-  margin: 30px auto;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
-  max-width: 1200px;
+  background-color: #fff;              /* Fondo blanco para contraste y legibilidad */
+  padding: 24px;                       /* Espaciado interno cómodo alrededor del contenido */
+  border-radius: 12px;                 /* Bordes redondeados, look moderno */
+  margin: 30px auto;                   /* Separación vertical + centrado horizontal (con width limitado) */
+  box-shadow: 0 2px 10px rgba(0,0,0,.06); /* Sombra suave para separar del fondo */
+  max-width: 1200px;                   /* No exceder 1200px para evitar líneas largas de texto */
 }
 .card h2 {
-  font-size: 1.35rem;
-  font-weight: 700;
-  text-align: center;
+  font-size: 1.35rem;                  /* Tamaño de título balanceado para desktop */
+  font-weight: 700;                    /* Título en negrita */
+  text-align: center;                  /* Centrado estético del heading */
 }
 
 /* ======================
    Botón principal (+)
    ====================== */
 .btn-add {
-  background-color: #0056b3;
-  color: #fff;
-  border-radius: 10px;
-  padding: 10px 16px;
-  border: none;
-  font-weight: 600;
-  transition: transform .08s ease, background-color .25s ease;
+  background-color: #0056b3;           /* Azul corporativo */
+  color: #fff;                         /* Texto blanco legible sobre azul */
+  border-radius: 10px;                 /* Esquinas suaves acordes al resto de UI */
+  padding: 10px 16px;                  /* Altura y ancho cómodos para pulsar */
+  border: none;                        /* Sin borde adicional (limpio) */
+  font-weight: 600;                    /* Peso medio-alto para jerarquía visual */
+  transition: transform .08s ease, background-color .25s ease; /* Animación sutil al interactuar */
 }
-.btn-add:hover { background-color: #004a9c; }
-.btn-add:active { transform: scale(.98); }
+.btn-add:hover { 
+  background-color: #004a9c;           /* Oscurecer en hover para feedback visual */
+}
+.btn-add:active { 
+  transform: scale(.98);               /* Micro-contracción en click para sensación táctil */
+}
 
 /* ======================
    Buscador en topbar
    ====================== */
 .search-input {
-  padding: 8px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  width: 100%;
-  transition: border-color .2s ease, box-shadow .2s ease;
+  padding: 8px 12px;                   /* Área de click/tecleo confortable */
+  border: 1px solid #ced4da;           /* Borde gris estándar tipo Bootstrap */
+  border-radius: 8px;                  /* Bordes suaves */
+  width: 100%;                         /* Ocupar todo el contenedor disponible (ej. col) */
+  transition: border-color .2s ease, box-shadow .2s ease; /* Feedback al enfocar */
 }
 .search-input:focus {
-  border-color: #1d6fa5;
-  outline: none;
-  box-shadow: 0 0 0 .2rem rgba(29,111,165,.12);
+  border-color: #1d6fa5;               /* Azul al focus para coherencia con marca */
+  outline: none;                       /* Quitar outline nativo y usar box-shadow controlado */
+  box-shadow: 0 0 0 .2rem rgba(29,111,165,.12); /* Halo suave accesible */
 }
 
 /* ======================
    Tabla
    ====================== */
 .table-responsive {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,.06);
-  background: #fff;
-  padding: 8px;
+  border-radius: 12px;                 /* Para que la tabla se vea como “card” */
+  overflow: hidden;                    /* Ocultar bordes duros del contenido interno */
+  box-shadow: 0 0 10px rgba(0,0,0,.06);/* Leve relieve para separar del fondo */
+  background: #fff;                    /* Fondo blanco consistente */
+  padding: 8px;                        /* Respiración alrededor de la tabla */
 }
 .table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 0;
+  width: 100%;                         /* Ancho completo del contenedor */
+  border-collapse: collapse;           /* Unifica bordes entre celdas */
+  margin-bottom: 0;                    /* Sin margen extra (ya lo da el wrapper) */
 }
 .table thead th {
-  background-color: #f7f8fa;
-  border-bottom: 2px solid #e9ecef;
-  font-weight: 700;
-  text-align: center;
-  vertical-align: middle;
-  padding: 12px 14px;
-  font-size: .92rem;
+  background-color: #f7f8fa;           /* Encabezado gris claro para diferenciar */
+  border-bottom: 2px solid #e9ecef;    /* Línea fuerte que separa header del body */
+  font-weight: 700;                    /* Encabezados en negrita para jerarquía */
+  text-align: center;                  /* Centrado de títulos de columnas */
+  vertical-align: middle;              /* Centrado vertical del texto */
+  padding: 12px 14px;                  /* Altura de fila y separación horizontal */
+  font-size: .92rem;                   /* Tamaño ligeramente menor que el body */
 }
 .table tbody td {
-  vertical-align: middle;
-  padding: 12px 14px;
-  text-align: center;
-  border: 1px solid #eef0f3;
-  font-size: .95rem;
+  vertical-align: middle;              /* Centrar contenido verticalmente (íconos/texto) */
+  padding: 12px 14px;                  /* Espaciado interno consistente con thead */
+  text-align: center;                  /* Centrado por consistencia visual del listado */
+  border: 1px solid #eef0f3;           /* Rejilla sutil entre celdas */
+  font-size: .95rem;                   /* Un pelín más grande que thead para lectura */
 }
 .table tbody tr:hover {
-  background-color: #f5faff;
+  background-color: #f5faff;           /* Resalte fila al pasar el mouse (azul muy suave) */
 }
 
 /* ======================
    Acciones (icon buttons)
    ====================== */
 .icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  font-size: 1rem;
-  border-radius: 10px;
-  background-color: #fff !important;
-  border: 1.5px solid #ced4da !important;
-  color: #333 !important;
-  cursor: pointer;
-  transition: background-color .25s ease, color .25s ease, border-color .25s ease, transform .08s ease;
+  display: inline-flex;                 /* Permite centrar ícono vertical/horizontal */
+  align-items: center;                  /* Alineación vertical del contenido */
+  justify-content: center;              /* Alineación horizontal del contenido */
+  padding: 6px 10px;                    /* Botón compacto para acciones en tabla */
+  font-size: 1rem;                      /* Tamaño base, ícono legible */
+  border-radius: 10px;                  /* Esquinas suaves como el resto de UI */
+  background-color: #fff !important;    /* Fondo blanco para contraste con borde */
+  border: 1.5px solid #ced4da !important; /* Borde gris visible (consistente) */
+  color: #333 !important;               /* Texto/ícono gris oscuro */
+  cursor: pointer;                      /* Manita para indicar acción */
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease, transform .08s ease; /* Feedback */
 }
-.icon-btn i { font-size: 1.05rem; pointer-events: none; }
+.icon-btn i { 
+  font-size: 1.05rem;                   /* Ícono un poco más grande para claridad */
+  pointer-events: none;                 /* Clicks pasan al botón, no al <i> */
+}
 .icon-btn:hover {
-  background-color: #e7f1ff !important;
-  border-color: #1d6fa5 !important;
-  color: #1d6fa5 !important;
+  background-color: #e7f1ff !important; /* Fondo azul muy claro al hover */
+  border-color: #1d6fa5 !important;     /* Borde azul para énfasis */
+  color: #1d6fa5 !important;            /* Ícono/texto en azul (acción) */
 }
-.icon-btn:active { transform: scale(.98); }
+.icon-btn:active { 
+  transform: scale(.98);                /* Micro-contracción al click */
+}
 
+/* Variantes de color para acciones comunes */
 .btn-primary.icon-btn {
-  color: #0056b3 !important;
-  border-color: #0056b3 !important;
+  color: #0056b3 !important;            /* Ícono/texto azul por defecto */
+  border-color: #0056b3 !important;     /* Borde azul para coherencia */
 }
 .btn-primary.icon-btn:hover {
-  background-color: #cfe2ff !important;
-  color: #004a9c !important;
-  border-color: #004a9c !important;
+  background-color: #cfe2ff !important; /* Fondo azul claro en hover */
+  color: #004a9c !important;            /* Azul más oscuro para contraste */
+  border-color: #004a9c !important;     /* Borde acompaña el tono */
 }
 .btn-danger.icon-btn {
-  color: #dc3545 !important;
+  color: #dc3545 !important;            /* Rojo para acciones destructivas */
   border-color: #dc3545 !important;
 }
 .btn-danger.icon-btn:hover {
-  background-color: #f8d7da !important;
-  color: #842029 !important;
-  border-color: #842029 !important;
+  background-color: #f8d7da !important; /* Fondo rojo claro en hover */
+  color: #842029 !important;            /* Texto/ícono rojo oscuro */
+  border-color: #842029 !important;     /* Borde acompaña el tono */
 }
 
 /* ======================
    Paginación
    ====================== */
 #paginacion {
-  margin-top: 20px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
+  margin-top: 20px;                     /* Separación con la tabla */
+  display: flex;                        /* Layout en fila */
+  gap: 8px;                             /* Espacio entre botones */
+  flex-wrap: wrap;                      /* Que los botones bajen en móvil */
+  justify-content: center;              /* Centrado horizontal */
+  align-items: center;                   /* Alineación vertical */
 }
 #paginacion button {
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: .9rem;
-  cursor: pointer;
-  transition: background-color .25s ease, color .25s ease, border-color .25s ease;
-  color: #333;
+  background: #fff;                     /* Fondo neutro por defecto */
+  border: 1px solid #dee2e6;            /* Borde claro (Bootstrap-like) */
+  border-radius: 8px;                   /* Bordes suaves */
+  padding: 6px 12px;                    /* Área de click adecuada */
+  font-size: .9rem;                     /* Tamaño ligeramente más pequeño */
+  cursor: pointer;                      /* Manita (navegación) */
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease; /* Feedback hover/focus */
+  color: #333;                          /* Texto gris oscuro por defecto */
 }
 #paginacion button:hover {
-  background-color: #0056b3;
-  color: #fff;
-  border-color: #0056b3;
+  background-color: #0056b3;            /* Azul marca en hover */
+  color: #fff;                          /* Texto blanco sobre azul */
+  border-color: #0056b3;                /* Borde acompaña */
 }
 #paginacion button.btn-primary {
-  background-color: #0056b3;
+  background-color: #0056b3;            /* Página actual resaltada en azul */
   color: #fff;
   border-color: #0056b3;
-  font-weight: 600;
+  font-weight: 600;                      /* Un poco más de peso para destacar */
 }
 #paginacion button:disabled {
-  background: #e9ecef;
-  color: #6c757d;
-  cursor: not-allowed;
-  border-color: #dee2e6;
+  background: #e9ecef;                  /* Estado deshabilitado (gris) */
+  color: #6c757d;                       /* Texto gris */
+  cursor: not-allowed;                   /* Cursor de no disponible */
+  border-color: #dee2e6;                /* Borde acorde al disabled */
 }
 
 /* ======================
    Dialog / modal
    ====================== */
 dialog {
-  width: 680px;
-  max-width: 92%;
-  border: none;
-  border-radius: 14px;
-  padding: 22px 24px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.18);
-  background-color: #fff;
+  width: 680px;                         /* Ancho fijo para desktop */
+  max-width: 92%;                       /* Respeta márgenes laterales en pantallas pequeñas */
+  border: none;                         /* Sin borde nativo */
+  border-radius: 14px;                  /* Esquinas suaves estilo card */
+  padding: 22px 24px;                   /* Espacio interno cómodo */
+  box-shadow: 0 8px 32px rgba(0,0,0,.18); /* Sombra fuerte para superposición */
+  background-color: #fff;               /* Fondo blanco (modal) */
 }
-dialog::backdrop { background: rgba(0,0,0,.3); }
+dialog::backdrop { 
+  background: rgba(0,0,0,.3);           /* Oscurecer fondo al abrir el modal */
+}
 
 dialog h3 {
-  font-size: 1.2rem;
-  margin-bottom: 14px;
-  font-weight: 800;
-  text-align: center;
-  color: #0056b3;
+  font-size: 1.2rem;                    /* Título del modal */
+  margin-bottom: 14px;                  /* Separación inferior del título */
+  font-weight: 800;                     /* Muy marcado para jerarquía */
+  text-align: center;                   /* Centrado */
+  color: #0056b3;                       /* Título en azul corporativo */
 }
 
 dialog input,
 dialog select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ced4da;
-  border-radius: 10px;
-  transition: border-color .2s ease, box-shadow .2s ease;
-  font-size: .95rem;
-  background: #fff;
+  width: 100%;                          /* Campos ocupan todo el ancho disponible */
+  padding: 10px 12px;                   /* Área de interacción cómoda */
+  border: 1px solid #ced4da;            /* Borde gris estándar */
+  border-radius: 10px;                  /* Bordes suaves como inputs globales */
+  transition: border-color .2s ease, box-shadow .2s ease; /* Feedback focus */
+  font-size: .95rem;                    /* Tamaño legible dentro del modal */
+  background: #fff;                     /* Fondo blanco (consistente) */
 }
 dialog input:focus,
 dialog select:focus {
-  border-color: #1d6fa5;
-  outline: none;
-  box-shadow: 0 0 0 .2rem rgba(29,111,165,.12);
+  border-color: #1d6fa5;                /* Azul al enfocar */
+  outline: none;                        /* Eliminar outline nativo */
+  box-shadow: 0 0 0 .2rem rgba(29,111,165,.12); /* Halo accesible */
 }
 
-/* Acciones dentro del modal */
+/* Acciones dentro del modal (contenedor de botones) */
 dialog .d-flex.justify-content-between.mt-3 {
-  display: flex;
-  gap: 10px;
+  display: flex;                        /* Asegurar layout flex aunque el HTML no lo tenga */
+  gap: 10px;                            /* Separación entre botones (Aceptar/Cancelar) */
 }
-dialog button { flex: 1; }
+dialog button { 
+  flex: 1;                              /* Ambos botones ocupan el mismo ancho */
+}
 
 /* ======================
    Responsive
    ====================== */
 @media (max-width: 992px){
-  .card{ padding: 20px; }
-  .card h2{ font-size: 1.15rem; }
-  .table-responsive{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .card{ padding: 20px; }               /* Ajuste de respiración en tablets */
+  .card h2{ font-size: 1.15rem; }       /* Título un poco más pequeño */
+  .table-responsive{ 
+    overflow-x:auto;                    /* Scroll horizontal si la tabla no cabe */
+    -webkit-overflow-scrolling:touch;   /* Inercia en iOS */
+  }
   .table thead th, .table tbody td{
-    padding: 10px;
-    font-size: .9rem;
-    white-space: nowrap;
+    padding: 10px;                      /* Celdas más compactas en pantallas medianas */
+    font-size: .9rem;                   /* Tipografía ligeramente reducida */
+    white-space: nowrap;                /* Evita saltos de línea bruscos */
   }
 }
 @media (max-width: 576px){
   .d-flex.justify-content-between.align-items-center.mb-4{
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
+    flex-direction: column;             /* Acciones apiladas (buscador/selector/botón) */
+    align-items: stretch;               /* Ocupan 100% del ancho */
+    gap: 10px;                          /* Separación vertical */
   }
-  .search-input{ width: 100%; }
-  #registrosPorPagina{ width: 100%; }
-  /* Oculta columnas poco críticas: Dirección y Correo */
+  .search-input{ width: 100%; }         /* Buscador ocupa todo el ancho */
+  #registrosPorPagina{ width: 100%; }   /* Select ocupa todo el ancho */
+  /* Oculta columnas poco críticas para móviles:
+     - 7: (ej. Dirección)
+     - 9: (ej. Correo)
+     Ajusta índices según tu estructura real de columnas */
   .table thead th:nth-child(7),
   .table tbody td:nth-child(7),
   .table thead th:nth-child(9),
   .table tbody td:nth-child(9){
-    display:none;
+    display:none;                       /* Oculta en móviles para evitar scroll excesivo */
   }
-  dialog{ width: 94%; max-width: 420px; padding: 16px; }
-  dialog .d-flex.justify-content-between.mt-3{ flex-direction: column; }
-  dialog button{ width: 100%; }
+  dialog{ 
+    width: 94%;                         /* Modal más estrecho en móviles */
+    max-width: 420px;                   /* Tope razonable para móviles grandes */
+    padding: 16px;                      /* Menos padding para aprovechar espacio */
+  }
+  dialog .d-flex.justify-content-between.mt-3{ 
+    flex-direction: column;             /* Botones apilados */
+  }
+  dialog button{ width: 100%; }         /* Botones al 100% (fáciles de pulsar) */
 }

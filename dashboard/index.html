@@ -11,7 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body>
+<body class="body">
   <!-- Sidebar -->
   <div id="sidebar">
     <div class="logo">
@@ -21,7 +21,7 @@
       <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
-        <li><a class="active" href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
+      <li><a class="active" href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
       <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
       <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
       <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
@@ -31,10 +31,6 @@
 
   <!-- Topbar -->
   <div class="topbar shadow-sm">
-    <div class="search-bar">
-      <i class="fas fa-search"></i>
-      <input type="text" placeholder="Buscar..."/>
-    </div>
     <div class="topbar-right">
       <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
       <span class="ms-2">Usuario</span>
@@ -43,7 +39,7 @@
   </div>
 
   <!-- Fecha y hora -->
-  <div class="text-end text-muted fs-6 mt-3 me-3">
+  <div class="text-end text-muted fs-6 mt-3 me-3 animate-fade">
     <span id="fechaActual"></span> - <span id="horaActual"></span>
   </div>
 
@@ -52,73 +48,78 @@
     <div class="container mt-4">
       
       <!-- Tarjeta saludo -->
-      <div class="card p-4 mb-4 shadow text-center">
-        <h4 id="saludo">Bienvenido</h4>
+      <div class="card glass-card p-4 mb-4 shadow text-center animate-slide">
+        <h4 id="saludo"><i class="fas fa-handshake text-danger me-2"></i>Bienvenido</h4>
         <p class="text-muted">Bienvenido al sistema de SASA</p>
       </div>
 
       <!-- Tarjetas principales -->
-      <div class="row mb-4">
+      <div class="row mb-4 justify-content-center">
         <!-- Vehículos -->
-        <div class="col-md-2 mb-3">
-          <div class="card p-3 shadow text-center">
-            <h5 class="fw-bold text-danger">Vehículos</h5>
+        <div class="col-md-2 col-sm-6 mb-3 animate-up">
+          <div class="stat-card">
+            <div class="icon-circle bg-danger"><i class="fas fa-car"></i></div>
+            <h5>Vehículos</h5>
             <h2 id="vehiculosTotal">0</h2>
-            <small class="text-muted">Registrados</small>
+            <p>Registrados</p>
           </div>
         </div>
         <!-- Historial -->
-        <div class="col-md-2 mb-3">
-          <div class="card p-3 shadow text-center">
-            <h5 class="fw-bold text-danger">Historial</h5>
+        <div class="col-md-2 col-sm-6 mb-3 animate-up">
+          <div class="stat-card">
+            <div class="icon-circle bg-warning"><i class="fas fa-clock-rotate-left"></i></div>
+            <h5>Historial</h5>
             <h2 id="historialTotal">0</h2>
-            <small class="text-muted">Acciones registradas</small><br>
-            <button id="verHistorialBtn" class="btn btn-outline-danger mt-2 btn-sm">Ver historial</button>
+            <p>Acciones registradas</p>
+            <button id="verHistorialBtn" class="btn btn-outline-danger btn-sm mt-2">Ver historial</button>
           </div>
         </div>
         <!-- Citas -->
-        <div class="col-md-2 mb-3">
-          <div class="card p-3 shadow text-center">
-            <h5 class="fw-bold text-danger">Citas</h5>
+        <div class="col-md-2 col-sm-6 mb-3 animate-up">
+          <div class="stat-card">
+            <div class="icon-circle bg-info"><i class="fas fa-calendar-day"></i></div>
+            <h5>Citas</h5>
             <h2 id="citasTotal">0</h2>
-            <small class="text-muted">Agendadas</small><br>
-            <button onclick="verCitasHoy()" class="btn btn-outline-danger mt-2 btn-sm">Hoy</button>
+            <p>Agendadas</p>
+            <button onclick="verCitasHoy()" class="btn btn-outline-danger btn-sm mt-2">Hoy</button>
           </div>
         </div>
         <!-- Pagos -->
-        <div class="col-md-2 mb-3">
-          <div class="card p-3 shadow text-center">
-            <h5 class="fw-bold text-danger">Pagos</h5>
+        <div class="col-md-2 col-sm-6 mb-3 animate-up">
+          <div class="stat-card">
+            <div class="icon-circle bg-success"><i class="fas fa-dollar-sign"></i></div>
+            <h5>Pagos</h5>
             <h2 id="pagosTotal">0</h2>
-            <small class="text-muted">Realizados</small>
+            <p>Realizados</p>
           </div>
         </div>
         <!-- Clientes -->
-        <div class="col-md-2 mb-3">
-          <div class="card p-3 shadow text-center">
-            <h5 class="fw-bold text-danger">Clientes</h5>
+        <div class="col-md-2 col-sm-6 mb-3 animate-up">
+          <div class="stat-card">
+            <div class="icon-circle bg-primary"><i class="fas fa-users"></i></div>
+            <h5>Clientes</h5>
             <h2 id="clientesTotal">0</h2>
             <select id="selectCliente" class="form-select my-2">
               <option value="">Seleccione cliente</option>
             </select>
-            <p id="infoCliente" class="text-muted">Seleccione un cliente</p>
+            <p id="infoCliente">Seleccione un cliente</p>
           </div>
         </div>
       </div>
 
       <!-- Gráficas -->
       <div class="row">
-        <div class="col-md-6 mb-4">
-          <div class="card p-3 shadow">
-            <h6 class="fw-bold">Vehículos por marca</h6>
+        <div class="col-md-6 mb-4 animate-fade">
+          <div class="card glass-card p-3 shadow">
+            <h6 class="fw-bold"><i class="fas fa-chart-pie me-2 text-danger"></i>Vehículos por marca</h6>
             <div style="height: 250px;">
               <canvas id="graficaVehiculosMarca"></canvas>
             </div>
           </div>
         </div>
-        <div class="col-md-6 mb-4">
-          <div class="card p-3 shadow">
-            <h6 class="fw-bold">Ingresos mensuales</h6>
+        <div class="col-md-6 mb-4 animate-fade">
+          <div class="card glass-card p-3 shadow">
+            <h6 class="fw-bold"><i class="fas fa-chart-line me-2 text-danger"></i>Ingresos mensuales</h6>
             <div style="height: 250px;">
               <canvas id="graficaIngresosMensuales"></canvas>
             </div>

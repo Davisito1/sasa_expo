@@ -1,17 +1,21 @@
+// ==================== IMPORTAR SERVICIOS ====================
+// Funciones CRUD para empleados
 import {
-  getEmpleados,
-  createEmpleado,
-  updateEmpleado,
-  deleteEmpleado
+  getEmpleados,     // obtiene empleados paginados (con filtro)
+  createEmpleado,   // registra un empleado
+  updateEmpleado,   // actualiza un empleado (no usado aún aquí)
+  deleteEmpleado    // elimina un empleado (se usa en la tabla con botón)
 } from "../Services/EmpleadosService.js";
 
-const tbody         = document.getElementById("tablaEmpleados");
-const pagWrap       = document.getElementById("paginacion");
-const inputBuscar   = document.getElementById("buscar");
-const selectSize    = document.getElementById("registrosPorPagina");
-const frmAdd        = document.getElementById("empleadoForm");
+// ==================== DOM ====================
+// Referencias a elementos HTML
+const tbody         = document.getElementById("tablaEmpleados");     // cuerpo de la tabla
+const pagWrap       = document.getElementById("paginacion");         // contenedor de paginación
+const inputBuscar   = document.getElementById("buscar");             // input para buscar
+const selectSize    = document.getElementById("registrosPorPagina"); // select para tamaño de página
+const frmAdd        = document.getElementById("empleadoForm");       // formulario de empleados
 
-// Campos ADD
+// Campos del formulario
 const txtNombre     = document.getElementById("txtNombre");
 const txtApellido   = document.getElementById("txtApellido");
 const selectCargo   = document.getElementById("selectCargo");
@@ -22,18 +26,22 @@ const txtFecha      = document.getElementById("fechaContratacion");
 const txtCorreo     = document.getElementById("txtCorreo");
 const selectUsuario = document.getElementById("selectUsuario");
 
-let empleadosCache  = [];
-let usuariosCache   = [];
-let paginaActual    = 1;
-let tamPagina       = 10;
-let totalPaginas    = 1;
+// ==================== VARIABLES GLOBALES ====================
+// Caches y control de paginación
+let empleadosCache  = []; // almacena empleados en memoria
+let usuariosCache   = []; // cache de usuarios para mostrar en select
+let paginaActual    = 1;  // página activa
+let tamPagina       = 10; // registros por página
+let totalPaginas    = 1;  // total de páginas
 
+// ==================== CARGAR USUARIOS ====================
+// Llama a la API de usuarios y los carga en el <select>
 async function cargarUsuarios() {
   try {
     const res = await fetch("http://localhost:8080/apiUsuario/consultar?page=0&size=50");
     const data = await res.json();
 
-    usuariosCache = data?.data?.content ?? [];
+    usuariosCache = data?.data?.content ?? []; // normalización de la respuesta
 
     const options = ['<option value="" disabled selected>Seleccione un Usuario</option>']
       .concat(usuariosCache.map(u => `<option value="${u.id}">${u.nombreUsuario}</option>`));
@@ -45,6 +53,8 @@ async function cargarUsuarios() {
   }
 }
 
+// ==================== VALIDACIÓN DE EMPLEADO ====================
+// Verifica que el DTO tenga datos válidos antes de enviarse
 function validarEmpleado(dto) {
   if (!dto.nombres || dto.nombres.length < 2) 
     return Swal.fire("Error", "Nombre inválido", "error"), false;
@@ -76,9 +86,12 @@ function validarEmpleado(dto) {
   return true;
 }
 
+// ==================== EVENTO FORMULARIO ====================
+// Registrar nuevo empleado
 frmAdd.addEventListener("submit", async e => {
   e.preventDefault();
 
+  // Construcción del DTO a enviar
   const dto = {
     nombres: txtNombre.value.trim(),
     apellidos: txtApellido.value.trim(),
@@ -91,19 +104,22 @@ frmAdd.addEventListener("submit", async e => {
     idUsuario: parseInt(selectUsuario.value, 10)
   };
 
+  // Validar antes de enviar
   if (!validarEmpleado(dto)) return;
 
   try {
-    await createEmpleado(dto);
+    await createEmpleado(dto);                 // crear empleado
     Swal.fire("Éxito", "Empleado registrado", "success");
-    await loadEmpleados(true);
-    frmAdd.reset();
+    await loadEmpleados(true);                 // recargar lista
+    frmAdd.reset();                            // limpiar formulario
   } catch (err) {
     console.error(err);
     Swal.fire("Error", "No se pudo registrar", "error");
   }
 });
 
+// ==================== RENDERIZAR TABLA ====================
+// Pinta las filas con los empleados obtenidos
 function renderTabla(lista) {
   tbody.innerHTML = "";
   lista.forEach(e => {
@@ -123,6 +139,7 @@ function renderTabla(lista) {
       <td>${e.correo}</td>
       <td>${usuario}</td>
       <td>
+        <!-- Botón eliminar -->
         <button class="btn btn-sm btn-danger" onclick="eliminarEmpleado(${id})">
           <i class="bi bi-trash"></i>
         </button>
@@ -131,6 +148,8 @@ function renderTabla(lista) {
   });
 }
 
+// ==================== RENDERIZAR PAGINACIÓN ====================
+// Genera botones de páginas
 function renderPaginacion(totalPaginas) {
   pagWrap.innerHTML = "";
   for (let p = 1; p <= totalPaginas; p++) {
@@ -142,10 +161,12 @@ function renderPaginacion(totalPaginas) {
   }
 }
 
+// ==================== CARGAR EMPLEADOS ====================
+// Llama a la API y actualiza tabla + paginación
 async function loadEmpleados(reset = false) {
   const res = await getEmpleados(paginaActual - 1, tamPagina, inputBuscar?.value ?? "");
 
-  // 🔹 Normalización
+  // Normalización de respuesta
   if (Array.isArray(res)) {
     empleadosCache = res;
   } else if (Array.isArray(res.content)) {
@@ -156,6 +177,7 @@ async function loadEmpleados(reset = false) {
     empleadosCache = [];
   }
 
+  // Ordenar por ID
   empleadosCache.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
   totalPaginas = res.totalPages ?? 1;
   if (reset) paginaActual = 1;
@@ -164,6 +186,8 @@ async function loadEmpleados(reset = false) {
   renderPaginacion(totalPaginas);
 }
 
+// ==================== INICIO ====================
+// Al cargar la página, traer usuarios y empleados
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarUsuarios();
   await loadEmpleados(true);

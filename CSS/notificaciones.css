@@ -1,109 +1,116 @@
-/* 🔹 Contenedor principal */
+/* 🔹 Contenedor principal de la vista de notificaciones */
 .notificaciones-container {
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 12px;
-  margin: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: #ffffff;               /* Fondo blanco */
+  padding: 25px;                           /* Espaciado interno */
+  border-radius: 12px;                     /* Bordes redondeados */
+  margin: 20px;                            /* Separación externa */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra suave */
 }
 
+/* Título principal dentro del contenedor */
 .notificaciones-container h2 {
   font-size: 22px;
   font-weight: 600;
-  color: #1d3557;
+  color: #1d3557;                          /* Azul oscuro */
   margin-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid #e0e0e0;        /* Línea divisoria */
   padding-bottom: 10px;
 }
 
-/* 🔹 Estilo de tabla */
+/* 🔹 Estilo general para la tabla de notificaciones */
 .table-notificaciones,
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse;                /* Quita espacios entre bordes */
   border-radius: 10px;
-  overflow: hidden;
+  overflow: hidden;                         /* Aplica bordes redondeados */
 }
 
+/* Encabezado de la tabla */
 .table-notificaciones thead,
 .table thead {
-  background-color: #1d3557;
-  color: white;
+  background-color: #1d3557;               /* Fondo azul oscuro */
+  color: white;                            /* Texto blanco */
 }
 
+/* Celdas de la tabla (cabecera y cuerpo) */
 .table-notificaciones th,
 .table-notificaciones td,
 .table th,
 .table td {
-  text-align: center;
-  padding: 14px;
-  border-bottom: 1px solid #e6e6e6;
+  text-align: center;                      /* Centra el contenido */
+  padding: 14px;                           /* Espaciado interno */
+  border-bottom: 1px solid #e6e6e6;        /* Línea gris separadora */
   font-size: 14px;
 }
 
+/* Efecto hover sobre filas */
 .table-notificaciones tbody tr:hover,
 .table tbody tr:hover {
-  background-color: #f1f5ff;
+  background-color: #f1f5ff;               /* Azul muy claro */
 }
 
-/* 🔹 Estilo para acciones */
+/* 🔹 Botones de acción (editar, eliminar, etc.) */
 .icon-btn {
-  display: inline-flex;
+  display: inline-flex;                     /* Ícono + texto alineados */
   align-items: center;
   justify-content: center;
   padding: 8px 12px;
   font-size: 0.95rem;
   border-radius: 8px;
-  background-color: #fff !important;
-  border: 1.5px solid #ced4da !important;
-  color: #333 !important;
+  background-color: #fff !important;       /* Fondo blanco */
+  border: 1.5px solid #ced4da !important;  /* Borde gris claro */
+  color: #333 !important;                  /* Texto gris oscuro */
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease;               /* Transiciones suaves */
 }
 
+/* Ícono dentro de los botones */
 .icon-btn i {
   font-size: 1.1rem;
-  pointer-events: none;
+  pointer-events: none;                     /* Evita que el ícono capture clicks */
 }
 
+/* Hover de los botones generales */
 .icon-btn:hover {
-  background-color: #e7f1ff !important;
-  border-color: #1d6fa5 !important;
-  color: #1d6fa5 !important;
+  background-color: #e7f1ff !important;     /* Fondo azul claro */
+  border-color: #1d6fa5 !important;         /* Borde azul */
+  color: #1d6fa5 !important;                /* Texto azul */
 }
 
-/* 🔹 Botón azul */
+/* 🔹 Botón azul (acción principal: editar, ver, etc.) */
 .btn-primary.icon-btn {
-  color: #0d6efd !important;
+  color: #0d6efd !important;                /* Azul Bootstrap */
   border-color: #0d6efd !important;
 }
 .btn-primary.icon-btn:hover {
-  background-color: #cfe2ff !important;
-  color: #084298 !important;
+  background-color: #cfe2ff !important;     /* Azul claro en hover */
+  color: #084298 !important;                /* Azul oscuro */
   border-color: #084298 !important;
 }
 
-/* 🔹 Botón rojo */
+/* 🔹 Botón rojo (acción de eliminar) */
 .btn-danger.icon-btn {
-  color: #dc3545 !important;
+  color: #dc3545 !important;                /* Rojo Bootstrap */
   border-color: #dc3545 !important;
 }
 .btn-danger.icon-btn:hover {
-  background-color: #f8d7da !important;
-  color: #842029 !important;
+  background-color: #f8d7da !important;     /* Rojo claro en hover */
+  color: #842029 !important;                /* Rojo oscuro */
   border-color: #842029 !important;
 }
 
 /* 🔹 Input de búsqueda en topbar */
 .search-input {
   padding: 8px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid #ccc;                   /* Borde gris */
   border-radius: 8px;
   outline: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease;                /* Animación en focus */
 }
 
+/* Estilo cuando el input de búsqueda está activo */
 .search-input:focus {
-  border-color: #1d6fa5;
-  box-shadow: 0 0 6px rgba(29, 111, 165, 0.4);
+  border-color: #1d6fa5;                    /* Azul en focus */
+  box-shadow: 0 0 6px rgba(29, 111, 165, 0.4); /* Sombra azul */
 }

@@ -1,41 +1,57 @@
- document.getElementById('emailForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const email = document.getElementById('emailInput').value.trim();
+// ===============================
+// FORMULARIO DE RECUPERACIÓN DE CORREO
+// ===============================
 
-      if(email === "") {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Campo vacío',
-          text: 'Por favor ingresa tu correo electrónico.'
-        });
-      } else if(!validateEmail(email)) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Correo inválido',
-          text: 'Por favor ingresa un correo válido.'
-        });
-      } else {
-        Swal.fire({
-          icon: 'success',
-          title: 'Correo enviado',
-          text: 'Hemos enviado un código de verificación a tu correo.',
-          showConfirmButton: false,
-          timer: 2000
-        }).then(() => {
-          window.location.href = '../Autenticacion/recuperar.html'; // Ir a pantalla de código
-        });
-      }
+// Captura el evento submit del formulario de email
+document.getElementById('emailForm').addEventListener('submit', function(e) {
+  e.preventDefault(); // evitar que recargue la página
+
+  const email = document.getElementById('emailInput').value.trim();
+
+  // -------- Validaciones --------
+  if (email === "") {
+    // Campo vacío
+    Swal.fire({
+      icon: 'warning',
+      title: 'Campo vacío',
+      text: 'Por favor ingresa tu correo electrónico.'
     });
+  } else if (!validateEmail(email)) {
+    // Correo con formato inválido
+    Swal.fire({
+      icon: 'error',
+      title: 'Correo inválido',
+      text: 'Por favor ingresa un correo válido.'
+    });
+  } else {
+    // Éxito → Simulación de envío de correo
+    Swal.fire({
+      icon: 'success',
+      title: 'Correo enviado',
+      text: 'Hemos enviado un código de verificación a tu correo.',
+      showConfirmButton: false,
+      timer: 2000
+    }).then(() => {
+      // Redirigir a pantalla para ingresar el código
+      window.location.href = '../Autenticacion/recuperar.html';
+    });
+  }
+});
 
-    // Validación de formato de correo
-    function validateEmail(email) {
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return re.test(email);
-    }
+// ===============================
+// FUNCIÓN DE VALIDACIÓN DE CORREO
+// ===============================
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // expresión regular básica
+  return re.test(email);
+}
 
-    // Volver a inicio de sesión con confirmación
-  document.addEventListener('DOMContentLoaded', function () {
+// ===============================
+// BOTÓN "VOLVER A LOGIN" CON CONFIRMACIÓN
+// ===============================
+document.addEventListener('DOMContentLoaded', function () {
   const backButton = document.getElementById('backToLogin');
+  
   if (backButton) {
     backButton.addEventListener('click', function () {
       Swal.fire({

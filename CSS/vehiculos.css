@@ -164,7 +164,7 @@ dialog h2 {
   text-align: center;
 }
 
-/* Grid dentro del dialog (consistente con mantenimiento) */
+/* Grid dentro del dialog */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

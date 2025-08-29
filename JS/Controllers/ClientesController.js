@@ -1,21 +1,25 @@
 // ==================== IMPORTAR SERVICIOS ====================
+// Importamos funciones CRUD desde el servicio de clientes
 import {
-  getClientes,
-  createCliente,
-  updateCliente,
-  deleteCliente
+  getClientes,    // obtiene clientes paginados (con filtro y tamaño de página)
+  createCliente,  // crea un nuevo cliente
+  updateCliente,  // actualiza un cliente existente
+  deleteCliente   // elimina un cliente
 } from "../Services/ClientesService.js";
 
 // ==================== DOM ====================
-const tablaClientes   = document.getElementById("tablaClientes");
-const pagWrap         = document.getElementById("paginacion");
-const selectPageSize  = document.getElementById("registrosPorPagina");
-const inputBuscar     = document.getElementById("buscar");
+// Referencias a elementos de la interfaz
+const tablaClientes   = document.getElementById("tablaClientes");      // tabla donde se muestran los clientes
+const pagWrap         = document.getElementById("paginacion");         // contenedor de botones de paginación
+const selectPageSize  = document.getElementById("registrosPorPagina"); // select para elegir cantidad por página
+const inputBuscar     = document.getElementById("buscar");             // input para filtrar clientes
 
+// Modal y formulario
 const frmCliente      = document.getElementById("clienteForm");
 const modalCliente    = new bootstrap.Modal(document.getElementById("clienteModal"));
 const modalTitle      = document.getElementById("clienteModalLabel");
 
+// Inputs del formulario
 const inputId         = document.getElementById("clienteId");
 const inputNombre     = document.getElementById("nombre");
 const inputApellido   = document.getElementById("apellido");
@@ -24,24 +28,26 @@ const inputFecha      = document.getElementById("fechaNacimiento");
 const inputGenero     = document.getElementById("genero");
 const inputCorreo     = document.getElementById("correo");
 
-let paginaActual = 0;
-let tamPagina    = parseInt(selectPageSize.value, 10);
-let filtroTexto  = "";
+// ==================== VARIABLES GLOBALES ====================
+// Controlan paginación y filtros
+let paginaActual = 0;                               // página actual
+let tamPagina    = parseInt(selectPageSize.value, 10); // registros por página
+let filtroTexto  = "";                              // texto de búsqueda
 
 // ==================== CARGAR CLIENTES ====================
+// Consulta clientes a la API y actualiza tabla + paginación
 async function cargarClientes(page = 0) {
   try {
     const { content, totalPages } = await getClientes(page, tamPagina, filtroTexto);
-
-    renderClientes(content);
-    renderPaginacion(totalPages, page);
-
+    renderClientes(content);             // dibuja tabla
+    renderPaginacion(totalPages, page);  // dibuja botones de páginas
   } catch (error) {
     console.error("Error cargando clientes:", error);
   }
 }
 
 // ==================== RENDERIZAR CLIENTES ====================
+// Dibuja las filas de la tabla de clientes
 function renderClientes(clientes) {
   tablaClientes.innerHTML = "";
 
@@ -56,9 +62,11 @@ function renderClientes(clientes) {
       <td>${cliente.genero}</td>
       <td>${cliente.correo}</td>
       <td class="text-center">
+        <!-- Botón editar -->
         <button class="btn btn-sm btn-primary me-2 icon-btn" data-id="${cliente.id}" data-action="edit">
           <i class="bi bi-pencil-square"></i>
         </button>
+        <!-- Botón eliminar -->
         <button class="btn btn-sm btn-danger icon-btn" data-id="${cliente.id}" data-action="delete">
           <i class="bi bi-trash"></i>
         </button>
@@ -69,6 +77,7 @@ function renderClientes(clientes) {
 }
 
 // ==================== RENDERIZAR PAGINACIÓN ====================
+// Genera botones para cambiar de página
 function renderPaginacion(totalPages, currentPage) {
   pagWrap.innerHTML = "";
 
@@ -85,9 +94,11 @@ function renderPaginacion(totalPages, currentPage) {
 }
 
 // ==================== FORMULARIO ====================
+// Maneja creación y edición de clientes
 frmCliente.addEventListener("submit", async (e) => {
   e.preventDefault();
 
+  // Construcción del objeto cliente
   const clienteData = {
     id: inputId.value || null,
     nombre: inputNombre.value.trim(),
@@ -96,22 +107,23 @@ frmCliente.addEventListener("submit", async (e) => {
     fechaNacimiento: inputFecha.value,
     genero: inputGenero.value,
     correo: inputCorreo.value.trim()
-    // 🔹 No enviamos contrasena en la web
+    // 🔹 Nota: no enviamos contraseña desde esta interfaz
   };
 
   try {
     if (clienteData.id) {
+      // Si hay ID → actualizar
       await updateCliente(clienteData.id, clienteData);
       Swal.fire("Actualizado", "Cliente actualizado correctamente", "success");
     } else {
+      // Si no hay ID → crear
       await createCliente(clienteData);
       Swal.fire("Creado", "Cliente creado correctamente", "success");
     }
 
-    modalCliente.hide();
-    frmCliente.reset();
-    cargarClientes(paginaActual);
-
+    modalCliente.hide();   // cerrar modal
+    frmCliente.reset();    // limpiar formulario
+    cargarClientes(paginaActual); // recargar tabla
   } catch (error) {
     console.error("Error guardando cliente:", error);
     Swal.fire("Error", "No se pudo guardar el cliente", "error");
@@ -119,6 +131,7 @@ frmCliente.addEventListener("submit", async (e) => {
 });
 
 // ==================== TABLA EVENTOS ====================
+// Detecta clicks en botones de la tabla (editar / eliminar)
 tablaClientes.addEventListener("click", async (e) => {
   const btn = e.target.closest("button");
   if (!btn) return;
@@ -127,11 +140,13 @@ tablaClientes.addEventListener("click", async (e) => {
   const action = btn.dataset.action;
 
   if (action === "edit") {
+    // ----------- Editar Cliente -----------
     modalTitle.textContent = "Editar Cliente";
     const { content } = await getClientes(paginaActual, tamPagina, filtroTexto);
     const cliente = content.find(c => c.id == id);
 
     if (cliente) {
+      // Cargar datos en formulario
       inputId.value       = cliente.id;
       inputNombre.value   = cliente.nombre;
       inputApellido.value = cliente.apellido;
@@ -144,6 +159,7 @@ tablaClientes.addEventListener("click", async (e) => {
     }
 
   } else if (action === "delete") {
+    // ----------- Eliminar Cliente -----------
     Swal.fire({
       title: "¿Eliminar cliente?",
       text: "Esta acción no se puede deshacer",
@@ -167,12 +183,14 @@ tablaClientes.addEventListener("click", async (e) => {
 });
 
 // ==================== EVENTOS DE BUSCAR Y SELECT ====================
+// Cambio de cantidad de registros por página
 selectPageSize.addEventListener("change", () => {
   tamPagina = parseInt(selectPageSize.value, 10);
   paginaActual = 0;
   cargarClientes(paginaActual);
 });
 
+// Filtro en buscador
 inputBuscar.addEventListener("input", () => {
   filtroTexto = inputBuscar.value.trim();
   paginaActual = 0;
@@ -180,4 +198,5 @@ inputBuscar.addEventListener("input", () => {
 });
 
 // ==================== INICIO ====================
+// Al cargar la página, inicializa la tabla de clientes
 cargarClientes(paginaActual);

@@ -1,7 +1,7 @@
 /* ===== Offsets dinámicos ===== */
 :root{
-  --topbar-h: 72px;           /* JS los ajusta */
-  --sidebar-w: 80px;          /* fallback: ancho típico de sidebar */
+  --topbar-h: 60px;          /* igual que .topbar { height: 60px } */
+  --sidebar-w: 80px;         /* ancho del sidebar cerrado */
   --container-max: 1200px;
 }
 .with-topbar-offset{
@@ -13,11 +13,11 @@
 
 /* ===== Layout responsivo ===== */
 @media (max-width: 992px){
-  .with-side-offset{ padding-left: 0; } /* en tablet/móvil, que use todo el ancho */
+  .with-side-offset{ padding-left: 0; }
 }
-/* ../CSS/usuario.css (o en tu dashboard.css) */
-#sidebar .logo img { cursor: pointer; }
 
+/* Cursor en logo */
+#sidebar .logo img { cursor: pointer; }
 
 /* Centrado y límites de ancho */
 .page-wrap{
