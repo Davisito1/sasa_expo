@@ -1,31 +1,28 @@
-// ==================== IMPORTAR SERVICIOS ====================
 // CRUD de pagos
 import { getPagos, createPago, updatePago, deletePago } from "../Services/PagosService.js";
 // Servicios relacionados
 import { getFacturas } from "../Services/FacturasService.js";
 import { getMetodosPago } from "../Services/MetodosPagoService.js";
 
-// ==================== DOM ====================
-// Tabla y modal
+// ===== DOM =====
 const tabla      = document.getElementById("tablaPagos");
 const frmPago    = document.getElementById("frmPago");
 const pagoModal  = new bootstrap.Modal(document.getElementById("mdPago"));
 const modalLabel = document.getElementById("pagoModalLabel");
 
 // Campos del formulario
-const inputId        = document.getElementById("pagoId");
-const inputFecha     = document.getElementById("fechaPago");
-const inputMonto     = document.getElementById("montoPago");
-const selectFactura  = document.getElementById("facturaPago");
-const selectMetodo   = document.getElementById("metodoPago");
+const inputId    = document.getElementById("pagoId");
+const inputFecha = document.getElementById("fechaPago");
+const inputMonto = document.getElementById("montoPago");
+const selectFactura = document.getElementById("facturaPago");
+const selectMetodo  = document.getElementById("metodoPago");
 
-// ==================== VARIABLES GLOBALES ====================
-let pagosCache    = []; // pagos cargados en memoria
-let facturasCache = []; // facturas disponibles
-let metodosCache  = []; // métodos de pago disponibles
+// ===== Variables globales =====
+let pagosCache    = [];
+let facturasCache = [];
+let metodosCache  = [];
 
-// ==================== RENDERIZAR TABLA ====================
-// Construye las filas de la tabla con los pagos
+// ===== Renderizar tabla =====
 function renderTabla(lista) {
   tabla.innerHTML = "";
   if (!lista.length) {
@@ -45,12 +42,10 @@ function renderTabla(lista) {
       <td>${factura ? `Factura #${factura.id} - $${factura.montoTotal}` : p.idFactura}</td>
       <td>${metodo ? metodo.metodo : "—"}</td>
       <td class="text-center">
-        <!-- Botón Editar -->
-        <button class="btn btn-sm btn-primary me-2" onclick="editarPago(${p.idPago ?? p.id})">
+        <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editarPago(${p.idPago ?? p.id})">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <!-- Botón Eliminar -->
-        <button class="btn btn-sm btn-danger" onclick="eliminarPago(${p.idPago ?? p.id})">
+        <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarPago(${p.idPago ?? p.id})">
           <i class="bi bi-trash"></i>
         </button>
       </td>`;
@@ -58,10 +53,8 @@ function renderTabla(lista) {
   });
 }
 
-// ==================== CARGAR COMBOS ====================
-// Trae facturas y métodos de pago y los carga en los selects
+// ===== Cargar combos =====
 async function cargarCombos() {
-  // Facturas
   const facturasResp = await getFacturas(0, 50);
   facturasCache = facturasResp?.content ?? facturasResp ?? [];
   selectFactura.innerHTML = `<option value="" disabled selected>Seleccione factura</option>`;
@@ -69,7 +62,6 @@ async function cargarCombos() {
     selectFactura.innerHTML += `<option value="${f.id}">Factura #${f.id} - $${f.montoTotal}</option>`;
   });
 
-  // Métodos de pago
   metodosCache = await getMetodosPago();
   selectMetodo.innerHTML = `<option value="" disabled selected>Seleccione método</option>`;
   metodosCache.forEach(m => {
@@ -78,8 +70,7 @@ async function cargarCombos() {
   });
 }
 
-// ==================== EDITAR PAGO ====================
-// Abre el modal con los datos de un pago
+// ===== Editar =====
 window.editarPago = (id) => {
   const p = pagosCache.find(x => (x.idPago ?? x.id) === id);
   if (!p) return Swal.fire("Error", "Pago no encontrado", "error");
@@ -94,8 +85,7 @@ window.editarPago = (id) => {
   pagoModal.show();
 };
 
-// ==================== ELIMINAR PAGO ====================
-// Confirma y elimina un pago
+// ===== Eliminar =====
 window.eliminarPago = async (id) => {
   const ok = await Swal.fire({
     title: "¿Eliminar pago?",
@@ -118,12 +108,11 @@ window.eliminarPago = async (id) => {
   }
 };
 
-// ==================== GUARDAR (CREAR / EDITAR) ====================
-// Lógica al enviar el formulario
+// ===== Guardar (crear / editar) =====
 frmPago.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // -------- Validaciones --------
+  // Validaciones
   if (!inputFecha.value) 
     return Swal.fire("Error", "La fecha es obligatoria", "error");
 
@@ -140,7 +129,7 @@ frmPago.addEventListener("submit", async (e) => {
   if (!selectMetodo.value) 
     return Swal.fire("Error", "Debe seleccionar un método de pago", "error");
 
-  // Validar que el pago no exceda el monto de la factura
+  // Validar que no se exceda el monto de la factura
   const facturaSeleccionada = facturasCache.find(f => f.id === parseInt(selectFactura.value, 10));
   if (!facturaSeleccionada) 
     return Swal.fire("Error", "Factura no encontrada", "error");
@@ -153,7 +142,7 @@ frmPago.addEventListener("submit", async (e) => {
     return Swal.fire("Error", `El pago excede el monto total de la factura. Restante: $${(facturaSeleccionada.montoTotal - totalPagado).toFixed(2)}`, "error");
   }
 
-  // DTO a enviar
+  // DTO
   const dto = {
     fecha: inputFecha.value,
     monto: nuevoMonto,
@@ -163,11 +152,9 @@ frmPago.addEventListener("submit", async (e) => {
 
   try {
     if (inputId.value) {
-      // Editar
       await updatePago(inputId.value, dto);
       Swal.fire("Éxito", "Pago actualizado correctamente", "success");
     } else {
-      // Crear
       await createPago(dto);
       Swal.fire("Éxito", "Pago registrado correctamente", "success");
     }
@@ -179,21 +166,19 @@ frmPago.addEventListener("submit", async (e) => {
   }
 });
 
-// ==================== CARGAR TABLA ====================
-// Trae los pagos desde la API y dibuja la tabla
+// ===== Cargar tabla =====
 async function cargarTabla() {
   pagosCache = await getPagos();
   renderTabla(pagosCache);
 }
 
-// ==================== INICIO ====================
-// Acciones iniciales al cargar la página
+// ===== Inicio =====
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarCombos();
   await cargarTabla();
 });
 
-// Botón para abrir modal en modo "Agregar"
+// Botón "Agregar Pago"
 document.getElementById("btnAddPago").addEventListener("click", () => {
   modalLabel.textContent = "Agregar Pago";
   frmPago.reset();

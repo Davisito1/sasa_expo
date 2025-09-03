@@ -1,61 +1,53 @@
-// ==================== IMPORTAR SERVICIOS ====================
-// Funciones CRUD de facturas
+// ===== Importar servicios =====
 import {
-  getFacturas,       // obtiene facturas con paginación
-  getFacturaById,    // obtiene factura por ID
-  createFactura,     // crea nueva factura
-  updateFactura,     // actualiza factura existente
-  deleteFactura      // elimina factura
+  getFacturas,
+  getFacturaById,
+  createFactura,
+  updateFactura,
+  deleteFactura
 } from "../Services/FacturasService.js";
-
-// Servicios para combos relacionados
 import { getEmpleados } from "../Services/EmpleadosService.js";
 import { getMantenimientos } from "../Services/MantenimientoService.js";
 
-// ==================== DOM ====================
-// Tabla y paginación
+// ===== DOM =====
 const tablaFacturas = document.getElementById("tablaFacturas");
 const pagWrap       = document.getElementById("paginacion");
 const selectPageSize= document.getElementById("registrosPorPagina");
 
-// Formularios y modales
 const frmAdd  = document.getElementById("frmAgregarFactura");
 const frmEdit = document.getElementById("frmEditarFactura");
 
 const modalAdd  = new bootstrap.Modal(document.getElementById("mdAgregarFactura"));
 const modalEdit = new bootstrap.Modal(document.getElementById("mdEditarFactura"));
 
-// Inputs de formulario agregar
-const fechaAdd          = document.getElementById("fechaFacturaAdd");
-const montoAdd          = document.getElementById("txtMontoFactura");
-const selEmpleadoAdd    = document.getElementById("selEmpleadoAdd");
+// Campos agregar
+const fechaAdd = document.getElementById("fechaFacturaAdd");
+const montoAdd = document.getElementById("txtMontoFactura");
+const selEmpleadoAdd = document.getElementById("selEmpleadoAdd");
 const selMantenimientoAdd = document.getElementById("selMantenimientoAdd");
 
-// Inputs de formulario editar
-const idEdit            = document.getElementById("txtIdFactura");
-const fechaEdit         = document.getElementById("fechaFacturaEdit");
-const montoEdit         = document.getElementById("txtEditarMontoFactura");
-const selEmpleadoEdit   = document.getElementById("selEmpleadoEdit");
+// Campos editar
+const idEdit   = document.getElementById("txtIdFactura");
+const fechaEdit= document.getElementById("fechaFacturaEdit");
+const montoEdit= document.getElementById("txtEditarMontoFactura");
+const selEmpleadoEdit = document.getElementById("selEmpleadoEdit");
 const selMantenimientoEdit = document.getElementById("selMantenimientoEdit");
 
-// ==================== VARIABLES GLOBALES ====================
-let facturasCache       = [];
-let empleadosCache      = [];
+// ===== Variables globales =====
+let facturasCache = [];
+let empleadosCache = [];
 let mantenimientosCache = [];
-let paginaActual        = 0;
-let tamPagina           = parseInt(selectPageSize.value, 10);
+let paginaActual = 0;
+let tamPagina = parseInt(selectPageSize.value, 10);
 
-// ==================== RENDERIZAR TABLA ====================
-// Dibuja las filas de la tabla de facturas
+// ===== Renderizar tabla =====
 function renderTabla(facturas) {
   tablaFacturas.innerHTML = "";
   if (!facturas || facturas.length === 0) {
-    tablaFacturas.innerHTML =
-      `<tr><td colspan="6" class="text-center">No hay registros</td></tr>`;
+    tablaFacturas.innerHTML = `<tr><td colspan="6" class="text-center">No hay registros</td></tr>`;
     return;
   }
 
-  // Ordena por ID
   facturas.sort((a, b) => a.id - b.id);
 
   facturas.forEach(f => {
@@ -74,12 +66,10 @@ function renderTabla(facturas) {
       <td>${empleado}</td>
       <td>${mantenimiento}</td>
       <td class="text-center">
-        <!-- Botón Editar -->
-        <button class="btn btn-sm btn-primary me-2" onclick="editarFactura(${f.id})">
+        <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editarFactura(${f.id})">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <!-- Botón Eliminar -->
-        <button class="btn btn-sm btn-danger" onclick="eliminarFactura(${f.id})">
+        <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarFactura(${f.id})">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -88,8 +78,7 @@ function renderTabla(facturas) {
   });
 }
 
-// ==================== RENDERIZAR PAGINACIÓN ====================
-// Genera botones para cada página
+// ===== Paginación =====
 function renderPaginacion(pageData) {
   pagWrap.innerHTML = "";
   if (!pageData || pageData.totalPages <= 1) return;
@@ -106,8 +95,7 @@ function renderPaginacion(pageData) {
   }
 }
 
-// ==================== CARGAR COMBOS ====================
-// Carga empleados y mantenimientos en los selects
+// ===== Cargar combos =====
 async function cargarCombos() {
   empleadosCache      = (await getEmpleados()).content ?? [];
   mantenimientosCache = (await getMantenimientos()).content ?? [];
@@ -133,8 +121,7 @@ async function cargarCombos() {
   });
 }
 
-// ==================== CARGAR TABLA ====================
-// Consulta API de facturas y actualiza tabla + paginación
+// ===== Cargar tabla =====
 async function cargarTabla() {
   const data = await getFacturas(paginaActual, tamPagina);
   facturasCache = data.content;
@@ -142,29 +129,27 @@ async function cargarTabla() {
   renderPaginacion(data);
 }
 
-// ==================== EDITAR FACTURA ====================
+// ===== Editar =====
 window.editarFactura = async function (id) {
   try {
     const f = await getFacturaById(id);
     if (!f) return Swal.fire("Error", "Factura no encontrada", "error");
 
-    // Cargar datos en el modal de edición
     idEdit.value    = f.id;
     fechaEdit.value = f.fecha;
     montoEdit.value = f.montoTotal;
 
     await cargarCombos();
-    selEmpleadoEdit.value     = f.idEmpleado;
+    selEmpleadoEdit.value = f.idEmpleado;
     selMantenimientoEdit.value = f.idMantenimiento;
 
     modalEdit.show();
   } catch (err) {
-    console.error("Error cargando factura", err);
     Swal.fire("Error", "No se pudo cargar la factura", "error");
   }
 };
 
-// ==================== ELIMINAR FACTURA ====================
+// ===== Eliminar =====
 window.eliminarFactura = async function (id) {
   const ok = await Swal.fire({
     title: "¿Eliminar factura?",
@@ -180,27 +165,25 @@ window.eliminarFactura = async function (id) {
     await deleteFactura(id);
     Swal.fire("Eliminada", "Factura eliminada correctamente", "success");
     cargarTabla();
-  } catch (err) {
+  } catch {
     Swal.fire("Error", "No se pudo eliminar la factura", "error");
   }
 };
 
-// ==================== AGREGAR FACTURA ====================
+// ===== Agregar =====
 frmAdd.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Validaciones básicas
   if (!fechaAdd.value) return Swal.fire("Error","La fecha es obligatoria","error");
   const hoy = new Date().toISOString().split("T")[0];
   if (fechaAdd.value < hoy) return Swal.fire("Error","La fecha no puede ser pasada","error");
 
   if (!montoAdd.value || isNaN(montoAdd.value) || parseFloat(montoAdd.value) <= 0) 
-    return Swal.fire("Error","El monto debe ser un número positivo","error");
+    return Swal.fire("Error","El monto debe ser positivo","error");
 
   if (!selEmpleadoAdd.value) return Swal.fire("Error","Seleccione un empleado","error");
   if (!selMantenimientoAdd.value) return Swal.fire("Error","Seleccione un mantenimiento","error");
 
-  // Objeto DTO
   const dto = {
     fecha: fechaAdd.value,
     montoTotal: parseFloat(montoAdd.value),
@@ -213,28 +196,25 @@ frmAdd.addEventListener("submit", async (e) => {
     Swal.fire("Éxito", "Factura registrada correctamente", "success");
     modalAdd.hide();
     await cargarTabla();
-  } catch (err) {
-    console.error("Error creando factura", err);
+  } catch {
     Swal.fire("Error", "No se pudo registrar la factura", "error");
   }
 });
 
-// ==================== ACTUALIZAR FACTURA ====================
+// ===== Actualizar =====
 frmEdit.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Validaciones
   if (!fechaEdit.value) return Swal.fire("Error","La fecha es obligatoria","error");
   const hoy = new Date().toISOString().split("T")[0];
   if (fechaEdit.value < hoy) return Swal.fire("Error","La fecha no puede ser pasada","error");
 
   if (!montoEdit.value || isNaN(montoEdit.value) || parseFloat(montoEdit.value) <= 0) 
-    return Swal.fire("Error","El monto debe ser un número positivo","error");
+    return Swal.fire("Error","El monto debe ser positivo","error");
 
   if (!selEmpleadoEdit.value) return Swal.fire("Error","Seleccione un empleado","error");
   if (!selMantenimientoEdit.value) return Swal.fire("Error","Seleccione un mantenimiento","error");
 
-  // Objeto DTO
   const dto = {
     fecha: fechaEdit.value,
     montoTotal: parseFloat(montoEdit.value),
@@ -247,20 +227,18 @@ frmEdit.addEventListener("submit", async (e) => {
     Swal.fire("Éxito", "Factura actualizada correctamente", "success");
     modalEdit.hide();
     await cargarTabla();
-  } catch (err) {
-    console.error("Error actualizando factura", err);
+  } catch {
     Swal.fire("Error", "No se pudo actualizar la factura", "error");
   }
 });
 
-// ==================== INICIO ====================
-// Se ejecuta al cargar la página
+// ===== Inicio =====
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarCombos();
   await cargarTabla();
 });
 
-// Cambiar tamaño de página
+// Cambio de tamaño de página
 selectPageSize.addEventListener("change", () => {
   tamPagina = parseInt(selectPageSize.value, 10);
   paginaActual = 0;

@@ -90,11 +90,11 @@ function renderTabla(data) {
       <td class="text-center">
         <!-- Botón Editar -->
         <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editarMantenimiento(${id})">
-          <i class="bi bi-pencil-square text-white"></i>
+          <i class="bi bi-pencil-square"></i>
         </button>
         <!-- Botón Eliminar -->
         <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarMantenimiento(${id})">
-          <i class="bi bi-trash text-white"></i>
+          <i class="bi bi-trash"></i>
         </button>
       </td>
     `;
