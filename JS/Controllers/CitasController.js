@@ -1,40 +1,35 @@
 // ======================= IMPORTACIONES =======================
-// Funciones del servicio de Citas (CRUD + paginado)
 import {
-  getCitasPaginado,  // obtiene citas con paginación
-  getCitaById,       // obtiene una cita específica por ID
-  createCita,        // crea una nueva cita
-  updateCita,        // actualiza una cita existente
-  deleteCita         // elimina una cita
+  getCitasPaginado,
+  getCitaById,
+  createCita,
+  updateCita,
+  deleteCita
 } from "../Services/CitasService.js";
-
-// Función del servicio de Clientes (para asociar cliente a cita)
 import { getClientes } from "../Services/ClientesService.js";
 
 // ======================= REFERENCIAS AL DOM =======================
-const tablaCitas = document.getElementById("tablaCitas");        // tabla donde se muestran citas
-const pagWrap = document.getElementById("paginacion");           // contenedor de paginación
-const selectPageSize = document.getElementById("registrosPorPagina"); // select con tamaño de página
+const tablaCitas = document.getElementById("tablaCitas");
+const pagWrap = document.getElementById("paginacion");
+const selectPageSize = document.getElementById("registrosPorPagina");
 
-const citaForm = document.getElementById("citaForm");            // formulario del modal
-const citaModal = new bootstrap.Modal(document.getElementById("citaModal")); // modal Bootstrap
-const modalLabel = document.getElementById("citaModalLabel");    // título del modal
+const citaForm = document.getElementById("citaForm");
+const citaModal = new bootstrap.Modal(document.getElementById("citaModal"));
+const modalLabel = document.getElementById("citaModalLabel");
 
-// Inputs dentro del formulario del modal
 const inputId = document.getElementById("citaId");
 const inputFecha = document.getElementById("fecha");
 const inputHora = document.getElementById("hora");
 const selectEstado = document.getElementById("estado");
 const selectCliente = document.getElementById("cliente");
 
-// ======================= VARIABLES GLOBALES =======================
-let citasCache = [];     // almacena citas en memoria temporal
-let clientesCache = [];  // almacena clientes cargados en memoria
-let paginaActual = 1;    // página actual para paginación
-let tamPagina = parseInt(selectPageSize.value, 10); // tamaño de página elegido
+// ======================= VARIABLES =======================
+let citasCache = [];
+let clientesCache = [];
+let paginaActual = 1;
+let tamPagina = parseInt(selectPageSize.value, 10);
 
 // ======================= FUNCIONES AUXILIARES =======================
-// Normaliza la respuesta de la API (dependiendo cómo venga la data)
 function parseResponse(apiResponse) {
   if (Array.isArray(apiResponse)) return apiResponse;
   if (apiResponse?.data?.content) return apiResponse.data.content;
@@ -43,16 +38,11 @@ function parseResponse(apiResponse) {
   return [];
 }
 
-// Carga clientes y los coloca en el select del formulario
 async function cargarClientes() {
   try {
-    const res = await getClientes(0, 100); // pide hasta 100 clientes
+    const res = await getClientes(0, 100);
     clientesCache = parseResponse(res);
-
-    // Resetea las opciones y agrega placeholder
     selectCliente.innerHTML = '<option disabled selected value="">Seleccione cliente</option>';
-
-    // Recorre clientes y los agrega como opción
     clientesCache.forEach(cli => {
       const opt = document.createElement("option");
       opt.value = cli.id || cli.idCliente;
@@ -65,29 +55,20 @@ async function cargarClientes() {
   }
 }
 
-// Renderiza las filas de la tabla con citas
 function renderTabla(citas) {
   tablaCitas.innerHTML = "";
-
-  // Si no hay registros, muestra mensaje
   if (!citas || citas.length === 0) {
     tablaCitas.innerHTML = `<tr><td colspan="6" class="text-center">No hay registros</td></tr>`;
     return;
   }
-
-  // Recorre cada cita y crea su fila
   citas.forEach(cita => {
     let nombreCliente = "—";
-
-    // Intenta obtener nombre del cliente desde objeto o cache
     if (cita.cliente?.nombre) {
       nombreCliente = `${cita.cliente.nombre} ${cita.cliente.apellido ?? ""}`;
     } else if (cita.idCliente) {
       const c = clientesCache.find(cli => (cli.id || cli.idCliente) === cita.idCliente);
       if (c) nombreCliente = `${c.nombre} ${c.apellido}`;
     }
-
-    // Crear fila
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${cita.id}</td>
@@ -96,11 +77,9 @@ function renderTabla(citas) {
       <td>${cita.estado}</td>
       <td>${nombreCliente}</td>
       <td class="text-center">
-        <!-- Botón Editar -->
         <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editarCita(${cita.id})">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <!-- Botón Eliminar -->
         <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarCita(${cita.id})">
           <i class="bi bi-trash"></i>
         </button>
@@ -110,7 +89,6 @@ function renderTabla(citas) {
   });
 }
 
-// Renderiza los botones de paginación
 function renderPaginacion(totalPaginas) {
   pagWrap.innerHTML = "";
   for (let p = 1; p <= totalPaginas; p++) {
@@ -125,43 +103,38 @@ function renderPaginacion(totalPaginas) {
   }
 }
 
-// Carga citas en la tabla con paginación
 async function cargarTabla(reset = false) {
-  const res = await getCitasPaginado(paginaActual - 1, tamPagina); // la API empieza en 0
+  const res = await getCitasPaginado(paginaActual - 1, tamPagina);
   citasCache = parseResponse(res);
   if (reset) paginaActual = 1;
   renderTabla(citasCache);
   renderPaginacion(res.totalPages ?? 1);
 }
 
-// ======================= FUNCIONES CRUD =======================
-// Abrir modal en modo "Agregar"
+// ======================= CRUD =======================
 window.abrirModalAgregar = async function () {
-  citaForm.reset();         // limpia formulario
-  inputId.value = "";       // ID vacío (nuevo)
+  citaForm.reset();
+  inputId.value = "";
   modalLabel.textContent = "Agregar Cita";
   const hoy = new Date().toISOString().split("T")[0];
-  inputFecha.setAttribute("min", hoy); // no se puede elegir fecha pasada
-  await cargarClientes();   // carga clientes en select
-  citaModal.show();         // muestra modal
+  inputFecha.setAttribute("min", hoy);
+  await cargarClientes();
+  citaModal.show();
 };
 
-// Abrir modal en modo "Editar"
 window.editarCita = async function (id) {
   try {
-    const cita = await getCitaById(id); // busca cita por ID
-    if (!cita) return Swal.fire("Error","No se encontró la cita","error");
+    const cita = await getCitaById(id);
+    if (!cita) return Swal.fire("Error", "No se encontró la cita", "error");
 
     citaForm.reset();
     modalLabel.textContent = "Editar Cita";
     inputId.value = cita.id;
 
-    // Controla fecha mínima
     const hoy = new Date().toISOString().split("T")[0];
     inputFecha.setAttribute("min", hoy);
     inputFecha.value = (cita.fecha < hoy) ? hoy : cita.fecha;
 
-    // Rellena el resto de campos
     inputHora.value = cita.hora;
     selectEstado.value = cita.estado;
 
@@ -175,9 +148,7 @@ window.editarCita = async function (id) {
   }
 };
 
-// Eliminar una cita
 window.eliminarCita = async function (id) {
-  // Confirmación con SweetAlert
   const ok = await Swal.fire({
     title: "¿Eliminar cita?",
     icon: "warning",
@@ -185,13 +156,12 @@ window.eliminarCita = async function (id) {
     confirmButtonText: "Sí, eliminar",
     cancelButtonText: "Cancelar"
   }).then(r => r.isConfirmed);
-
   if (!ok) return;
 
   try {
-    await deleteCita(id); // elimina
+    await deleteCita(id);
     Swal.fire("Eliminada", "Cita borrada", "success");
-    cargarTabla(true);    // recarga tabla
+    cargarTabla(true);
   } catch (err) {
     console.error("Error al eliminar cita:", err);
     Swal.fire("Error", "No se pudo eliminar", "error");
@@ -201,19 +171,25 @@ window.eliminarCita = async function (id) {
 // ======================= GUARDAR (CREAR / EDITAR) =======================
 citaForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const hoy = new Date().toISOString().split("T")[0];
 
-  // Validaciones de campos obligatorios
   if (!inputFecha.value || inputFecha.value < hoy) 
     return Swal.fire("Error", "Seleccione una fecha válida", "error");
-  
+
   if (!inputHora.value) 
     return Swal.fire("Error", "Seleccione una hora", "error");
 
-  const horaNum = parseInt(inputHora.value.split(":")[0], 10);
-  if (horaNum < 7 || horaNum > 16) 
+  // ✅ Validación robusta de hora
+  const [h, m] = inputHora.value.split(":").map(Number);
+  if (isNaN(h) || isNaN(m)) {
+    return Swal.fire("Error", "Formato de hora inválido", "error");
+  }
+  if (h < 7 || h > 16 || (h === 16 && m > 0)) {
     return Swal.fire("Error", "La hora debe estar entre 07:00 y 16:00", "error");
+  }
+  if (m !== 0 && m !== 30) {
+    return Swal.fire("Error", "La hora debe estar en intervalos de 30 minutos (ej: 07:00, 07:30, 08:00...)", "error");
+  }
 
   if (!selectEstado.value) 
     return Swal.fire("Error", "Seleccione un estado", "error");
@@ -221,7 +197,6 @@ citaForm.addEventListener("submit", async (e) => {
   if (!selectCliente.value) 
     return Swal.fire("Error", "Seleccione un cliente", "error");
 
-  // Objeto DTO que se manda al backend
   const dto = {
     fecha: inputFecha.value,
     hora: inputHora.value,
@@ -231,17 +206,15 @@ citaForm.addEventListener("submit", async (e) => {
 
   try {
     if (inputId.value) {
-      // Si hay ID → actualizar
       await updateCita(parseInt(inputId.value, 10), dto);
       Swal.fire("Éxito", "Cita actualizada", "success");
     } else {
-      // Si no hay ID → crear
       await createCita(dto);
       Swal.fire("Éxito", "Cita registrada", "success");
     }
-    citaModal.hide();       // cierra modal
-    await cargarClientes(); // recarga clientes
-    await cargarTabla(true);// recarga tabla
+    citaModal.hide();
+    await cargarClientes();
+    await cargarTabla(true);
   } catch (err) {
     console.error("Error al guardar cita:", err);
     Swal.fire("Error", "No se pudo guardar la cita", "error");
@@ -249,14 +222,12 @@ citaForm.addEventListener("submit", async (e) => {
 });
 
 // ======================= EVENTOS EXTRA =======================
-// Cambiar tamaño de página
 selectPageSize.addEventListener("change", () => {
   tamPagina = parseInt(selectPageSize.value, 10);
   paginaActual = 1;
   cargarTabla(true);
 });
 
-// Inicializar al cargar la página
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarClientes();
   await cargarTabla(true);

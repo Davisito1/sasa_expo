@@ -22,6 +22,40 @@
       font-weight: bold;
       text-align: center;
     }
+
+    /* ===== Botones de acción (íconos) ===== */
+    .icon-btn {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      background: #fff;
+      font-size: 18px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    /* Editar */
+    .btn-primary.icon-btn {
+      border-color: #0d6efd;
+      color: #0d6efd;
+    }
+    .btn-primary.icon-btn:hover {
+      background: rgba(13, 110, 253, 0.1);
+      color: #0b5ed7;
+    }
+
+    /* Eliminar */
+    .btn-danger.icon-btn {
+      border-color: #dc3545;
+      color: #dc3545;
+    }
+    .btn-danger.icon-btn:hover {
+      background: rgba(220, 53, 69, 0.1);
+      color: #bb2d3b;
+    }
   </style>
 </head>
 <body>
@@ -62,7 +96,7 @@
       <h2 class="mb-4">Mantenimientos</h2>
 
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <!-- 🔹 Botón que abre el modal desde JS -->
+        <!-- Botón que abre el modal desde JS -->
         <button onclick="abrirModalAgregar()" class="btn btn-primary">
           <i class="fas fa-plus me-2"></i> Nuevo Mantenimiento
         </button>
@@ -92,7 +126,7 @@
             </tr>
           </thead>
           <tbody id="tablaMantenimiento">
-            <!-- Datos dinámicos desde JS -->
+            <!-- Filas dinámicas desde JS -->
           </tbody>
         </table>
       </div>
