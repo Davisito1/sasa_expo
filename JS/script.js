@@ -1,9 +1,3 @@
-// ===============================
-// Dashboard.js
-// ===============================
-// Muestra KPIs, gráficas y permite ver detalles dinámicos
-// ===============================
-
 document.addEventListener("DOMContentLoaded", async () => {
 
   // ====== ENDPOINTS ======
