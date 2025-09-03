@@ -1,89 +1,176 @@
- body {
-      background-color: #f1eded;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+:root{
+  /*  Paleta de colores corporativa SASA */
+  --sasa-primary:#C91A1A;        /* Rojo principal */
+  --sasa-primary-600:#A61515;    /* Rojo intermedio (hover) */
+  --sasa-primary-700:#8A1313;    /* Rojo oscuro */
+  --sasa-bg:#f6f6f7;             /* Fondo base neutro */
+  --sasa-card:#ffffff;           /* Fondo de tarjetas / modales */
+  --sasa-text:#1b1b1f;           /* Texto principal */
+  --sasa-muted:#6b7280;          /* Texto secundario / subtítulos */
+  --sasa-ring: 0 0 0 0.25rem rgba(201,26,26,.15); /* Glow rojo en focus */
+}
 
-    .welcome-container {
-      background-color: #fff;
-      padding: 50px;
-      border-radius: 20px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      max-width: 900px;
-      width: 100%;
-    }
+/* Reset global básico */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
 
-    .welcome-text {
-      max-width: 50%;
-    }
+/* Fondo base genérico de todas las páginas */
+body{
+  margin:0;
+  color:var(--sasa-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans";
+  background: var(--sasa-bg);
+}
 
-    .welcome-text h1 {
-      font-size: 3rem;
-      font-weight: bold;
-      color: #000;
-    }
+/* Fondo decorativo EXCLUSIVO para pantallas de autenticación */
+.auth-bg{
+  background:
+    radial-gradient(60rem 60rem at -10% -20%, rgba(201,26,26,.08), transparent 60%),
+    radial-gradient(60rem 60rem at 110% 120%, rgba(201,26,26,.08), transparent 60%),
+    var(--sasa-bg);
+}
 
-    .welcome-text p {
-      margin: 20px 0;
-      font-size: 1.1rem;
-      color: #333;
-    }
+/* Layout del login: centra la tarjeta */
+.auth-layout{
+  min-height:100dvh;          /* Pantalla completa */
+  display:grid;
+  place-items:center;          /* Centrado vertical y horizontal */
+  padding:24px;
+}
 
-    .btn-sasa {
-      background-color: #800000;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin-right: 10px;
-      border-radius: 20px;
-      font-weight: bold;
-      transition: 0.3s;
-      text-decoration: none;
-      display: inline-block;
-    }
+/* Badge de marca (arriba a la izquierda) */
+.brand-badge{
+  position:fixed;
+  top:18px; left:18px;
+  display:flex; align-items:center; gap:10px;
+  font-weight:700;
+  color:var(--sasa-primary-700);
+  opacity:.9;
+}
+.brand-badge img{
+  width:34px; height:34px; object-fit:cover;
+  border-radius:8px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
 
-    .btn-sasa:hover {
-      background-color: #a00000;
-    }
+/* Tarjeta del formulario de login */
+.login-card{
+  width:100%;
+  max-width:420px;
+  background:var(--sasa-card);
+  border-radius:18px;
+  padding:28px;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.08),
+    0 1px 0 rgba(0,0,0,.05) inset;
+  animation: rise .35s ease-out both; /* efecto al aparecer */
+}
+@keyframes rise{
+  from{ transform:translateY(8px); opacity:0; }
+  to{ transform:translateY(0); opacity:1; }
+}
 
-    .btn-outline-sasa {
-      background-color: transparent;
-      color: #800000;
-      border: 2px solid #800000;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-weight: bold;
-      transition: 0.3s;
-      text-decoration: none;
-      display: inline-block;
-    }
+/* Títulos */
+.title{
+  font-size:1.6rem;
+  font-weight:800;
+  margin:0;
+}
+.subtitle{
+  margin:6px 0 0 0;
+  color:var(--sasa-muted);
+  font-size:.95rem;
+}
 
-    .btn-outline-sasa:hover {
-      background-color: #800000;
-      color: #fff;
-    }
+/* Campo de entrada con borde elevado */
+.input-elevated{
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fafafa;
+  transition: box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+.input-elevated:focus-within{
+  border-color: var(--sasa-primary);
+  box-shadow: var(--sasa-ring);
+  background:#fff;
+}
 
-    .welcome-image img {
-      width: 300px;
-    }
+/* Ícono de input-group (ej. correo, usuario) */
+.input-group-text{
+  background:transparent;
+  border:none;
+  border-right:1px solid #e6e6e6;
+  color:#555;
+}
 
-    @media (max-width: 768px) {
-      .welcome-container {
-        flex-direction: column;
-        text-align: center;
-      }
-      .welcome-text, .welcome-image {
-        max-width: 100%;
-      }
-      .welcome-image img {
-        width: 200px;
-        margin-top: 20px;
-      }
-    }
-  
+/* Inputs internos */
+.form-control{
+  border:none;
+  background:transparent;
+  padding:12px 14px;
+}
+.form-control:focus{ box-shadow:none; background:#fff; }
+
+/* Botón para mostrar/ocultar contraseña */
+.btn-eye{
+  border:0;
+  background:transparent;
+  padding:0 12px;
+  color:#6b7280;
+}
+.btn-eye:hover{ color:#374151; }
+
+/* Links secundarios pequeños (recuperar, registrarse) */
+.small-links a{
+  text-decoration:none;
+  color: var(--sasa-primary-700);
+}
+.small-links a:hover{ color: var(--sasa-primary); }
+
+/* Botón principal SASA */
+.btn-sasa{
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:8px;
+  background: linear-gradient(180deg, var(--sasa-primary), var(--sasa-primary-700));
+  color:#fff;
+  border:0; border-radius:12px;
+  padding:12px 16px;
+  font-weight:700;
+  letter-spacing:.2px;
+  transition: transform .06s ease, filter .2s ease;
+  position:relative;
+  overflow:hidden;
+}
+.btn-sasa:hover{ filter: brightness(1.05); }
+.btn-sasa:active{ transform: translateY(1px); }
+
+/* Spinner y label del botón durante carga */
+.btn-sasa .btn-spinner{ display:none; margin-left:8px; }
+.btn-sasa.loading .btn-label{ opacity: 0; }
+.btn-sasa.loading .btn-spinner{ display:inline-block; }
+
+/* Botón contorno SASA */
+.btn-outline-sasa{
+  --bs-btn-color: var(--sasa-primary-700);
+  --bs-btn-border-color: var(--sasa-primary-700);
+  --bs-btn-hover-color:#fff;
+  --bs-btn-hover-bg: var(--sasa-primary-700);
+  --bs-btn-hover-border-color: var(--sasa-primary-700);
+  --bs-btn-active-bg: var(--sasa-primary-700);
+  --bs-btn-active-border-color: var(--sasa-primary-700);
+  border-radius:10px;
+}
+
+/* Estados de validación */
+.was-validated .form-control:invalid,
+.form-control.is-invalid{ background:#fff; }
+.invalid-feedback{ display:none; }
+.was-validated .form-control:invalid ~ .invalid-feedback,
+.form-control.is-invalid ~ .invalid-feedback{ display:block; }
+
+/* Ajustes responsive */
+@media (max-width:480px){
+  .login-card{ padding:22px; border-radius:16px; }
+  .title{ font-size:1.45rem; }
+}

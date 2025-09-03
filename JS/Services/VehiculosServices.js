@@ -1,51 +1,69 @@
-const API_URL = "http://localhost:8080/apiVehiculo";
+// VehiculosServices.js
+const API_BASE = "http://localhost:8080/apiVehiculo";
 
-// 🔹 Helper para normalizar la respuesta
-function parseResponse(json) {
-  if (Array.isArray(json)) return json;                // si ya es array
-  if (json.data?.content) return json.data.content;    // si viene dentro de data.content
-  if (json.content) return json.content;               // si viene como content
-  if (json.data) return json.data;                     // si viene solo en data
-  return [];                                           // vacío o estructura rara
+// -------- Utilidad base --------
+async function fetchJsonOrThrow(url, options = {}) {
+  const res = await fetch(url, options);
+  const text = await res.text();
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
+  try { return text ? JSON.parse(text) : null; } catch { return text; }
 }
 
-// 🔹 Obtener todos los vehículos
-export async function getVehiculos() {
-  const res = await fetch(API_URL);
-  if (!res.ok) throw new Error("Error al obtener vehículos");
-  const json = await res.json();
-  return parseResponse(json);
+// -------- Normalización --------
+function normalizePage(json) {
+  if (!json) return { content: [], totalPages: 0, totalElements: 0 };
+  if (json.data && json.data.content) return json.data;   // {status, data: Page}
+  if (json.content) return json;                          // Page directo
+  if (Array.isArray(json.data)) return { content: json.data, totalPages: 1, totalElements: json.data.length };
+  if (Array.isArray(json)) return { content: json, totalPages: 1, totalElements: json.length };
+  return { content: [], totalPages: 0, totalElements: 0 };
 }
 
-// 🔹 Crear nuevo vehículo
-export async function createVehiculo(vehiculo) {
-  const res = await fetch(API_URL, {
+// =============== READ (paginado + orden) ===============
+export async function getVehiculos(page = 0, size = 10, sortBy = "idVehiculo", sortDir = "asc") {
+  const url = `${API_BASE}/consultar?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`;
+  const json = await fetchJsonOrThrow(url);
+  return normalizePage(json);
+}
+
+// =============== CREATE ===============
+export async function createVehiculo(data) {
+  const payload = {
+    ...data,
+    idCliente: data.idCliente,
+    idEstado:  data.idEstado
+  };
+
+  const body = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(vehiculo),
-  });
-  if (!res.ok) throw new Error("Error al crear vehículo");
-  const json = await res.json();
-  return parseResponse(json);
+    body: JSON.stringify(payload),
+  };
+
+  const json = await fetchJsonOrThrow(`${API_BASE}/registrar`, body);
+  return json?.data ?? json;
 }
 
-// 🔹 Actualizar vehículo
-export async function updateVehiculo(id, vehiculo) {
-  const res = await fetch(`${API_URL}/${id}`, {
+// =============== UPDATE ===============
+export async function updateVehiculo(id, data) {
+  const payload = {
+    ...data,
+    idCliente: data.idCliente,
+    idEstado:  data.idEstado
+  };
+
+  const body = {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(vehiculo),
-  });
-  if (!res.ok) throw new Error("Error al actualizar vehículo");
-  const json = await res.json();
-  return parseResponse(json);
+    body: JSON.stringify(payload),
+  };
+
+  const json = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, body);
+  return json?.data ?? json;
 }
 
-// 🔹 Eliminar vehículo
+// =============== DELETE ===============
 export async function deleteVehiculo(id) {
-  const res = await fetch(`${API_URL}/${id}`, {
-    method: "DELETE",
-  });
-  if (!res.ok) throw new Error("Error al eliminar vehículo");
-  return true;
+  const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
+  return json?.data ?? json;
 }

@@ -1,0 +1,104 @@
+/* Registro usa la tarjeta/botones de login.css. Aquí solo alineación y aire. */
+.login-card{ max-width: 680px; }
+
+/* Inputs planos coherentes con el sistema */
+.input-plain{
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+  padding: 12px 14px;
+  height: 44px;                 /* altura consistente */
+}
+.input-plain:focus{
+  border-color: var(--sasa-primary);
+  box-shadow: var(--sasa-ring);
+  background: #fff;
+}
+
+/* Grid de campos: ordenado y con líneas base alineadas */
+.form-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+}
+.form-grid.tight{ row-gap: 14px; }
+.field{ display: grid; gap: 6px; }
+.col-span-2{ grid-column: span 2; }
+
+.form-label{ font-weight: 600; }
+
+/* Password con botón textual (sin iconos) */
+.plain-with-action{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+.ghost-action{
+  background: transparent;
+  border: 0;
+  padding: 6px 8px;
+  color: var(--sasa-muted);
+  border-radius: 8px;
+  height: 36px;
+}
+.ghost-action:hover{ color: var(--sasa-primary-700); }
+
+/* Acciones */
+.primary-action{ margin-top: 10px; }
+.secondary-actions{
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.secondary-actions .btn{
+  border-radius: 12px;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+/* Móvil: 1 columna y botones apilados */
+@media (max-width: 640px){
+  .form-grid{ grid-template-columns: 1fr; }
+  .col-span-2{ grid-column: auto; }
+  .secondary-actions{ flex-direction: column; }
+}
+
+
+
+
+
+/* ===== Botón principal (más grande) ===== */
+.btn-main{
+  font-size: 1.1rem;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+/* ===== Botones secundarios (más pequeños) ===== */
+.btn-sm-custom{
+  font-size: 0.9rem;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Botones outline secundarios */
+.btn-link-outline{
+  border: 2px solid var(--sasa-primary-700);
+  color: var(--sasa-primary-700);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all .25s ease;
+}
+
+.btn-link-outline:hover{
+  background: var(--sasa-primary-700);
+  color: #fff;
+}

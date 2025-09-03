@@ -1,0 +1,120 @@
+/* ================================
+   CUERPO DE LA PÁGINA DASHBOAARD XD
+   ================================ */
+.welcome-body {
+  background: #f4f1f1;                /* Fondo gris muy claro */
+  min-height: 100vh;                  /* Ocupa toda la altura de la ventana */
+  display: flex;                      /* Centra el contenido */
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif; /* Fuente moderna */
+}
+
+/* ================================
+   TARJETA CENTRAL
+   ================================ */
+.welcome-card {
+  background: #fff;                   /* Fondo blanco */
+  border-radius: 20px;                /* Bordes redondeados */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12); /* Sombra elegante */
+  padding: 50px;                      /* Espaciado interno amplio */
+  max-width: 1100px;                  /* Límite de ancho */
+  width: 100%;
+}
+
+/* ================================
+   CONTENIDO INTERNO (texto + imagen)
+   ================================ */
+.welcome-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;     /* Texto a un lado, imagen al otro */
+  gap: 40px;                          /* Espacio entre ambos */
+}
+
+/* ================================
+   HERO (título + párrafo de bienvenida)
+   ================================ */
+.hero h1 {
+  font-size: clamp(2rem, 4vw, 3rem);  /* Responsivo: mínimo 2rem, máximo 3rem */
+  font-weight: 800;                   /* Muy negrita */
+  margin-bottom: 12px;
+  color: #222;                        /* Gris oscuro */
+}
+.hero h1 span {
+  color: var(--sasa-primary-700);     /* Parte resaltada en rojo SASA */
+}
+.hero p {
+  font-size: 1.1rem;
+  color: var(--sasa-muted);           /* Gris medio */
+  margin-bottom: 30px;
+  line-height: 1.5;                   /* Mejora la legibilidad */
+}
+
+/* ================================
+   ACCIONES (botones principales)
+   ================================ */
+.actions {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;                    /* Se adaptan en pantallas pequeñas */
+}
+
+.actions a {
+  display: inline-block;
+  padding: 14px 32px;                 /* Botones grandes */
+  font-weight: 700;
+  border-radius: 30px;                /* Bordes redondeados tipo “pill” */
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+/* Botón sólido rojo SASA */
+.btn-sasa {
+  background: var(--sasa-primary-700);
+  color: #fff;
+}
+.btn-sasa:hover {
+  background: #7e0d0d;                /* Más oscuro al pasar mouse */
+}
+
+/* Botón contorno */
+.btn-outline-sasa {
+  border: 2px solid var(--sasa-primary-700);
+  color: var(--sasa-primary-700);
+  background: transparent;
+}
+.btn-outline-sasa:hover {
+  background: var(--sasa-primary-700);
+  color: #fff;
+}
+
+/* ================================
+   ILUSTRACIÓN / IMAGEN
+   ================================ */
+.art img {
+  width: 350px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 18px 28px rgba(0,0,0,0.15)); /* Sombra alrededor */
+  border-radius: 15px;                               /* Redondeo suave */
+}
+
+/* ================================
+   RESPONSIVE (pantallas <900px)
+   ================================ */
+@media (max-width: 900px) {
+  .welcome-content {
+    flex-direction: column;           /* Texto arriba, imagen abajo */
+    text-align: center;               /* Centra todo el texto */
+  }
+  .art img {
+    width: 250px;                     /* Imagen más pequeña en móviles */
+    margin-top: 25px;
+  }
+}
