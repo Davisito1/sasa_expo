@@ -11,28 +11,73 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="body">
-  <div id="sidebar">
-    <div class="logo">
-      <img src="../IMG/logo sasa.jpg" alt="SASA"/>
+<body>
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <!-- Header fijo del sidebar: logo + SASA + divisor -->
+    <div class="sidebar-header">
+      <div class="logo">
+        <img src="../IMG/logo sasa.jpg" alt="Logo SASA" />
+        <span class="logo-text">SASA</span>
+      </div>
+      <div class="logo-divider"></div>
     </div>
-    <ul>
-      <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
-      <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
-      <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
-      <li><a class="active" href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
-      <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
-      <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
-      <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
-      <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
-    </ul>
-  </div>
 
+    <!-- Menú -->
+    <ul>
+      <li>
+        <a href="../dashboard/index.html">
+          <i class="fas fa-home"></i><span>Inicio</span>
+        </a>
+      </li>
+      <li>
+        <a href="../vehiculos/vehiculos.html">
+          <i class="fas fa-car"></i><span>Vehículos</span>
+        </a>
+      </li>
+      <li>
+        <a href="../mantenimiento/mantenimiento.html">
+          <i class="fas fa-wrench"></i><span>Mantenimiento</span>
+        </a>
+      </li>
+      <li>
+        <a href="../empleados/empleados.html">
+          <i class="fas fa-user"></i><span>Empleados</span>
+        </a>
+      </li>
+      <li>
+        <a href="../clientes/clientes.html">
+          <i class="fas fa-users"></i><span>Clientes</span>
+        </a>
+      </li>
+      <li>
+        <a href="../citas/citas.html">
+          <i class="fas fa-calendar"></i><span>Citas</span>
+        </a>
+      </li>
+      <li>
+        <a href="../facturas/facturas.html">
+          <i class="fas fa-receipt"></i><span>Facturas</span>
+        </a>
+      </li>
+      <li>
+        <a href="../pagos/pagos.html">
+          <i class="fas fa-credit-card"></i><span>Pagos</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- TOPBAR -->
   <div class="topbar shadow-sm">
     <div class="topbar-right">
-      <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
+      <a href="../notificaciones/notificaciones.html" aria-label="Notificaciones">
+        <i class="fas fa-bell fa-lg"></i>
+      </a>
       <span class="ms-2">Usuario</span>
-      <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
+      <a href="../Ajustes/usuario.html" aria-label="Perfil de usuario">
+        <i class="fas fa-user-circle fa-lg" id="userIcon"></i>
+      </a>
     </div>
   </div>
 
@@ -41,14 +86,14 @@
     <span id="fechaActual"></span> - <span id="horaActual"></span>
   </div>
 
-  <!-- Contenido -->
-  <div class="content">
+  <!-- CONTENIDO -->
+  <main class="content">
     <div class="container mt-4">
-      
+
       <!-- Tarjeta saludo -->
       <div class="card glass-card p-4 mb-4 shadow text-center animate-slide">
         <h4 id="saludo"><i class="fas fa-handshake text-danger me-2"></i>Bienvenido</h4>
-        <p class="text-muted">Bienvenido al sistema de Sistema de Administracion y Seguimiento Automotriz</p>
+        <p class="text-muted">Bienvenido al Sistema de Administración y Seguimiento Automotriz</p>
       </div>
 
       <!-- Tarjetas principales -->
@@ -110,7 +155,7 @@
         <div class="col-md-6 mb-4 animate-fade">
           <div class="card glass-card p-3 shadow">
             <h6 class="fw-bold"><i class="fas fa-chart-pie me-2 text-danger"></i>Vehículos por marca</h6>
-            <div style="height: 250px;">
+            <div style="height:250px">
               <canvas id="graficaVehiculosMarca"></canvas>
             </div>
           </div>
@@ -118,7 +163,7 @@
         <div class="col-md-6 mb-4 animate-fade">
           <div class="card glass-card p-3 shadow">
             <h6 class="fw-bold"><i class="fas fa-chart-line me-2 text-danger"></i>Ingresos mensuales</h6>
-            <div style="height: 250px;">
+            <div style="height:250px">
               <canvas id="graficaIngresosMensuales"></canvas>
             </div>
           </div>
@@ -126,7 +171,25 @@
       </div>
 
     </div>
-  </div>
+  </main>
+
+  <!-- Marca activo por URL -->
+  <script>
+    const items = document.querySelectorAll('#sidebar ul li a');
+    const here = location.pathname.split('/').pop().toLowerCase();
+
+    items.forEach(a=>{
+      const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+      if(file && file === here){
+        a.parentElement.classList.add('is-active');
+        a.setAttribute('aria-current','page');
+      }
+      a.addEventListener('click', ()=>{
+        document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
+        a.parentElement.classList.add('is-active');
+      });
+    });
+  </script>
 
   <script src="../JS/script.js"></script>
 </body>
