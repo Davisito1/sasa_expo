@@ -264,3 +264,22 @@ body.dashboard .topbar{ justify-content:flex-start !important; position:fixed; }
   }
   .search-bar{ min-width:240px; }
 }
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;   /* espacio entre íconos y texto */
+}
+
+.topbar-right a i {
+  color: #fff;           /* íconos blancos */
+  transition: color 0.3s;
+}
+
+.topbar-right a i:hover {
+  color: #ddd;           /* gris claro al pasar el mouse */
+}
+
+.topbar-right span {
+  color: #fff;           /* texto blanco */
+  font-weight: bold;
+}
