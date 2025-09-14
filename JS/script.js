@@ -1,50 +1,74 @@
-document.addEventListener("DOMContentLoaded", async () => {
+// dashboard.js  ✅ FINAL
+// Asegúrate de que este script se cargue con: <script type="module" src="../dashboard/dashboard.js"></script>
 
-  // ====== ENDPOINTS ======
-  const API_VEHICULOS = "http://localhost:8080/apiVehiculo/consultar";
-  const API_CLIENTES  = "http://localhost:8080/apiCliente/consultar?page=0&size=100";
-  const API_ESTADOS   = "http://localhost:8080/api/estadoVehiculo/listar";
-  const API_CITAS     = "http://localhost:8080/apiCitas/listar";
-  const API_HISTORIAL = "http://localhost:8080/api/historial/consultar?page=0&size=100";
-  const API_PAGOS     = "http://localhost:8080/apiPagos/consultar";
+// IMPORTA DESDE TU CARPETA JS (ajusta si es distinto)
+import { attachAuthInterceptor, isLoggedIn, checkAuth } from "../js/Services/LoginService.js";
 
-  // ===============================
-  // FECHA Y HORA EN VIVO
-  // ===============================
-  function mostrarFechaYHora() {
+// Activa el interceptor ANTES de cualquier fetch
+attachAuthInterceptor({ onUnauthorizedRedirect: "../Autenticacion/login.html" });
+
+document.addEventListener("DOMContentLoaded", init);
+
+async function init() {
+  // ====== Guardia de sesión ======
+  if (!isLoggedIn()) {
+    window.location.href = "../Autenticacion/login.html";
+    return;
+  }
+  const chk = await checkAuth();
+  if (chk.status !== "success") {
+    await Swal.fire("Sesión expirada", "Por favor inicia sesión nuevamente.", "warning");
+    window.location.href = "../Autenticacion/login.html";
+    return;
+  }
+
+  // ====== ENDPOINTS (usa los que realmente tengas) ======
+  const BASE = "http://localhost:8080";
+  const API_VEHICULOS = `${BASE}/apiVehiculo/consultar`;
+  const API_CLIENTES  = `${BASE}/apiCliente/consultar?page=0&size=100`;
+  const API_CITAS     = `${BASE}/apiCitas/listar`;
+  const API_HISTORIAL = `${BASE}/api/historial/consultar?page=0&size=100`;
+  const API_PAGOS     = `${BASE}/apiPagos/consultar`;
+
+  // ====== FECHA, HORA Y SALUDO ======
+  const fechaEl = document.getElementById("fechaActual");
+  const horaEl  = document.getElementById("horaActual");
+  const saludoEl = document.getElementById("saludo"); // ← usa este id en tu HTML
+
+  function actualizarFechaHora() {
     const f = new Date();
-    document.getElementById("fechaActual").textContent = f.toLocaleDateString("es-ES", {
-      weekday: "long", year: "numeric", month: "long", day: "numeric"
-    });
-    document.getElementById("horaActual").textContent = f.toLocaleTimeString("es-ES", {
-      hour: "2-digit", minute: "2-digit"
-    });
+    if (fechaEl) fechaEl.textContent = f.toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+    if (horaEl)  horaEl.textContent  = f.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
   }
-  mostrarFechaYHora();
-  setInterval(mostrarFechaYHora, 60000); // actualizar cada minuto
-
-  // ===============================
-  // SALUDO SEGÚN HORA
-  // ===============================
-  function mostrarSaludo() {
-    const hora = new Date().getHours();
-    let saludo = "Hola";
-    if (hora < 12) saludo = "Buenos días";
-    else if (hora < 18) saludo = "Buenas tardes";
-    else saludo = "Buenas noches";
-    document.getElementById("saludo").textContent = saludo;
+  function actualizarSaludo() {
+    const h = new Date().getHours();
+    const texto = h < 12 ? "Buenos días" : (h < 18 ? "Buenas tardes" : "Buenas noches");
+    if (saludoEl) saludoEl.textContent = texto;
   }
-  mostrarSaludo();
+  actualizarFechaHora();
+  actualizarSaludo();
+  setInterval(() => { actualizarFechaHora(); actualizarSaludo(); }, 60_000);
 
-  // ===============================
-  // FUNCIÓN AUXILIAR: totalizar entidades
-  // ===============================
-  const totalizar = async (url, id) => {
+  // ====== Helper de carga con conteo ======
+  let sessionExpiredShown = false;
+  async function totalizar(url, idContador) {
     try {
-      const res = await fetch(url);
-      const data = await res.json();
+      const res = await fetch(url); // el interceptor ya mete Authorization y credentials
 
-      // Normalización de estructuras distintas
+      if (res.status === 401 && !sessionExpiredShown) {
+        sessionExpiredShown = true;
+        await Swal.fire("Sesión expirada", "Por favor inicia sesión nuevamente.", "warning");
+        window.location.href = "../Autenticacion/login.html";
+        return [];
+      }
+      if (!res.ok) {
+        console.warn(`⚠️ ${res.status} en ${url}`);
+        const el = document.getElementById(idContador);
+        if (el) el.textContent = "0";
+        return [];
+      }
+
+      const data = await res.json().catch(() => ({}));
       let registros = [];
       if (Array.isArray(data)) registros = data;
       else if (data.content) registros = data.content;
@@ -54,142 +78,95 @@ document.addEventListener("DOMContentLoaded", async () => {
         registros = Array.from({ length: data.data.totalElements });
       }
 
-      // Pintar en tarjeta
-      const el = document.getElementById(id);
+      const el = document.getElementById(idContador);
       if (el) el.textContent = registros.length;
-
       return registros;
-    } catch (err) {
-      console.error("Error cargando " + id, err);
-      const el = document.getElementById(id);
+    } catch (e) {
+      console.error("Error cargando", idContador, e);
+      const el = document.getElementById(idContador);
       if (el) el.textContent = "0";
       return [];
     }
-  };
+  }
 
-  // ===============================
-  // CARGA DE RESÚMENES
-  // ===============================
+  // ====== Cargar datos ======
   const vehiculos = await totalizar(API_VEHICULOS, "vehiculosTotal");
-  const clientes  = await totalizar(API_CLIENTES, "clientesTotal");
-  const citas     = await totalizar(API_CITAS, "citasTotal");
+  const clientes  = await totalizar(API_CLIENTES,  "clientesTotal");
+  const citas     = await totalizar(API_CITAS,     "citasTotal");
   await totalizar(API_HISTORIAL, "historialTotal");
-  const pagos     = await totalizar(API_PAGOS, "pagosTotal");
+  const pagos     = await totalizar(API_PAGOS,     "pagosTotal");
 
-  // ===============================
-  // GRÁFICA VEHÍCULOS POR MARCA
-  // ===============================
+  // ====== Gráfica por marca ======
   const marcas = {};
-  vehiculos.forEach((v) => {
-    const marca = (v.marca || v.Marca || "Otra").trim();
-    marcas[marca] = (marcas[marca] || 0) + 1;
+  vehiculos.forEach(v => {
+    const m = (v.marca || v.Marca || "Otra").toString().trim();
+    marcas[m] = (marcas[m] || 0) + 1;
   });
-
-  if (Object.keys(marcas).length > 0) {
+  if (Object.keys(marcas).length && document.getElementById("graficaVehiculosMarca")) {
     new Chart(document.getElementById("graficaVehiculosMarca"), {
       type: "doughnut",
+      data: { labels: Object.keys(marcas), datasets: [{ data: Object.values(marcas), backgroundColor: ["#C91A1A","#e74c3c","#ff7675","#fab1a0","#ffeaa7"] }] },
+      options: { responsive: true, maintainAspectRatio: true },
+    });
+  }
+
+  // ====== Gráfica ingresos dummy ======
+  if (document.getElementById("graficaIngresosMensuales")) {
+    new Chart(document.getElementById("graficaIngresosMensuales"), {
+      type: "line",
       data: {
-        labels: Object.keys(marcas),
-        datasets: [{
-          data: Object.values(marcas),
-          backgroundColor: ["#C91A1A", "#e74c3c", "#ff7675", "#fab1a0", "#ffeaa7"],
-        }],
+        labels: ["Ene","Feb","Mar","Abr","May","Jun","Jul"],
+        datasets: [{ label:"Ingresos ($)", data:[8500,9200,10500,11000,9600,12300,11500], borderColor:"#C91A1A", backgroundColor:"rgba(201,26,26,0.1)", fill:true, tension:0.3 }]
       },
       options: { responsive: true, maintainAspectRatio: true },
     });
   }
 
-  // ===============================
-  // GRÁFICA INGRESOS MENSUALES (dummy)
-  // ===============================
-  new Chart(document.getElementById("graficaIngresosMensuales"), {
-    type: "line",
-    data: {
-      labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul"],
-      datasets: [{
-        label: "Ingresos ($)",
-        data: [8500, 9200, 10500, 11000, 9600, 12300, 11500],
-        borderColor: "#C91A1A",
-        backgroundColor: "rgba(201,26,26,0.1)",
-        fill: true,
-        tension: 0.3,
-      }],
-    },
-    options: { responsive: true, maintainAspectRatio: true },
-  });
-
-  // ===============================
-  // BOTÓN "VER HISTORIAL"
-  // ===============================
-  document.getElementById("verHistorialBtn").addEventListener("click", () => {
-    window.location.href = "../historial/historial.html";
-  });
-
-  // ===============================
-  // FUNCIÓN: VER CITAS DE HOY
-  // ===============================
-  window.verCitasHoy = async function () {
+  // ====== Ver citas hoy ======
+  window.verCitasHoy = async () => {
     try {
       const res = await fetch(API_CITAS);
+      if (res.status === 401 && !sessionExpiredShown) {
+        sessionExpiredShown = true;
+        await Swal.fire("Sesión expirada", "Debes iniciar sesión nuevamente.", "warning");
+        window.location.href = "../Autenticacion/login.html";
+        return;
+      }
+      if (!res.ok) throw new Error(`Error ${res.status}`);
       const response = await res.json();
       const data = response.data || response;
       const hoy = new Date().toISOString().split("T")[0];
-      const citasHoy = data.filter((c) => c.fecha === hoy);
-
-      if (citasHoy.length > 0) {
-        const html = citasHoy.map(c => `
-          <p><strong>Hora:</strong> ${c.hora} - <strong>Estado:</strong> ${c.estado}</p>
-        `).join("<hr>");
-        Swal.fire({
-          title: "Citas de hoy",
-          html,
-          icon: "info",
-          confirmButtonText: "Cerrar",
-          confirmButtonColor: "#C91A1A"
-        });
+      const citasHoy = (Array.isArray(data) ? data : []).filter(c => c.fecha === hoy);
+      if (citasHoy.length) {
+        const html = citasHoy.map(c => `<p><strong>Hora:</strong> ${c.hora} - <strong>Estado:</strong> ${c.estado}</p>`).join("<hr>");
+        Swal.fire({ title:"Citas de hoy", html, icon:"info", confirmButtonText:"Cerrar", confirmButtonColor:"#C91A1A" });
       } else {
-        Swal.fire({
-          title: "Sin citas hoy",
-          text: "No hay citas registradas para hoy.",
-          icon: "warning",
-          confirmButtonText: "Ok",
-          confirmButtonColor: "#C91A1A"
-        });
+        Swal.fire({ title:"Sin citas hoy", text:"No hay citas registradas para hoy.", icon:"warning", confirmButtonText:"Ok", confirmButtonColor:"#C91A1A" });
       }
-    } catch (error) {
-      Swal.fire({
-        title: "Error",
-        text: "No se pudo cargar la información de citas.",
-        icon: "error",
-        confirmButtonText: "Cerrar",
-        confirmButtonColor: "#C91A1A"
-      });
-      console.error(error);
+    } catch (e) {
+      console.error(e);
+      Swal.fire({ title:"Error", text:"No se pudo cargar la información de citas.", icon:"error", confirmButtonText:"Cerrar", confirmButtonColor:"#C91A1A" });
     }
   };
 
-  // ===============================
-  // SELECT DETALLES CLIENTE
-  // ===============================
-  try {
-    const select = document.getElementById("selectCliente");
-
-    clientes.forEach((c) => {
+  // ====== Select de cliente (detalles) ======
+  const select = document.getElementById("selectCliente");
+  if (select && Array.isArray(clientes)) {
+    clientes.forEach(c => {
       const opt = document.createElement("option");
       opt.value = c.idCliente || c.id;
       opt.textContent = `${c.nombre} ${c.apellido}`;
       select.appendChild(opt);
     });
 
-    // Al seleccionar un cliente → mostrar detalles
     select.addEventListener("change", () => {
-      const idCliente = parseInt(select.value);
+      const idCliente = parseInt(select.value, 10);
       if (!idCliente) return;
 
       const cliente = clientes.find(c => (c.idCliente || c.id) === idCliente);
-      const vehiculosCliente = vehiculos.filter((v) => v.idCliente === idCliente);
-      const citasCliente     = citas.filter((c) => c.idCliente === idCliente);
-      const pagosCliente     = pagos.filter((p) => p.idCliente === idCliente);
+      const vehiculosCliente = vehiculos.filter(v => (v.idCliente || v.cliente?.idCliente) === idCliente);
+      const citasCliente     = citas.filter(c => c.idCliente === idCliente);
+      const pagosCliente     = pagos.filter(p => p.idCliente === idCliente);
 
       const html = `
         <div style="text-align:left">
@@ -203,16 +180,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <ul>${pagosCliente.map(p => `<li>Monto: $${p.monto} - ${p.fecha}</li>`).join("") || "<li>Ninguno</li>"}</ul>
         </div>
       `;
-
-      Swal.fire({
-        title: `${cliente?.nombre || ""} ${cliente?.apellido || ""}`,
-        html,
-        icon: "info",
-        confirmButtonColor: "#C91A1A",
-        width: 600
-      });
+      Swal.fire({ title: `${cliente?.nombre || ""} ${cliente?.apellido || ""}`, html, icon:"info", confirmButtonColor:"#C91A1A", width:600 });
     });
-  } catch (error) {
-    console.error("Error cargando clientes:", error);
   }
-});
+}

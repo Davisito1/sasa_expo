@@ -1,10 +1,17 @@
 // ==================== IMPORTAR SERVICIOS ====================
-// CRUD de vehículos
-import { getVehiculos, createVehiculo, updateVehiculo, deleteVehiculo } from "../Services/VehiculosServices.js";
+// CRUD de vehículos + helpers de auth/401
+import {
+  getVehiculos,
+  createVehiculo,
+  updateVehiculo,
+  deleteVehiculo,
+  UnauthorizedError,
+  getAuthToken
+} from "../Services/VehiculosServices.js";
 
 // Endpoints auxiliares para combos
-const CLIENTES_API = "http://localhost:8080/apiCliente";
-const ESTADOS_API  = "http://localhost:8080/api/estadoVehiculo";
+const CLIENTES_API = (import.meta?.env?.VITE_API_CLIENTE) || "http://localhost:8080/apiCliente";
+const ESTADOS_API  = (import.meta?.env?.VITE_API_ESTADO_VEHICULO) || "http://localhost:8080/api/estadoVehiculo";
 
 // ==================== DOM ====================
 // Tabla y modal
@@ -27,6 +34,42 @@ let paginaActual    = 0;
 let tamPagina       = parseInt(selectPageSize.value, 10);
 let totalPaginas    = 1;
 
+// ==================== UTILES AUTH FETCH ====================
+// fetch con credenciales y Authorization Bearer si hay token
+async function fetchAuthJson(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  headers.set("Accept", "application/json");
+
+  const token = getAuthToken();
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const res = await fetch(url, { credentials: "include", ...options, headers });
+  const text = await res.text();
+  let body;
+  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+
+  if (res.status === 401) {
+    throw new UnauthorizedError(typeof body === "string" ? body : (body?.message || "No autorizado"));
+  }
+  if (!res.ok) {
+    const msg = typeof body === "string" ? body : JSON.stringify(body);
+    throw new Error(`${res.status} ${res.statusText} -> ${url}\n${msg}`);
+  }
+  return body;
+}
+
+function handleAuthError(err) {
+  if (err instanceof UnauthorizedError) {
+    // opcional: limpiar UI/estado
+    Swal.fire("Sesión expirada", "Por favor vuelve a iniciar sesión.", "warning");
+    window.location.href = "/login.html";
+    return true;
+  }
+  return false;
+}
+
 // ==================== PARSE RESPONSE ====================
 // Normaliza distintas respuestas de la API
 function parseResponse(apiResponse) {
@@ -40,9 +83,14 @@ function parseResponse(apiResponse) {
 // ==================== INICIO ====================
 // Al cargar la página, traer combos y lista inicial
 document.addEventListener("DOMContentLoaded", async () => {
-  await cargarClientes();
-  await cargarEstados();
-  await loadVehiculos(true);
+  try {
+    await Promise.all([cargarClientes(), cargarEstados()]);
+    await loadVehiculos(true);
+  } catch (err) {
+    if (handleAuthError(err)) return;
+    console.error(err);
+    Swal.fire("Error", "No se pudo inicializar la vista", "error");
+  }
 });
 
 // ==================== ABRIR MODAL AGREGAR ====================
@@ -89,17 +137,16 @@ vehiculoForm.addEventListener("submit", async (e) => {
 
   try {
     if (id) {
-      // Editar
       await updateVehiculo(id, vehiculo);
       Swal.fire("Éxito", "Vehículo actualizado correctamente", "success");
     } else {
-      // Crear
       await createVehiculo(vehiculo);
       Swal.fire("Éxito", "Vehículo agregado correctamente", "success");
     }
     modalVehiculo.hide();
     loadVehiculos(true);
   } catch (error) {
+    if (handleAuthError(error)) return;
     console.error("Error al guardar vehículo:", error);
     Swal.fire("Error", "No se pudo guardar el vehículo", "error");
   }
@@ -116,6 +163,7 @@ async function loadVehiculos(reset = false) {
 
     renderListaYPaginacion();
   } catch (err) {
+    if (handleAuthError(err)) return;
     console.error("Error al cargar vehículos:", err);
     Swal.fire("Error", "No se pudieron cargar los vehículos", "error");
   }
@@ -125,11 +173,32 @@ async function loadVehiculos(reset = false) {
 function renderVehiculos(lista) {
   tablaVehiculos.innerHTML = "";
 
-  lista.forEach(v => {
+  // Filtro por texto (marca, modelo, placa, cliente, estado) sobre la página actual
+  const term = (inputBuscar.value || "").toLowerCase();
+
+  const depurada = lista.filter(v => {
+    if (!term) return true;
     const clienteCache = clientesCache.find(c => (c.id || c.idCliente) === (v.idCliente ?? v.cliente?.idCliente));
     const estadoCache  = estadosCache.find(e => (e.id || e.idEstado) === (v.idEstado ?? v.estado?.idEstado));
 
-    // Nombre cliente y estado
+    const nombreCliente =
+      ((v.nombreCliente || v.cliente?.nombre || clienteCache?.nombre || "") + " " +
+       (v.apellidoCliente || v.cliente?.apellido || clienteCache?.apellido || "")).trim();
+
+    const nombreEstado = v.nombreEstado || v.estado?.nombreEstado || estadoCache?.nombreEstado || "";
+
+    const blob = [
+      v.marca, v.modelo, v.placa, String(v.anio || ""), v.vin || "",
+      nombreCliente, nombreEstado
+    ].join(" ").toLowerCase();
+
+    return blob.includes(term);
+  });
+
+  depurada.forEach(v => {
+    const clienteCache = clientesCache.find(c => (c.id || c.idCliente) === (v.idCliente ?? v.cliente?.idCliente));
+    const estadoCache  = estadosCache.find(e => (e.id || e.idEstado) === (v.idEstado ?? v.estado?.idEstado));
+
     const nombreCliente =
       (v.nombreCliente || v.cliente?.nombre || clienteCache?.nombre || "") +
       (v.apellidoCliente || v.cliente?.apellido || clienteCache?.apellido ? " " + (v.apellidoCliente || v.cliente?.apellido || clienteCache?.apellido) : "");
@@ -213,6 +282,7 @@ window.removeVehiculo = async (id) => {
         Swal.fire("Eliminado", "Vehículo eliminado correctamente", "success");
         loadVehiculos();
       } catch (error) {
+        if (handleAuthError(error)) return;
         console.error("Error al eliminar vehículo:", error);
         Swal.fire("Error", "No se pudo eliminar el vehículo", "error");
       }
@@ -223,8 +293,7 @@ window.removeVehiculo = async (id) => {
 // ==================== CARGAR CLIENTES Y ESTADOS ====================
 async function cargarClientes() {
   try {
-    const res = await fetch(`${CLIENTES_API}/consultar?page=0&size=50`);
-    const data = await res.json();
+    const data = await fetchAuthJson(`${CLIENTES_API}/consultar?page=0&size=100`);
     clientesCache = parseResponse(data);
 
     const selectCliente = document.getElementById("idCliente");
@@ -236,6 +305,7 @@ async function cargarClientes() {
       selectCliente.appendChild(option);
     });
   } catch (error) {
+    if (handleAuthError(error)) return;
     console.error("Error al cargar clientes:", error);
     Swal.fire("Error", "No se pudieron cargar los clientes", "error");
   }
@@ -243,8 +313,7 @@ async function cargarClientes() {
 
 async function cargarEstados() {
   try {
-    const res = await fetch(`${ESTADOS_API}/consultar?page=0&size=50`);
-    const data = await res.json();
+    const data = await fetchAuthJson(`${ESTADOS_API}/consultar?page=0&size=100`);
     estadosCache = parseResponse(data);
 
     const selectEstado = document.getElementById("idEstado");
@@ -256,16 +325,16 @@ async function cargarEstados() {
       selectEstado.appendChild(option);
     });
   } catch (error) {
+    if (handleAuthError(error)) return;
     console.error("Error al cargar estados:", error);
     Swal.fire("Error", "No se pudieron cargar los estados", "error");
   }
 }
 
 // ==================== EVENTOS EXTRA ====================
-// Buscar
+// Buscar en la página actual
 inputBuscar.addEventListener("input", () => {
-  paginaActual = 0;
-  loadVehiculos(true);
+  renderListaYPaginacion(); // re-render con filtro local
 });
 
 // Cambiar tamaño de página
