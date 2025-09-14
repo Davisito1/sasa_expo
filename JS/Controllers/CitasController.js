@@ -1,4 +1,3 @@
-// ======================= IMPORTACIONES =======================
 import {
   getCitasPaginado,
   getCitaById,
@@ -51,7 +50,7 @@ async function cargarClientes() {
     });
   } catch (err) {
     console.error("Error al cargar clientes:", err);
-    Swal.fire("Error", "No se pudieron cargar los clientes", "error");
+    Swal.fire("Error", "No se pudieron cargar las citas", "error");
   }
 }
 

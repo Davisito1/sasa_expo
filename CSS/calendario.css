@@ -1,0 +1,148 @@
+:root {
+  --primary: #7c1c1c;
+  --primary-hover: #C91A1A;
+  --light-gray: #bbb;
+  --dark-gray: #333;
+
+  --calendar-green-status: #e5f7e7;
+  --calendar-orange-status: #fff2e1;
+  --calendar-red-status: #fdeaea;
+  --green: #1a7c1a;
+  --orange: #c75c14;
+  --red: #b72222;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+}
+
+.main {
+  overflow: hidden;
+  border-radius: 12px;
+  padding: 0;
+  width: 100%;          
+  max-width: 100%;    
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+
+.calendar {
+  width: 100%;         
+}
+
+.calendar__days {
+  grid-template-columns: repeat(7, 1fr); 
+  width: 100%;      
+}
+
+.calendar__day {
+  min-height: 120px;  
+}
+/* Calendar */
+.calendar__header {
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header__container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  color: #fff;
+}
+
+.container__heading {
+  font-size: 1.3em;
+  font-weight: 600;
+}
+
+.calendar__button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background-color: #fff;
+  color: var(--primary);
+  display: grid;
+  place-items: center;
+  font-size: 1.25em;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+}
+.calendar__button:hover {
+  background: var(--primary-hover);
+  color: #fff;
+}
+
+.calendar__weekdays,
+.calendar__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  place-items: center;
+}
+
+.calendar__weekday {
+  padding: 10px 0;
+  color: var(--dark-gray);
+  font-weight: 600;
+}
+
+.calendar__days {
+  background-color: #fafafa;
+}
+
+.calendar__day {
+  width: 100%;
+  min-height: 80px;
+  padding: 6px;
+  border: 1px solid #e6e6e6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.day__info h5 {
+  margin: 0;
+  font-size: 0.9em;
+  color: var(--dark-gray);
+}
+
+.calendar__appointments {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.calendar__appointments li {
+  padding: 3px 6px;
+  font-size: 0.75em;
+  border-radius: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Estados */
+.appointment__pendiente {
+  background: var(--calendar-orange-status);
+  color: var(--orange);
+}
+.appointment__confirmada {
+  background: var(--calendar-green-status);
+  color: var(--green);
+}
+.appointment__cancelada {
+  background: var(--calendar-red-status);
+  color: var(--red);
+}

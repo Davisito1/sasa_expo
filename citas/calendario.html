@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendario de Citas</title>
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../CSS/dashboard.css" />
+  <link rel="stylesheet" href="../CSS/calendario.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <img src="../IMG/logo sasa.jpg" alt="Logo SASA" />
+          <span class="logo-text">SASA</span>
+        </div>
+        <div class="logo-divider"></div>
+      </div>
+      <ul>
+        <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+        <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+        <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
+        <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
+        <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
+        <li><a class="active" href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
+        <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
+        <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar shadow-sm">
+    <div class="search-bar">
+      <i class="fas fa-search"></i>
+      <input type="text" class="search-input form-control" placeholder="Buscar..." />
+    </div>
+    <div class="topbar-right">
+      <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
+      <span class="ms-2">Usuario</span>
+      <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <main class="content">
+    <section class="card p-3">
+      <h2 class="mb-4">Calendario de Citas</h2>
+
+      <div class="main">
+        <section class="calendar">
+          <header class="calendar__header">
+            <div class="header__container">
+              <button class="calendar__button" id="prev-month"><i class="ri-arrow-left-s-line"></i></button>
+              <h3 class="container__heading" id="calendar-date"></h3>
+              <button class="calendar__button" id="next-month"><i class="ri-arrow-right-s-line"></i></button>
+            </div>
+          </header>
+
+          <!-- Días de la semana -->
+          <section class="calendar__weekdays">
+            <div class="calendar__weekday"><abbr>Lun</abbr></div>
+            <div class="calendar__weekday"><abbr>Mar</abbr></div>
+            <div class="calendar__weekday"><abbr>Mié</abbr></div>
+            <div class="calendar__weekday"><abbr>Jue</abbr></div>
+            <div class="calendar__weekday"><abbr>Vie</abbr></div>
+            <div class="calendar__weekday"><abbr>Sáb</abbr></div>
+            <div class="calendar__weekday"><abbr>Dom</abbr></div>
+          </section>
+
+          <!-- Días -->
+          <ol class="calendar__days" id="calendar-days">
+            <!-- Se genera dinámicamente con JS -->
+          </ol>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script  type="module" src="../JS/calendario.js"></script>
+
+  <script>
+    // Script para resaltar el item activo en el sidebar
+    const items = document.querySelectorAll('#sidebar ul li a');
+    const here = location.pathname.split('/').pop().toLowerCase();
+    items.forEach(a => {
+      const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+      if (file && file === here) {
+        a.parentElement.classList.add('is-active');
+      }
+    });
+  </script>
+</body>
+</html>
