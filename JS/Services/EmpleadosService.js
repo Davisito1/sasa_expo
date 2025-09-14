@@ -2,23 +2,18 @@
 // EmpleadosService.js
 // ===============================
 
-// URL base de la API de empleados
 const API_BASE = "http://localhost:8080/apiEmpleados";
 
-// ===============================
-// FUNCIONES AUXILIARES
-// ===============================
+import { attachAuthInterceptor } from "../services/loginService.js";
+attachAuthInterceptor();
 
-// -------- Utilidad base para fetch --------
-// Hace fetch, valida errores y devuelve JSON o texto
+
 async function fetchJsonOrThrow(url, options = {}) {
-  const res = await fetch(url, options);
+  const res = await fetch(url, options); // 👈 el token lo agrega el interceptor
   const text = await res.text();
 
-  // Si hubo error en la respuesta, lanza excepción con detalles
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
 
-  // Intenta parsear JSON, si no puede devuelve texto plano
   try { 
     return text ? JSON.parse(text) : null; 
   } catch { 
@@ -30,13 +25,12 @@ async function fetchJsonOrThrow(url, options = {}) {
 // SERVICIOS EMPLEADOS (CRUD)
 // ===============================
 
-// -------- LISTAR EMPLEADOS (paginado + búsqueda) --------
-// `page` = número de página, `size` = tamaño de página, `q` = filtro de búsqueda
+// -------- LISTAR EMPLEADOS --------
 export async function getEmpleados(page = 0, size = 10, q = "") {
-  const s = Math.min(size, 50); // límite máximo de 50 registros por página
+  const s = Math.min(size, 50); // máximo 50 registros por página
   const query = q ? `&q=${encodeURIComponent(q)}` : "";
   const json = await fetchJsonOrThrow(`${API_BASE}/consultar?page=${page}&size=${s}${query}`);
-  return json?.data ?? json;   // backend devuelve {status, data}
+  return json?.data ?? json;
 }
 
 // -------- CREAR EMPLEADO --------

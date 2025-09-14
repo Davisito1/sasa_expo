@@ -2,23 +2,24 @@
 // ClienteService.js
 // ===============================
 
-// URL base de la API de clientes
+
+import { attachAuthInterceptor } from "../services/loginService.js";
+
+attachAuthInterceptor();  //esto asegura que todas las peticiones fetch lleven el token
+
 const API_BASE = "http://localhost:8080/apiCliente";
 
 // ===============================
 // FUNCIONES AUXILIARES
 // ===============================
 
-// -------- Utilidad base para fetch --------
 // Hace la petición a la API, valida errores y parsea a JSON
 async function fetchJsonOrThrow(url, options = {}) {
-  const res = await fetch(url, options);
+  const res = await fetch(url, options); // 👈 el token ya se agrega por attachAuthInterceptor
   const text = await res.text();
 
-  // Si hubo error HTTP lanza excepción con detalle
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
 
-  // Intenta parsear JSON, si falla devuelve texto plano
   try {
     return text ? JSON.parse(text) : null;
   } catch {
@@ -26,12 +27,11 @@ async function fetchJsonOrThrow(url, options = {}) {
   }
 }
 
-// -------- Normalización de respuesta --------
-// Estándar para respuestas paginadas o arrays simples
+// Normalización de respuesta estándar para pageable o arrays simples
 function normalizeResponse(json) {
   if (!json) return { content: [], totalPages: 1, totalElements: 0 };
-  if (json.data && json.data.content) return json.data;   // Spring pageable
-  if (json.content) return json;                          // respuesta directa con content
+  if (json.data && json.data.content) return json.data;   // Spring pageable (data.content)
+  if (json.content) return json;                          // pageable directo (content)
   if (Array.isArray(json.data)) 
     return { content: json.data, totalPages: 1, totalElements: json.data.length };
 
@@ -46,7 +46,7 @@ function normalizeResponse(json) {
 export async function getClientes(page = 0, size = 10, query = "") {
   const s = Math.min(size, 100); // límite máximo de registros
   let url = `${API_BASE}/consultar?page=${page}&size=${s}`;
-  if (query && query.trim() !== "") url += `&q=${encodeURIComponent(query)}`; // filtro búsqueda
+  if (query && query.trim() !== "") url += `&q=${encodeURIComponent(query)}`;
   const json = await fetchJsonOrThrow(url);
   return normalizeResponse(json);
 }
@@ -68,13 +68,12 @@ export async function createCliente(data) {
     correo: data.correo,
   };
 
-  const body = {
+  const json = await fetchJsonOrThrow(`${API_BASE}/registrar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
-  };
+  });
 
-  const json = await fetchJsonOrThrow(`${API_BASE}/registrar`, body);
   return json?.data ?? json;
 }
 
@@ -89,13 +88,12 @@ export async function updateCliente(id, data) {
     correo: data.correo,
   };
 
-  const body = {
+  const json = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
-  };
+  });
 
-  const json = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, body);
   return json?.data ?? json;
 }
 

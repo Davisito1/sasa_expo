@@ -36,7 +36,7 @@ let totalPaginas    = 1;
 async function cargarUsuarios() {
   try {
     const res = await fetch("http://localhost:8080/apiUsuario/consultar?page=0&size=50", {
-      credentials: "include"   // 🔑 enviar cookie JWT
+      credentials: "include"
     });
 
     if (res.status === 401) {
@@ -144,15 +144,7 @@ function renderPaginacion(totalPaginas) {
 // ==================== CARGAR EMPLEADOS ====================
 async function loadEmpleados(reset = false) {
   try {
-    const res = await getEmpleados(paginaActual - 1, tamPagina, inputBuscar?.value ?? "", { credentials: "include" });
-
-    if (res.status === 401) {
-      Swal.fire("Sesión expirada", "Por favor inicia sesión nuevamente", "warning")
-        .then(() => window.location.href = "../login/login.html");
-      return;
-    }
-
-    let data = await res.json();
+    const data = await getEmpleados(paginaActual - 1, tamPagina, inputBuscar?.value ?? "");
 
     if (Array.isArray(data)) {
       empleadosCache = data;
@@ -175,6 +167,29 @@ async function loadEmpleados(reset = false) {
     Swal.fire("Error", "No se pudieron cargar los empleados", "error");
   }
 }
+
+// ==================== ELIMINAR EMPLEADO ====================
+window.eliminarEmpleado = async function(id) {
+  Swal.fire({
+    title: "¿Eliminar empleado?",
+    text: "Esta acción no se puede deshacer",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar"
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await deleteEmpleado(id);
+        Swal.fire("Eliminado", "Empleado eliminado correctamente", "success");
+        await loadEmpleados(true);
+      } catch (err) {
+        console.error(err);
+        Swal.fire("Error", "No se pudo eliminar el empleado", "error");
+      }
+    }
+  });
+};
 
 // ==================== INICIO ====================
 document.addEventListener("DOMContentLoaded", async () => {
