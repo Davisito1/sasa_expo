@@ -1,25 +1,26 @@
-// ==================== IMPORTAR SERVICIOS ====================
-// Importamos funciones CRUD desde el servicio de clientes
+// ===============================
+// ClientesController.js
+// ===============================
 import {
-  getClientes,    // obtiene clientes paginados (con filtro y tamaño de página)
-  createCliente,  // crea un nuevo cliente
-  updateCliente,  // actualiza un cliente existente
-  deleteCliente   // elimina un cliente
+  getClientes,
+  getClienteById,
+  createCliente,
+  updateCliente,
+  deleteCliente
 } from "../Services/ClientesService.js";
 
-// ==================== DOM ====================
-// Referencias a elementos de la interfaz
-const tablaClientes   = document.getElementById("tablaClientes");      // tabla donde se muestran los clientes
-const pagWrap         = document.getElementById("paginacion");         // contenedor de botones de paginación
-const selectPageSize  = document.getElementById("registrosPorPagina"); // select para elegir cantidad por página
-const inputBuscar     = document.getElementById("buscar");             // input para filtrar clientes
+// ===============================
+// ELEMENTOS DOM
+// ===============================
+const tablaClientes   = document.getElementById("tablaClientes");
+const pagWrap         = document.getElementById("paginacion");
+const selectPageSize  = document.getElementById("registrosPorPagina");
+const inputBuscar     = document.getElementById("buscar");
 
-// Modal y formulario
 const frmCliente      = document.getElementById("clienteForm");
 const modalCliente    = new bootstrap.Modal(document.getElementById("clienteModal"));
 const modalTitle      = document.getElementById("clienteModalLabel");
 
-// Inputs del formulario
 const inputId         = document.getElementById("clienteId");
 const inputNombre     = document.getElementById("nombre");
 const inputApellido   = document.getElementById("apellido");
@@ -28,46 +29,59 @@ const inputFecha      = document.getElementById("fechaNacimiento");
 const inputGenero     = document.getElementById("genero");
 const inputCorreo     = document.getElementById("correo");
 
-// ==================== VARIABLES GLOBALES ====================
-// Controlan paginación y filtros
-let paginaActual = 0;                               // página actual
-let tamPagina    = parseInt(selectPageSize.value, 10); // registros por página
-let filtroTexto  = "";                              // texto de búsqueda
+// ===============================
+// VARIABLES GLOBALES
+// ===============================
+let paginaActual = 0;
+let tamPagina    = parseInt(selectPageSize.value, 10);
+let filtroTexto  = "";
 
-// ==================== CARGAR CLIENTES ====================
-// Consulta clientes a la API y actualiza tabla + paginación
+// ===============================
+// CARGAR CLIENTES
+// ===============================
 async function cargarClientes(page = 0) {
   try {
-    const { content, totalPages } = await getClientes(page, tamPagina, filtroTexto);
-    renderClientes(content);             // dibuja tabla
-    renderPaginacion(totalPages, page);  // dibuja botones de páginas
-  } catch (error) {
-    console.error("Error cargando clientes:", error);
+    const { content, totalPages } = await getClientes(
+      page,
+      tamPagina,
+      filtroTexto,
+      "idCliente",   // 👈 siempre ordena por ID
+      "asc"          // 👈 siempre en ascendente
+    );
+
+    renderClientes(content);
+    renderPaginacion(totalPages, page);
+  } catch (err) {
+    console.error("Error cargando clientes:", err);
+    Swal.fire("Error", "No se pudieron cargar los clientes", "error");
   }
 }
 
-// ==================== RENDERIZAR CLIENTES ====================
-// Dibuja las filas de la tabla de clientes
+// ===============================
+// RENDERIZAR TABLA
+// ===============================
 function renderClientes(clientes) {
   tablaClientes.innerHTML = "";
+  if (!clientes || clientes.length === 0) {
+    tablaClientes.innerHTML = `<tr><td colspan="8" class="text-center">No hay clientes</td></tr>`;
+    return;
+  }
 
-  clientes.forEach(cliente => {
+  clientes.forEach(cli => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${cliente.id}</td>
-      <td>${cliente.nombre}</td>
-      <td>${cliente.apellido}</td>
-      <td>${cliente.dui}</td>
-      <td>${cliente.fechaNacimiento}</td>
-      <td>${cliente.genero}</td>
-      <td>${cliente.correo}</td>
+      <td>${cli.id}</td>
+      <td>${cli.nombre}</td>
+      <td>${cli.apellido}</td>
+      <td>${cli.dui}</td>
+      <td>${cli.fechaNacimiento}</td>
+      <td>${cli.genero}</td>
+      <td>${cli.correo}</td>
       <td class="text-center">
-        <!-- Botón editar -->
-        <button class="btn btn-sm btn-primary me-2 icon-btn" data-id="${cliente.id}" data-action="edit">
+        <button class="btn btn-sm btn-primary me-2 icon-btn" data-id="${cli.id}" data-action="edit">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <!-- Botón eliminar -->
-        <button class="btn btn-sm btn-danger icon-btn" data-id="${cliente.id}" data-action="delete">
+        <button class="btn btn-sm btn-danger icon-btn" data-id="${cli.id}" data-action="delete">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -76,11 +90,11 @@ function renderClientes(clientes) {
   });
 }
 
-// ==================== RENDERIZAR PAGINACIÓN ====================
-// Genera botones para cambiar de página
+// ===============================
+// RENDERIZAR PAGINACIÓN
+// ===============================
 function renderPaginacion(totalPages, currentPage) {
   pagWrap.innerHTML = "";
-
   for (let i = 0; i < totalPages; i++) {
     const btn = document.createElement("button");
     btn.className = `btn btn-sm ${i === currentPage ? "btn-primary" : "btn-outline-primary"}`;
@@ -93,13 +107,13 @@ function renderPaginacion(totalPages, currentPage) {
   }
 }
 
-// ==================== FORMULARIO ====================
-// Maneja creación y edición de clientes
+// ===============================
+// FORMULARIO (CREAR / ACTUALIZAR)
+// ===============================
 frmCliente.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  // Construcción del objeto cliente
-  const clienteData = {
+  const cliente = {
     id: inputId.value || null,
     nombre: inputNombre.value.trim(),
     apellido: inputApellido.value.trim(),
@@ -107,31 +121,29 @@ frmCliente.addEventListener("submit", async (e) => {
     fechaNacimiento: inputFecha.value,
     genero: inputGenero.value,
     correo: inputCorreo.value.trim()
-    // 🔹 Nota: no enviamos contraseña desde esta interfaz
   };
 
   try {
-    if (clienteData.id) {
-      // Si hay ID → actualizar
-      await updateCliente(clienteData.id, clienteData);
+    if (cliente.id) {
+      await updateCliente(cliente.id, cliente);
       Swal.fire("Actualizado", "Cliente actualizado correctamente", "success");
     } else {
-      // Si no hay ID → crear
-      await createCliente(clienteData);
+      await createCliente(cliente);
       Swal.fire("Creado", "Cliente creado correctamente", "success");
     }
 
-    modalCliente.hide();   // cerrar modal
-    frmCliente.reset();    // limpiar formulario
-    cargarClientes(paginaActual); // recargar tabla
-  } catch (error) {
-    console.error("Error guardando cliente:", error);
+    modalCliente.hide();
+    frmCliente.reset();
+    cargarClientes(paginaActual);
+  } catch (err) {
+    console.error("Error guardando cliente:", err);
     Swal.fire("Error", "No se pudo guardar el cliente", "error");
   }
 });
 
-// ==================== TABLA EVENTOS ====================
-// Detecta clicks en botones de la tabla (editar / eliminar)
+// ===============================
+// EVENTOS TABLA (EDITAR/ELIMINAR)
+// ===============================
 tablaClientes.addEventListener("click", async (e) => {
   const btn = e.target.closest("button");
   if (!btn) return;
@@ -140,26 +152,24 @@ tablaClientes.addEventListener("click", async (e) => {
   const action = btn.dataset.action;
 
   if (action === "edit") {
-    // ----------- Editar Cliente -----------
     modalTitle.textContent = "Editar Cliente";
-    const { content } = await getClientes(paginaActual, tamPagina, filtroTexto);
-    const cliente = content.find(c => c.id == id);
-
-    if (cliente) {
-      // Cargar datos en formulario
-      inputId.value       = cliente.id;
-      inputNombre.value   = cliente.nombre;
-      inputApellido.value = cliente.apellido;
-      inputDui.value      = cliente.dui;
-      inputFecha.value    = cliente.fechaNacimiento;
-      inputGenero.value   = cliente.genero;
-      inputCorreo.value   = cliente.correo;
-
-      modalCliente.show();
+    try {
+      const cliente = await getClienteById(id);
+      if (cliente) {
+        inputId.value       = cliente.id;
+        inputNombre.value   = cliente.nombre;
+        inputApellido.value = cliente.apellido;
+        inputDui.value      = cliente.dui;
+        inputFecha.value    = cliente.fechaNacimiento;
+        inputGenero.value   = cliente.genero;
+        inputCorreo.value   = cliente.correo;
+        modalCliente.show();
+      }
+    } catch (err) {
+      console.error("Error cargando cliente:", err);
+      Swal.fire("Error", "No se pudo cargar el cliente", "error");
     }
-
   } else if (action === "delete") {
-    // ----------- Eliminar Cliente -----------
     Swal.fire({
       title: "¿Eliminar cliente?",
       text: "Esta acción no se puede deshacer",
@@ -167,14 +177,14 @@ tablaClientes.addEventListener("click", async (e) => {
       showCancelButton: true,
       confirmButtonText: "Sí, eliminar",
       cancelButtonText: "Cancelar"
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+    }).then(async (res) => {
+      if (res.isConfirmed) {
         try {
           await deleteCliente(id);
           Swal.fire("Eliminado", "Cliente eliminado correctamente", "success");
           cargarClientes(paginaActual);
-        } catch (error) {
-          console.error("Error eliminando cliente:", error);
+        } catch (err) {
+          console.error("Error eliminando cliente:", err);
           Swal.fire("Error", "No se pudo eliminar el cliente", "error");
         }
       }
@@ -182,21 +192,22 @@ tablaClientes.addEventListener("click", async (e) => {
   }
 });
 
-// ==================== EVENTOS DE BUSCAR Y SELECT ====================
-// Cambio de cantidad de registros por página
+// ===============================
+// EVENTOS EXTRA
+// ===============================
 selectPageSize.addEventListener("change", () => {
   tamPagina = parseInt(selectPageSize.value, 10);
   paginaActual = 0;
   cargarClientes(paginaActual);
 });
 
-// Filtro en buscador
 inputBuscar.addEventListener("input", () => {
   filtroTexto = inputBuscar.value.trim();
   paginaActual = 0;
   cargarClientes(paginaActual);
 });
 
-// ==================== INICIO ====================
-// Al cargar la página, inicializa la tabla de clientes
+// ===============================
+// INICIO
+// ===============================
 cargarClientes(paginaActual);

@@ -1,3 +1,6 @@
+// ===============================
+// LoginService.js
+// ===============================
 const API_BASE   = "http://localhost:8080";
 const LOGIN_URL  = `${API_BASE}/auth/login`;
 const LOGOUT_URL = `${API_BASE}/auth/logout`;
@@ -6,13 +9,29 @@ const ME_URL     = `${API_BASE}/auth/me`;
 const TOKEN_KEY = "authToken";
 const USER_KEY  = "user";
 
-function setToken(t){ localStorage.setItem(TOKEN_KEY, t); }
-function getToken(){ return localStorage.getItem(TOKEN_KEY); }
-function clearToken(){ localStorage.removeItem(TOKEN_KEY); }
-function setUsuario(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
-function getUsuario(){ try{ return JSON.parse(localStorage.getItem(USER_KEY)) || null; }catch{return null;} }
-function clearUsuario(){ localStorage.removeItem(USER_KEY); }
+// ===============================
+// MANEJO TOKEN Y USUARIO
+// ===============================
+export function setToken(t){ localStorage.setItem(TOKEN_KEY, t); }
+export function getToken(){ return localStorage.getItem(TOKEN_KEY); }
+export function clearToken(){ localStorage.removeItem(TOKEN_KEY); }
 
+export function setUsuario(u){ localStorage.setItem(USER_KEY, JSON.stringify(u)); }
+export function getUsuario(){ 
+  try { return JSON.parse(localStorage.getItem(USER_KEY)) || null; } 
+  catch { return null; } 
+}
+export function clearUsuario(){ localStorage.removeItem(USER_KEY); }
+
+// ✅ Extra: obtener ID del usuario logueado
+export function getUserId(){
+  const u = getUsuario();
+  return u?.idCliente ?? u?.id ?? null;
+}
+
+// ===============================
+// INTERCEPTOR FETCH CON TOKEN
+// ===============================
 let fetchPatched = false;
 export function attachAuthInterceptor({ onUnauthorizedRedirect = "../Autenticacion/login.html" } = {}) {
   if (fetchPatched) return;
@@ -33,6 +52,9 @@ export function attachAuthInterceptor({ onUnauthorizedRedirect = "../Autenticaci
   };
 }
 
+// ===============================
+// LOGIN
+// ===============================
 export async function login(userOrEmail, password){
   const payload = userOrEmail.includes("@")
     ? { correo: userOrEmail, contrasena: password }
@@ -54,6 +76,9 @@ export async function login(userOrEmail, password){
   return { status:"success", data:data.user };
 }
 
+// ===============================
+// CHECK AUTH
+// ===============================
 export async function checkAuth(){
   if (!getToken()) return { status:"fail" };
   const r = await fetch(ME_URL, { credentials:"include" });
@@ -61,11 +86,17 @@ export async function checkAuth(){
   return { status:"success", data: await r.json().catch(()=>true) };
 }
 
+// ===============================
+// LOGOUT
+// ===============================
 export async function logout({ redirectTo="../Autenticacion/login.html" }={}){
   try { await fetch(LOGOUT_URL, { method:"POST", credentials:"include" }); } catch {}
   clearToken(); clearUsuario();
   if (redirectTo) window.location.href = redirectTo;
 }
 
+// ===============================
+// HELPERS
+// ===============================
 export function isLoggedIn(){ return !!getToken(); }
 export function getUsuarioLogueado(){ return getUsuario(); }

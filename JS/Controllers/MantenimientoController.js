@@ -7,6 +7,9 @@ import {
   deleteMantenimiento  // elimina un mantenimiento
 } from "../Services/MantenimientoService.js";
 
+// Importar loginService para el token
+import { getToken } from "../Services/LoginService.js";
+
 // Endpoint directo para vehículos (se usa en combo)
 const VEHICULOS_API = "http://localhost:8080/apiVehiculo/consultar";
 
@@ -52,7 +55,15 @@ function getDescripcionTexto(desc) {
 // Trae vehículos de la API y llena el select
 async function cargarVehiculos() {
   try {
-    const res = await fetch(`${VEHICULOS_API}?page=0&size=100`);
+    const token = getToken();
+    const res = await fetch(`${VEHICULOS_API}?page=0&size=100`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) throw new Error(`Error ${res.status}`);
     const json = await res.json();
     vehiculosCache = Array.isArray(json?.data?.content) ? json.data.content : [];
 
@@ -88,11 +99,9 @@ function renderTabla(data) {
       <td>${m.codigoMantenimiento ?? "—"}</td>
       <td>${getVehiculoTexto(m.idVehiculo ?? m.vehiculo?.idVehiculo)}</td>
       <td class="text-center">
-        <!-- Botón Editar -->
         <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editarMantenimiento(${id})">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <!-- Botón Eliminar -->
         <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarMantenimiento(${id})">
           <i class="bi bi-trash"></i>
         </button>
@@ -230,11 +239,9 @@ form.addEventListener("submit", async e => {
 
   try {
     if (txtId.value) {
-      // Editar
       await updateMantenimiento(parseInt(txtId.value, 10), dto);
       Swal.fire("Éxito", "Mantenimiento actualizado", "success");
     } else {
-      // Crear
       await createMantenimiento(dto);
       Swal.fire("Éxito", "Mantenimiento creado", "success");
     }
