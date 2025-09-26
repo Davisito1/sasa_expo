@@ -1,0 +1,26 @@
+#sidebar ul li.is-active,
+#sidebar ul li a.active{
+  background: transparent !important;
+  color: var(--brand) !important;
+  font-weight: 600;
+}
+
+#sidebar ul li.is-active::before{
+  content:"";
+  position:absolute;
+  left:-6px;
+  top:8px;
+  bottom:8px;
+  width:4px;
+  border-radius:8px;
+  background:var(--brand);
+  opacity:1;
+}
+
+#sidebar ul li.is-active:hover{
+  background: transparent !important;
+}
+
+#sidebar ul li:hover{
+  background: var(--bg-hover);
+}

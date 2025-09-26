@@ -5,41 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Citas</title>
 
-  <!-- SweetAlert -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <!-- Estilos -->
   <link rel="stylesheet" href="../CSS/dashboard.css" />
-  <link rel="stylesheet" href="../CSS/citas.css" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="../CSS/citas.css" />
 </head>
 <body>
-  <!-- Sidebar -->
-  <div id="sidebar">
-    <aside id="sidebar">
-      <div class="sidebar-header">
-        <div class="logo">
-          <img src="../IMG/logo sasa.jpg" alt="Logo SASA" />
-          <span class="logo-text">SASA</span>
-        </div>
-        <div class="logo-divider"></div>
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <img src="../IMG/logo sasa.jpg" alt="Logo SASA" />
+        <span class="logo-text">SASA</span>
       </div>
-      <ul>
-        <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
-        <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
-        <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
-        <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
-        <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
-        <li><a class="active" href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
-        <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
-        <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
-      </ul>
-    </aside>
-  </div>
+      <div class="logo-divider"></div>
+    </div>
+    <ul>
+<li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+      <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+      <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
+      <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
+      <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
+      <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
+      <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
+      <li><a href="../OrdenDetalle/OrdenDetalle.html"><i class="fas fa-table"></i><span>Tabla de Ordenes</span></a></li>
+      <li><a href="../Trabajos/trabajos.html"><i class="fas fa-clipboard-list"></i><span>Trabajos</span></a></li>
+    </ul>
+  </aside>
 
-  <!-- Topbar -->
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
@@ -52,15 +45,14 @@
     </div>
   </div>
 
-  <!-- Contenido -->
   <main class="content">
     <section class="card">
       <h2 class="mb-4">Citas</h2>
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <button class="btn btn-primary" onclick="abrirModalAgregar()">
+        <button class="btn btn-primary" id="btnNuevaCita">
           <i class="fas fa-plus me-2"></i> Nueva Cita
         </button>
-        <button class="btn btn-danger" onclick="window.location.href = 'calendario.html'">
+        <button class="btn btn-danger" id="btnVerCalendario">
           <i class="fas fa-calendar-alt me-2"></i> Ver Calendario
         </button>
         <div class="d-flex align-items-center">
@@ -74,7 +66,6 @@
         </div>
       </div>
 
-      <!-- Tabla -->
       <div class="table-responsive">
         <table class="table table-bordered table-striped align-middle">
           <thead class="table-light text-center">
@@ -97,8 +88,7 @@
     </section>
   </main>
 
-  <!-- Modal Cita -->
-  <div class="modal fade" id="citaModal" tabindex="-1">
+  <div class="modal fade" id="citaModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form id="citaForm">
@@ -108,17 +98,14 @@
           </div>
           <div class="modal-body d-flex flex-column gap-3">
             <input type="hidden" id="citaId" />
-
             <div>
               <label for="fecha" class="form-label">Fecha</label>
               <input type="date" id="fecha" class="form-control" required />
             </div>
-
             <div>
               <label for="hora" class="form-label">Hora</label>
               <input type="time" id="hora" class="form-control" required min="07:00" max="16:00" />
             </div>
-
             <div>
               <label for="estado" class="form-label">Estado</label>
               <select id="estado" class="form-select" required>
@@ -129,17 +116,14 @@
                 <option>Completada</option>
               </select>
             </div>
-
             <div>
               <label for="cliente" class="form-label">Cliente</label>
               <select id="cliente" class="form-select" required></select>
             </div>
-
             <div>
               <label for="vehiculo" class="form-label">Vehículo</label>
               <select id="vehiculo" class="form-select" required></select>
             </div>
-
             <div>
               <label for="tipoServicio" class="form-label">Tipo de Servicio</label>
               <select id="tipoServicio" class="form-select" required>
@@ -148,7 +132,6 @@
                 <option value="Mantenimiento correctivo">Mantenimiento correctivo</option>
               </select>
             </div>
-
             <div>
               <label for="descripcion" class="form-label">Descripción</label>
               <textarea id="descripcion" class="form-control" maxlength="255" placeholder="Opcional"></textarea>
@@ -162,23 +145,13 @@
       </div>
     </div>
   </div>
-<script>
-  const items = document.querySelectorAll('#sidebar ul li a');
-  const here = location.pathname.split('/').pop().toLowerCase();
 
-  items.forEach(a=>{
-    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
-    if(file && file === here){
-      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
-    }
-    a.addEventListener('click', ()=>{
-      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
-      a.parentElement.classList.add('is-active');
-    });
-  });
-</script>
-  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../JS/hooks/citasUI.js"></script>
+  <script src="../JS/utils/activeMenu.js"></script>
   <script type="module" src="../JS/Controllers/CitasController.js"></script>
+  <script src="../JS/utils/activeMenu.js"></script>
+
 </body>
 </html>

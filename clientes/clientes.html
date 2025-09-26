@@ -5,21 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clientes</title>
 
-  <!-- SweetAlert -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <!-- Estilos -->
   <link rel="stylesheet" href="../CSS/dashboard.css" />
-  <link rel="stylesheet" href="../CSS/clientes.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../CSS/clientes.css" />
 </head>
 <body>
 
-    <div id="sidebar">
-      <aside id="sidebar">
-    <!-- Header fijo del sidebar: logo + SASA + divisor -->
+  <aside id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
         <img src="../IMG/logo sasa.jpg" alt="Logo SASA" />
@@ -31,15 +25,14 @@
       <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
-      <li><a class="active" href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
+      <li class="is-active"><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
       <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
       <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
       <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
-      <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
+      <li><a href="../OrdenDetalle/OrdenDetalle.html"><i class="fas fa-table"></i><span>Tabla de Ordenes</span></a></li>
     </ul>
-  </div>
+  </aside>
 
-  <!-- Topbar -->
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
@@ -52,7 +45,6 @@
     </div>
   </div>
 
-  <!-- Contenido -->
   <main class="content">
     <section class="card">
       <h2 class="mb-4">Clientes</h2>
@@ -73,7 +65,6 @@
         </div>
       </div>
 
-      <!-- Tabla -->
       <div class="table-responsive">
         <table class="table table-bordered table-striped align-middle">
           <thead>
@@ -88,9 +79,7 @@
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody id="tablaClientes">
-            <!-- Datos dinámicos -->
-          </tbody>
+          <tbody id="tablaClientes"></tbody>
         </table>
       </div>
 
@@ -98,7 +87,6 @@
     </section>
   </main>
 
-  <!-- Modal Agregar/Editar Cliente -->
   <div class="modal fade" id="clienteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
@@ -113,15 +101,12 @@
             <input type="text" id="apellido" name="apellido" placeholder="Apellido" required class="form-control" minlength="2" maxlength="100" />
             <input type="text" id="dui" name="dui" placeholder="DUI (########-#)" pattern="\d{8}-\d{1}" required class="form-control" />
             <input type="date" id="fechaNacimiento" name="fechaNacimiento" required class="form-control" min="1900-01-01" />
-            
-            <!-- ✅ Fix: valores exactos que el backend acepta -->
             <select id="genero" name="genero" required class="form-select">
               <option value="" disabled selected>Seleccione género</option>
               <option value="Masculino">Masculino</option>
               <option value="Femenino">Femenino</option>
               <option value="Otro">Otro</option>
             </select>
-
             <input type="email" id="correo" name="correo" placeholder="Correo electrónico" required class="form-control" maxlength="150" />
           </div>
           <div class="modal-footer">
@@ -133,23 +118,9 @@
     </div>
   </div>
 
-
-    <script>
-  const items = document.querySelectorAll('#sidebar ul li a');
-  const here = location.pathname.split('/').pop().toLowerCase();
-
-  items.forEach(a=>{
-    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
-    if(file && file === here){
-      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
-    }
-    a.addEventListener('click', ()=>{
-      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
-      a.parentElement.classList.add('is-active');
-    });
-  });
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../JS/utils/activeMenu.js"></script>
   <script type="module" src="../JS/Controllers/ClientesController.js"></script>
 </body>
 </html>

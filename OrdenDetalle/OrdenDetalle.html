@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Órdenes de Trabajo</title>
+  <link rel="stylesheet" href="../CSS/dashboard.css"/>
+  <link rel="stylesheet" href="../CSS/OrdenDetalle.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="dashboard">
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <img src="../IMG/logo sasa.jpg" alt="Logo SASA"/>
+        <span class="logo-text">SASA</span>
+      </div>
+      <div class="logo-divider"></div>
+    </div>
+    <ul>
+<li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+      <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+      <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
+      <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
+      <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
+      <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
+      <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
+      <li><a href="../OrdenDetalle/OrdenDetalle.html"><i class="fas fa-table"></i><span>Tabla de Ordenes</span></a></li>
+      <li><a href="../Trabajos/trabajos.html"><i class="fas fa-clipboard-list"></i><span>Trabajos</span></a></li>
+    </ul>
+  </aside>
+
+  <div class="topbar shadow-sm">
+    <div class="topbar-right">
+      <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
+      <span class="ms-2">Usuario</span>
+      <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
+    </div>
+  </div>
+
+  <div class="text-end text-muted fs-6 mt-3 me-3 animate-fade">
+    <span id="fechaActual"></span> - <span id="horaActual"></span>
+  </div>
+
+  <main class="content">
+    <div class="container mt-4">
+      <div class="card glass-card p-4 mb-4 shadow card-in">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-clipboard-list text-danger fs-4"></i>
+            <h4 class="m-0">Órdenes de Trabajo</h4>
+          </div>
+          <div class="d-flex align-items-center gap-2 text-muted small">
+            <span id="kpiTotalOrdenes" class="badge bg-light text-dark">0 órdenes</span>
+            <span id="kpiPeriodo" class="badge bg-light text-dark">Periodo actual</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card glass-card p-3 mb-4 shadow card-in">
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-4">
+            <label class="form-label">Buscar</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fa fa-search"></i></span>
+              <input id="filtroTexto" class="form-control" placeholder="ID orden, placa, cliente, vehículo"/>
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <label class="form-label">Desde</label>
+            <input id="fDesde" type="date" class="form-control"/>
+          </div>
+          <div class="col-6 col-md-2">
+            <label class="form-label">Hasta</label>
+            <input id="fHasta" type="date" class="form-control"/>
+          </div>
+          <div class="col-6 col-md-2">
+            <label class="form-label">Estado factura</label>
+            <select id="fEstado" class="form-select">
+              <option value="">Todas</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Pagada">Pagada</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+          </div>
+          <div class="col-6 col-md-2 d-flex gap-2">
+            <button id="btnAplicar" class="btn btn-primary flex-fill"><i class="fa fa-filter me-1"></i>Aplicar</button>
+            <button id="btnLimpiar" class="btn btn-outline-secondary"><i class="fa fa-rotate me-1"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-lg-7">
+          <div class="card shadow h-100 card-pop">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <span class="fw-semibold">Listado de órdenes</span>
+              <div class="d-flex align-items-center gap-2">
+                <select id="pageSize" class="form-select form-select-sm w-auto">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
+                <div class="btn-group">
+                  <button id="prevPage" class="btn btn-sm btn-outline-secondary"><i class="fa fa-chevron-left"></i></button>
+                  <button id="nextPage" class="btn btn-sm btn-outline-secondary"><i class="fa fa-chevron-right"></i></button>
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table table-hover align-middle mb-0" id="tablaOrdenes">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Fecha</th>
+                    <th>Vehículo</th>
+                    <th>Cliente</th>
+                    <th class="text-end">Total</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <div class="empty" id="vacioOrdenes">Sin resultados</div>
+              <div class="spinner" id="spinOrdenes"></div>
+            </div>
+            <div class="card-footer d-flex justify-content-between small text-muted">
+              <span id="pagInfo">Página 1</span>
+              <span id="totalInfo">0 registros</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-5">
+          <div class="card shadow h-100 card-pop">
+            <div class="card-header d-flex align-items-center justify-content-between">
+              <span class="fw-semibold">Detalle seleccionado</span>
+              <div class="d-flex gap-2">
+                <a id="btnAbrirEdicion" href="../Trabajos/trabajos.html" class="btn btn-sm btn-outline-primary disabled"><i class="fa fa-pen-to-square me-1"></i>Abrir</a>
+                <button id="btnVerFactura" class="btn btn-sm btn-outline-dark disabled"><i class="fa fa-receipt me-1"></i>Factura</button>
+              </div>
+            </div>
+            <div class="p-3 border-bottom">
+              <div class="row g-2 small">
+                <div class="col-6">
+                  <div class="muted">Orden</div>
+                  <div id="detId">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="muted">Fecha</div>
+                  <div id="detFecha">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="muted">Vehículo</div>
+                  <div id="detVehiculo">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="muted">Cliente</div>
+                  <div id="detCliente">—</div>
+                </div>
+              </div>
+            </div>
+            <div class="table-wrap small">
+              <table class="table table-sm align-middle mb-0" id="tablaDetalle">
+                <thead>
+                  <tr>
+                    <th>ID Detalle</th>
+                    <th>Mantenimiento</th>
+                    <th class="text-end">Precio</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <div class="empty" id="vacioDetalle">Seleccione una orden</div>
+              <div class="spinner" id="spinDetalle"></div>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge rounded-pill" id="estadoBadge">—</span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="muted">Total</span>
+                <strong id="totalOrden">0.00</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="modalFactura" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h6 class="modal-title">Factura</h6>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row g-2">
+                <div class="col-6">
+                  <div class="muted">ID</div>
+                  <div id="facId">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="muted">Fecha</div>
+                  <div id="facFecha">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="muted">Empleado</div>
+                  <div id="facEmpleado">—</div>
+                </div>
+                <div class="col-6">
+                  <div class="muted">Método de pago</div>
+                  <div id="facMetodo">—</div>
+                </div>
+                <div class="col-12">
+                  <div class="muted">Descripción</div>
+                  <div id="facDesc">—</div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <span class="me-auto"><span class="muted">Estado</span> <span id="facEstado" class="badge rounded-pill">—</span></span>
+              <span class="muted me-1">Monto</span><strong id="facMonto">0.00</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module" src="../JS/OrdenDetalle.js"></script>
+  <script src="../JS/utils/activeMenu.js"></script>
+
+</body>
+</html>

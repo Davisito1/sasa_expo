@@ -63,7 +63,7 @@ export async function getFacturaById(id) {
   return json?.data ?? json;
 }
 
-// -------- CREAR FACTURA --------
+
 export async function createFactura(data) {
   const payload = {
     fecha: data.fecha,
@@ -82,7 +82,7 @@ export async function createFactura(data) {
   return json?.data ?? json;
 }
 
-// -------- ACTUALIZAR FACTURA --------
+
 export async function updateFactura(id, data) {
   const payload = {
     fecha: data.fecha,
@@ -101,8 +101,33 @@ export async function updateFactura(id, data) {
   return json?.data ?? json;
 }
 
-// -------- ELIMINAR FACTURA --------
+
 export async function deleteFactura(id) {
   const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
   return json?.data ?? json;
+}
+
+const BASE="http://localhost:8080";
+
+export async function getFacturas({page=0,size=10,archivada=false,onlyWithOrder=false}={}){
+  const url=new URL(`${BASE}/apiFactura/consultar`);
+  url.searchParams.set("page",page);
+  url.searchParams.set("size",size);
+  url.searchParams.set("archivada",archivada?"true":"false");
+  if(onlyWithOrder) url.searchParams.set("onlyWithOrder","true");
+  const r=await fetch(url.toString(),{credentials:"include"});
+  if(!r.ok) return {content:[],totalPages:0,number:0};
+  return r.json();
+}
+
+export async function archiveFactura(id){
+  const r=await fetch(`${BASE}/apiFactura/${id}/archivar`,{method:"PUT",credentials:"include"});
+  if(!r.ok) throw new Error("archivar");
+  return r.json().catch(()=>({}));
+}
+
+export async function unarchiveFactura(id){
+  const r=await fetch(`${BASE}/apiFactura/${id}/restaurar`,{method:"PUT",credentials:"include"});
+  if(!r.ok) throw new Error("restaurar");
+  return r.json().catch(()=>({}));
 }

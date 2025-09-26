@@ -4,62 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Facturas</title>
-
-  <!-- SweetAlert -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
-
-  <!-- Estilos -->
   <link rel="stylesheet" href="../CSS/dashboard.css" />
-  <link rel="stylesheet" href="../CSS/facturas.css" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-  <style>
-    thead th {
-      background: #fff !important;
-      color: #000;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .icon-btn {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      width: 38px;
-      height: 38px;
-      border-radius: 8px;
-      border: 2px solid transparent;
-      background: #fff;
-      font-size: 18px;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .btn-primary.icon-btn {
-      border-color: #0d6efd;
-      color: #0d6efd;
-    }
-    .btn-primary.icon-btn:hover {
-      background: rgba(13, 110, 253, 0.1);
-      color: #0b5ed7;
-    }
-
-    .btn-danger.icon-btn {
-      border-color: #dc3545;
-      color: #dc3545;
-    }
-    .btn-danger.icon-btn:hover {
-      background: rgba(220, 53, 69, 0.1);
-      color: #bb2d3b;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="../CSS/facturas.css" />
+    <link rel="stylesheet" href="../CSS/theme-red.css" />
 </head>
 <body>
-  <!-- Sidebar -->
-   <div id="sidebar">
-      <aside id="sidebar">
-    <!-- Header fijo del sidebar: logo + SASA + divisor -->
+  <aside id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
         <img src="../IMG/logo sasa.jpg" alt="Logo SASA" />
@@ -68,18 +21,18 @@
       <div class="logo-divider"></div>
     </div>
     <ul>
-      <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+<li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
-            <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
       <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
+      <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
       <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
-      <li><a href="../facturas/facturas.html" class="active"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
-      <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
+      <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
+      <li><a href="../OrdenDetalle/OrdenDetalle.html"><i class="fas fa-table"></i><span>Tabla de Ordenes</span></a></li>
+      <li><a href="../Trabajos/trabajos.html"><i class="fas fa-clipboard-list"></i><span>Trabajos</span></a></li>
     </ul>
-  </div>
+  </aside>
 
-  <!-- Topbar -->
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
@@ -92,131 +45,52 @@
     </div>
   </div>
 
-  <!-- Contenido principal -->
   <main class="content">
     <section class="card">
-      <h2 class="mb-4">Facturas</h2>
-
-      <!-- Encabezado de acciones -->
-      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <button id="btnAddFactura" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mdAgregarFactura">
-          <i class="fas fa-plus me-2"></i> Nueva Factura
-        </button>
-
-        <!-- Selector de cantidad de registros -->
-        <div class="d-flex align-items-center">
-          <label for="registrosPorPagina" class="me-2 fw-semibold">Mostrar:</label>
-          <select id="registrosPorPagina" class="form-select form-select-sm" style="width:auto;">
-            <option value="5">5</option>
-            <option value="10" selected>10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
+      <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+        <h2 class="m-0">Facturas</h2>
+        <div class="d-flex align-items-center gap-2">
+          <ul class="nav nav-pills" id="tabsFacturas">
+            <li class="nav-item"><button class="nav-link active" data-tab="activas">Activas</button></li>
+            <li class="nav-item"><button class="nav-link" data-tab="archivadas">Archivadas</button></li>
+          </ul>
+          <div class="d-flex align-items-center ms-2">
+            <label for="registrosPorPagina" class="me-2 fw-semibold">Mostrar:</label>
+            <select id="registrosPorPagina" class="form-select form-select-sm" style="width:auto;">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- Tabla -->
       <div class="table-responsive">
         <table class="table table-bordered table-striped align-middle">
           <thead>
             <tr>
-              <th>ID Factura</th>
-              <th>Fecha Emisión</th>
-              <th>Monto Total</th>
-              <th>Empleado</th>
-              <th>Mantenimiento</th>
+              <th>#</th>
+              <th>Orden</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Descripción</th>
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody id="tablaFacturas">
-          </tbody>
+          <tbody id="tablaFacturas"></tbody>
         </table>
       </div>
 
-      <!-- Paginación -->
       <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2"></div>
     </section>
   </main>
 
-  <!-- Modal Agregar Factura -->
-  <div class="modal fade" id="mdAgregarFactura" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <form id="frmAgregarFactura">
-          <div class="modal-header">
-            <h5 class="modal-title">Agregar Factura</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body d-flex flex-column gap-3">
-            <input type="date" id="fechaFacturaAdd" required class="form-control" />
-            <input type="number" id="txtMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
-
-            <select id="selEmpleadoAdd" class="form-select" required>
-              <option value="" selected disabled>Seleccione un empleado</option>
-            </select>
-
-            <select id="selMantenimientoAdd" class="form-select" required>
-              <option value="" selected disabled>Seleccione un mantenimiento</option>
-            </select>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-success">Guardar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Editar Factura -->
-  <div class="modal fade" id="mdEditarFactura" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <form id="frmEditarFactura">
-          <div class="modal-header">
-            <h5 class="modal-title">Editar Factura</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body d-flex flex-column gap-3">
-            <input type="hidden" id="txtIdFactura" />
-            <input type="date" id="fechaFacturaEdit" required class="form-control" />
-            <input type="number" id="txtEditarMontoFactura" placeholder="Monto total ($)" required class="form-control" min="0" step="0.01" />
-
-            <select id="selEmpleadoEdit" class="form-select" required>
-              <option value="" selected disabled>Seleccione un empleado</option>
-            </select>
-
-            <select id="selMantenimientoEdit" class="form-select" required>
-              <option value="" selected disabled>Seleccione un mantenimiento</option>
-            </select>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Actualizar</button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <script>
-  const items = document.querySelectorAll('#sidebar ul li a');
-  const here = location.pathname.split('/').pop().toLowerCase();
-
-  items.forEach(a=>{
-    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
-    if(file && file === here){
-      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
-    }
-    a.addEventListener('click', ()=>{
-      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
-      a.parentElement.classList.add('is-active');
-    });
-  });
-</script>
-
-
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../JS/utils/activeMenu.js"></script>
   <script type="module" src="../JS/Controllers/FacturasController.js"></script>
+  <script src="../JS/utils/activeMenu.js"></script>
+
 </body>
 </html>

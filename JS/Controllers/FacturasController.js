@@ -1,246 +1,75 @@
-// ===== Importar servicios =====
-import {
-  getFacturas,
-  getFacturaById,
-  createFactura,
-  updateFactura,
-  deleteFactura
-} from "../Services/FacturasService.js";
-import { getEmpleados } from "../Services/EmpleadosService.js";
-import { getMantenimientos } from "../Services/MantenimientoService.js";
+import { getFacturas, archiveFactura, unarchiveFactura } from "../Services/FacturasService.js";
 
-// ===== DOM =====
-const tablaFacturas = document.getElementById("tablaFacturas");
-const pagWrap       = document.getElementById("paginacion");
-const selectPageSize= document.getElementById("registrosPorPagina");
+const tabla=document.getElementById("tablaFacturas");
+const pagWrap=document.getElementById("paginacion");
+const pageSizeSel=document.getElementById("registrosPorPagina");
+const buscar=document.getElementById("buscar");
+const tabs=document.getElementById("tabsFacturas");
 
-const frmAdd  = document.getElementById("frmAgregarFactura");
-const frmEdit = document.getElementById("frmEditarFactura");
+let pagina=0;
+let size=parseInt(pageSizeSel.value,10);
+let tab="activas";
+let cache=[];
 
-const modalAdd  = new bootstrap.Modal(document.getElementById("mdAgregarFactura"));
-const modalEdit = new bootstrap.Modal(document.getElementById("mdEditarFactura"));
-
-// Campos agregar
-const fechaAdd = document.getElementById("fechaFacturaAdd");
-const montoAdd = document.getElementById("txtMontoFactura");
-const selEmpleadoAdd = document.getElementById("selEmpleadoAdd");
-const selMantenimientoAdd = document.getElementById("selMantenimientoAdd");
-
-// Campos editar
-const idEdit   = document.getElementById("txtIdFactura");
-const fechaEdit= document.getElementById("fechaFacturaEdit");
-const montoEdit= document.getElementById("txtEditarMontoFactura");
-const selEmpleadoEdit = document.getElementById("selEmpleadoEdit");
-const selMantenimientoEdit = document.getElementById("selMantenimientoEdit");
-
-// ===== Variables globales =====
-let facturasCache = [];
-let empleadosCache = [];
-let mantenimientosCache = [];
-let paginaActual = 0;
-let tamPagina = parseInt(selectPageSize.value, 10);
-
-// ===== Renderizar tabla =====
-function renderTabla(facturas) {
-  tablaFacturas.innerHTML = "";
-  if (!facturas || facturas.length === 0) {
-    tablaFacturas.innerHTML = `<tr><td colspan="6" class="text-center">No hay registros</td></tr>`;
-    return;
-  }
-
-  facturas.sort((a, b) => a.id - b.id);
-
-  facturas.forEach(f => {
-    const empleado = f.nombreEmpleado 
-      || empleadosCache.find(e => e.id === f.idEmpleado)?.nombres 
-      || "—";
-    const mantenimiento = f.descripcionMantenimiento 
-      || mantenimientosCache.find(m => m.id === f.idMantenimiento)?.descripcion 
-      || "—";
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${f.id}</td>
-      <td>${f.fecha}</td>
-      <td>$${f.montoTotal.toFixed(2)}</td>
-      <td>${empleado}</td>
-      <td>${mantenimiento}</td>
+function badgeEstado(e){const m={Pendiente:"warning",Pagada:"success",Cancelada:"secondary"};const c=m[e]||"light";return `<span class="badge text-bg-${c}">${e||"—"}</span>`}
+function renderTabla(rows){
+  tabla.innerHTML="";
+  if(!rows||!rows.length){tabla.innerHTML=`<tr><td colspan="6" class="text-center">Sin facturas</td></tr>`;return}
+  rows.forEach(f=>{
+    if(!f.idOrden) return;
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
+      <td>${f.id||f.idFactura}</td>
+      <td><button class="btn btn-sm icon-btn" data-ver="${f.idOrden}"><i class="fa-solid fa-up-right-from-square"></i></button></td>
+      <td>${f.fecha||""}</td>
+      <td>${badgeEstado(f.estado)}</td>
+      <td>${f.descripcion||"—"}</td>
       <td class="text-center">
-        <button class="btn btn-sm btn-primary me-2 icon-btn" onclick="editarFactura(${f.id})">
-          <i class="bi bi-pencil-square"></i>
-        </button>
-        <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarFactura(${f.id})">
-          <i class="bi bi-trash"></i>
-        </button>
+        ${tab==="activas"
+          ? `<button class="btn btn-sm btn-outline-secondary icon-btn" data-archivar="${f.id||f.idFactura}"><i class="fa-solid fa-box-archive"></i></button>`
+          : `<button class="btn btn-sm btn-outline-primary icon-btn" data-restaurar="${f.id||f.idFactura}"><i class="fa-solid fa-rotate-left"></i></button>`
+        }
       </td>
     `;
-    tablaFacturas.appendChild(tr);
+    tabla.appendChild(tr);
   });
 }
-
-// ===== Paginación =====
-function renderPaginacion(pageData) {
-  pagWrap.innerHTML = "";
-  if (!pageData || pageData.totalPages <= 1) return;
-
-  for (let i = 0; i < pageData.totalPages; i++) {
-    const btn = document.createElement("button");
-    btn.textContent = i + 1;
-    btn.className = `btn btn-sm ${i === pageData.number ? "btn-primary" : "btn-outline-primary"}`;
-    btn.onclick = async () => {
-      paginaActual = i;
-      await cargarTabla();
-    };
-    pagWrap.appendChild(btn);
+function renderPaginacion(p){
+  pagWrap.innerHTML="";
+  if(!p||p.totalPages<=1) return;
+  for(let i=0;i<p.totalPages;i++){
+    const b=document.createElement("button");
+    b.textContent=i+1;
+    b.className=`btn ${i===p.number?"btn-primary":"btn-outline-primary"} btn-sm`;
+    b.onclick=()=>{pagina=i;cargar()};
+    pagWrap.appendChild(b);
   }
 }
-
-// ===== Cargar combos =====
-async function cargarCombos() {
-  empleadosCache      = (await getEmpleados()).content ?? [];
-  mantenimientosCache = (await getMantenimientos()).content ?? [];
-
-  [selEmpleadoAdd, selEmpleadoEdit].forEach(sel => {
-    sel.innerHTML = '<option value="" disabled selected>Seleccione un empleado</option>';
-    empleadosCache.forEach(e => {
-      const opt = document.createElement("option");
-      opt.value = e.id;
-      opt.textContent = `${e.nombres} ${e.apellidos}`;
-      sel.appendChild(opt);
-    });
-  });
-
-  [selMantenimientoAdd, selMantenimientoEdit].forEach(sel => {
-    sel.innerHTML = '<option value="" disabled selected>Seleccione un mantenimiento</option>';
-    mantenimientosCache.forEach(m => {
-      const opt = document.createElement("option");
-      opt.value = m.id;
-      opt.textContent = m.descripcion;
-      sel.appendChild(opt);
-    });
+function filtrar(busq){
+  if(!busq) return cache;
+  const q=busq.toLowerCase();
+  return cache.filter(f=>{
+    const s=[f.id,f.idOrden,f.estado,f.descripcion,f.fecha].map(x=>String(x||"").toLowerCase()).join(" ");
+    return s.includes(q);
   });
 }
-
-// ===== Cargar tabla =====
-async function cargarTabla() {
-  const data = await getFacturas(paginaActual, tamPagina);
-  facturasCache = data.content;
-  renderTabla(facturasCache);
-  renderPaginacion(data);
+async function cargar(){
+  const archivada = tab==="archivadas";
+  const data = await getFacturas({page:pagina,size,archivada,onlyWithOrder:true});
+  const content = Array.isArray(data)?data:(data.content||[]);
+  cache = content.filter(f=>!!f.idOrden);
+  renderTabla(filtrar(buscar?.value||""));
+  renderPaginacion(Array.isArray(data)?null:data);
 }
-
-// ===== Editar =====
-window.editarFactura = async function (id) {
-  try {
-    const f = await getFacturaById(id);
-    if (!f) return Swal.fire("Error", "Factura no encontrada", "error");
-
-    idEdit.value    = f.id;
-    fechaEdit.value = f.fecha;
-    montoEdit.value = f.montoTotal;
-
-    await cargarCombos();
-    selEmpleadoEdit.value = f.idEmpleado;
-    selMantenimientoEdit.value = f.idMantenimiento;
-
-    modalEdit.show();
-  } catch (err) {
-    Swal.fire("Error", "No se pudo cargar la factura", "error");
-  }
-};
-
-// ===== Eliminar =====
-window.eliminarFactura = async function (id) {
-  const ok = await Swal.fire({
-    title: "¿Eliminar factura?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Sí, eliminar",
-    cancelButtonText: "Cancelar"
-  }).then(r => r.isConfirmed);
-
-  if (!ok) return;
-
-  try {
-    await deleteFactura(id);
-    Swal.fire("Eliminada", "Factura eliminada correctamente", "success");
-    cargarTabla();
-  } catch {
-    Swal.fire("Error", "No se pudo eliminar la factura", "error");
-  }
-};
-
-// ===== Agregar =====
-frmAdd.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  if (!fechaAdd.value) return Swal.fire("Error","La fecha es obligatoria","error");
-  const hoy = new Date().toISOString().split("T")[0];
-  if (fechaAdd.value < hoy) return Swal.fire("Error","La fecha no puede ser pasada","error");
-
-  if (!montoAdd.value || isNaN(montoAdd.value) || parseFloat(montoAdd.value) <= 0) 
-    return Swal.fire("Error","El monto debe ser positivo","error");
-
-  if (!selEmpleadoAdd.value) return Swal.fire("Error","Seleccione un empleado","error");
-  if (!selMantenimientoAdd.value) return Swal.fire("Error","Seleccione un mantenimiento","error");
-
-  const dto = {
-    fecha: fechaAdd.value,
-    montoTotal: parseFloat(montoAdd.value),
-    idEmpleado: parseInt(selEmpleadoAdd.value, 10),
-    idMantenimiento: parseInt(selMantenimientoAdd.value, 10)
-  };
-
-  try {
-    await createFactura(dto);
-    Swal.fire("Éxito", "Factura registrada correctamente", "success");
-    modalAdd.hide();
-    await cargarTabla();
-  } catch {
-    Swal.fire("Error", "No se pudo registrar la factura", "error");
-  }
+tabla.addEventListener("click",async e=>{
+  const a=e.target.closest("[data-archivar]");
+  const r=e.target.closest("[data-restaurar]");
+  const v=e.target.closest("[data-ver]");
+  if(a){const id=parseInt(a.getAttribute("data-archivar"),10);try{await archiveFactura(id);await cargar()}catch{Swal.fire("Error","No se pudo archivar","error")}}
+  if(r){const id=parseInt(r.getAttribute("data-restaurar"),10);try{await unarchiveFactura(id);await cargar()}catch{Swal.fire("Error","No se pudo restaurar","error")}}
+  if(v){const idOrden=parseInt(v.getAttribute("data-ver"),10);if(idOrden) window.location.href=`../OrdenDetalle/OrdenDetalle.html?idOrden=${idOrden}`}
 });
-
-// ===== Actualizar =====
-frmEdit.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  if (!fechaEdit.value) return Swal.fire("Error","La fecha es obligatoria","error");
-  const hoy = new Date().toISOString().split("T")[0];
-  if (fechaEdit.value < hoy) return Swal.fire("Error","La fecha no puede ser pasada","error");
-
-  if (!montoEdit.value || isNaN(montoEdit.value) || parseFloat(montoEdit.value) <= 0) 
-    return Swal.fire("Error","El monto debe ser positivo","error");
-
-  if (!selEmpleadoEdit.value) return Swal.fire("Error","Seleccione un empleado","error");
-  if (!selMantenimientoEdit.value) return Swal.fire("Error","Seleccione un mantenimiento","error");
-
-  const dto = {
-    fecha: fechaEdit.value,
-    montoTotal: parseFloat(montoEdit.value),
-    idEmpleado: parseInt(selEmpleadoEdit.value, 10),
-    idMantenimiento: parseInt(selMantenimientoEdit.value, 10)
-  };
-
-  try {
-    await updateFactura(idEdit.value, dto);
-    Swal.fire("Éxito", "Factura actualizada correctamente", "success");
-    modalEdit.hide();
-    await cargarTabla();
-  } catch {
-    Swal.fire("Error", "No se pudo actualizar la factura", "error");
-  }
-});
-
-// ===== Inicio =====
-document.addEventListener("DOMContentLoaded", async () => {
-  await cargarCombos();
-  await cargarTabla();
-});
-
-// Cambio de tamaño de página
-selectPageSize.addEventListener("change", () => {
-  tamPagina = parseInt(selectPageSize.value, 10);
-  paginaActual = 0;
-  cargarTabla();
-});
+pageSizeSel.addEventListener("change",()=>{size=parseInt(pageSizeSel.value,10);pagina=0;cargar()});
+if(buscar){buscar.addEventListener("input",()=>renderTabla(filtrar(buscar.value)))}
+if(tabs){tabs.addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(!b)return;tabs.querySelectorAll(".nav-link").forEach(x=>x.classList.remove("active"));b.classList.add("active");tab=b.getAttribute("data-tab");pagina=0;cargar()})}
+document.addEventListener("DOMContentLoaded",cargar);

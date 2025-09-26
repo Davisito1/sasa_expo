@@ -1,0 +1,4 @@
+#vehiculoSeleccionado.bg-success { background-color:#d1fae5 !important; color:#065f46 !important; }
+#vehiculoSeleccionado.bg-danger  { background-color:#fee2e2 !important; color:#7f1d1d !important; }
+
+#tablaDetalle td input[type="number"]{ width:100%; padding:.25rem .5rem; }

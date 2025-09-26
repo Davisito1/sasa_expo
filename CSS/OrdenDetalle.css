@@ -1,0 +1,18 @@
+.muted{color:#6b7280}
+.card-in{animation:fadeIn .6s ease both}
+.card-pop{animation:pop .5s ease both}
+.table-wrap{position:relative;max-height:54vh;overflow:auto}
+.table-wrap::-webkit-scrollbar{height:8px;width:8px}
+.table-wrap::-webkit-scrollbar-thumb{background:#ddd;border-radius:12px}
+.table thead th{position:sticky;top:0;background:#f8f9fa;z-index:1}
+.table-hover tbody tr{cursor:pointer}
+.table-hover tbody tr.active{background:rgba(201,26,26,.06)}
+.empty{display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9aa0a6;font-size:.95rem;opacity:.9}
+.spinner{display:none;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.spinner::after{content:"";width:28px;height:28px;border:3px solid #eee;border-top-color:#C91A1A;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.badge[data-estado="Pendiente"]{background:#fff3cd;color:#8a6d3b;border:1px solid #ffe69c}
+.badge[data-estado="Pagada"]{background:#e9f8ef;color:#0f5132;border:1px solid #bde5c8}
+.badge[data-estado="Cancelada"]{background:#fde2e2;color:#7f1d1d;border:1px solid #f5bcbc}
+.card .btn.disabled,.card .btn:disabled{pointer-events:none;opacity:.6}
+@media (max-width:992px){.table-wrap{max-height:48vh}}
