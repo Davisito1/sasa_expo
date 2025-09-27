@@ -1,5 +1,5 @@
 // ======================= IMPORTS =======================
-import { login, getUsuarioLogueado } from "../services/loginService.js";
+import { login, getUsuarioLogueado, setToken, setUsuario } from "../services/loginService.js";
 
 // ======================= AUTOLOGIN =======================
 document.addEventListener("DOMContentLoaded", () => {
@@ -34,8 +34,14 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   try {
     // Llamada al servicio de login
     const respuesta = await login(usuarioIngresado, passwordIngresado);
+
     const user = respuesta.data || {};
-    const nombre = user.username || user.nombre || "Usuario";
+    const token = respuesta.token;
+    const nombre = user.nombreUsuario || user.username || "Usuario";
+
+    // ✅ Guardar en localStorage (ya lo hace loginService, pero reforzamos)
+    if (token) setToken(token);
+    if (user) setUsuario(user);
 
     Swal.fire({
       icon: "success",

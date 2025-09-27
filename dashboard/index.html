@@ -132,7 +132,21 @@
 
     </div>
   </main>
+<script>
+  const items = document.querySelectorAll('#sidebar ul li a');
+  const here = location.pathname.split('/').pop().toLowerCase();
 
-  <script type="module" src="../JS/dashboard.js"></script>
+  items.forEach(a=>{
+    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+    if(file && file === here){
+      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
+    }
+    a.addEventListener('click', ()=>{
+      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
+      a.parentElement.classList.add('is-active');
+    });
+  });
+</script>
+  <script type="module" src="../JS/script.js"></script>
 </body>
 </html>

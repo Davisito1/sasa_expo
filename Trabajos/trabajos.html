@@ -11,6 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="dashboard bg-light">
+  <!-- Sidebar -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
@@ -32,6 +33,7 @@
     </ul>
   </aside>
 
+  <!-- Topbar -->
   <div class="topbar shadow-sm">
     <div class="topbar-right">
       <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
@@ -40,10 +42,12 @@
     </div>
   </div>
 
+  <!-- Fecha y hora -->
   <div class="text-end text-muted fs-6 mt-3 me-3 animate-fade">
     <span id="fechaActual"></span> - <span id="horaActual"></span>
   </div>
 
+  <!-- Contenido -->
   <main class="content">
     <div class="container mt-4">
       <div class="card glass-card p-3 mb-4 shadow animate-slide">
@@ -52,19 +56,16 @@
       </div>
 
       <div class="row g-4">
+        <!-- Orden -->
         <section class="col-12 col-lg-6">
           <div class="card h-100">
             <div class="card-header fw-semibold">Datos de la Orden</div>
             <div class="card-body">
               <div class="mb-3">
-                <label for="vehiculoBusqueda" class="form-label">Buscar vehículo (placa / ID / cliente)</label>
-                <div class="d-flex gap-2 flex-wrap">
-                  <input id="vehiculoBusqueda" class="form-control" placeholder="Ej: P123-456 / 102 / Juan Pérez" maxlength="10"/>
-                  <button id="btnBuscarVehiculo" class="btn btn-dark">
-                    <i class="fa fa-search me-1"></i> Buscar
-                  </button>
-                  <span id="vehiculoSeleccionado" class="badge bg-secondary">Ninguno</span>
-                </div>
+                <label for="selVehiculo" class="form-label">Seleccionar vehículo</label>
+                <select id="selVehiculo" class="form-select">
+                  <option value="">Seleccione un vehículo...</option>
+                </select>
               </div>
 
               <div class="row g-3">
@@ -92,20 +93,25 @@
           </div>
         </section>
 
+        <!-- Detalle mantenimientos -->
         <section class="col-12 col-lg-6">
           <div class="card h-100">
             <div class="card-header fw-semibold">Detalle de Mantenimientos</div>
             <div class="card-body">
               <div class="row g-3 align-items-end">
-                <div class="col-12 col-md-7">
+                <div class="col-12 col-md-5">
                   <label for="selMantenimiento" class="form-label">Mantenimiento</label>
                   <select id="selMantenimiento" class="form-select"></select>
                 </div>
-                <div class="col-6 col-md-3">
-                  <label for="precioMant" class="form-label">Precio</label>
+                <div class="col-4 col-md-2">
+                  <label for="cantidadMant" class="form-label">Cantidad</label>
+                  <input type="number" id="cantidadMant" class="form-control" min="1" value="1"/>
+                </div>
+                <div class="col-4 col-md-3">
+                  <label for="precioMant" class="form-label">Precio Unitario</label>
                   <input type="number" id="precioMant" class="form-control" min="0" max="5000" step="0.01" placeholder="0.00"/>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-4 col-md-2">
                   <button id="btnAgregarDetalle" class="btn btn-primary w-100">
                     <i class="fa fa-plus me-1"></i> Agregar
                   </button>
@@ -118,8 +124,10 @@
                     <tr>
                       <th>ID Detalle</th>
                       <th>Mantenimiento</th>
-                      <th style="width:140px">Precio</th>
-                      <th style="width:100px">Acciones</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unitario</th>
+                      <th>Subtotal</th>
+                      <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody></tbody>
@@ -134,6 +142,7 @@
           </div>
         </section>
 
+        <!-- Factura -->
         <section class="col-12">
           <div class="card">
             <div class="card-header fw-semibold">Factura</div>
@@ -187,28 +196,35 @@
             </div>
           </div>
         </section>
-
-        <section class="col-12">
-          <div class="card">
-            <div class="card-header fw-semibold">Atajos y relacionados</div>
-            <div class="card-body d-flex flex-wrap gap-2">
-              <button id="gotoCliente" class="btn btn-outline-dark"><i class="fa fa-user me-1"></i> Ver cliente</button>
-              <button id="gotoVehiculo" class="btn btn-outline-dark"><i class="fa fa-car-side me-1"></i> Ver vehículo</button>
-              <button id="gotoHistorial" class="btn btn-outline-dark"><i class="fa fa-clock-rotate-left me-1"></i> Historial</button>
-              <button id="gotoCitas" class="btn btn-outline-dark"><i class="fa fa-calendar-check me-1"></i> Citas</button>
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   </main>
 
+  <!-- Sidebar Active Script -->
+  <script>
+    const items = document.querySelectorAll('#sidebar ul li a');
+    const here = location.pathname.split('/').pop().toLowerCase();
+    items.forEach(a=>{
+      const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+      if(file && file === here){
+        a.parentElement.classList.add('is-active');
+      }
+      a.addEventListener('click', ()=>{
+        document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
+        a.parentElement.classList.add('is-active');
+      });
+    });
+  </script>
+
+  <!-- Fecha y Hora Script -->
   <script>
     const f = document.getElementById('fechaActual');
     const h = document.getElementById('horaActual');
     function tick(){const d=new Date();f.textContent=d.toLocaleDateString();h.textContent=d.toLocaleTimeString()}
     tick(); setInterval(tick,1000);
   </script>
+
+  <!-- Controller -->
   <script type="module" src="../JS/Controllers/TrabajosController.js"></script>
 </body>
 </html>

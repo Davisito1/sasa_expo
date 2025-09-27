@@ -20,6 +20,8 @@ const selectPageSize = document.getElementById("registrosPorPagina");
 const citaModal = new bootstrap.Modal(document.getElementById("citaModal"));
 const modalLabel = document.getElementById("citaModalLabel");
 
+const citaForm = document.getElementById("citaForm"); // ✅ formulario global
+
 const inputId = document.getElementById("citaId");
 const inputFecha = document.getElementById("fecha");
 const inputHora = document.getElementById("hora");
@@ -149,7 +151,7 @@ async function cargarTabla(reset = false) {
 window.abrirModalAgregar = async function () {
   inputId.value = "";
   modalLabel.textContent = "Agregar Cita";
-  citaForm.reset();
+  if (citaForm) citaForm.reset();
 
   const hoy = new Date().toISOString().split("T")[0];
   inputFecha.setAttribute("min", hoy);
@@ -166,7 +168,7 @@ window.editarCita = async function (id) {
     if (!cita) return Swal.fire("Error", "No se encontró la cita", "error");
 
     modalLabel.textContent = "Editar Cita";
-    citaForm.reset();
+    if (citaForm) citaForm.reset();
     inputId.value = cita.id;
 
     const hoy = new Date().toISOString().split("T")[0];
@@ -176,7 +178,7 @@ window.editarCita = async function (id) {
     await cargarVehiculos(cita.idVehiculo);
 
     inputFecha.value = cita.fecha ?? "";
-    inputHora.value = to24h(cita.hora) ?? "";
+    inputHora.value = to24h(cita.hora) || cita.hora || "";
     selectEstado.value = cita.estado ?? "";
     selectServicio.value = cita.tipoServicio ?? "";
     inputDescripcion.value = cita.descripcion ?? "";
@@ -204,14 +206,7 @@ window.eliminarCita = async function (id) {
 };
 
 // ======================= FORMULARIO =======================
-document.addEventListener("DOMContentLoaded", () => {
-  const citaForm = document.getElementById("citaForm");
-
-  if (!citaForm) {
-    console.error("❌ No se encontró el formulario con id 'citaForm'");
-    return;
-  }
-
+if (citaForm) {
   citaForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -232,9 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
       descripcion: inputDescripcion.value
     };
 
-    console.log("Vehiculo seleccionado:", selectVehiculo.value);
-    console.log("📦 Payload enviado:", dto);
-
     try {
       if (inputId.value) {
         await updateCita(parseInt(inputId.value, 10), dto);
@@ -250,14 +242,31 @@ document.addEventListener("DOMContentLoaded", () => {
       Swal.fire("Error", "No se pudo guardar la cita", "error");
     }
   });
+}
 
-  selectPageSize.addEventListener("change", () => {
-    tamPagina = parseInt(selectPageSize.value, 10);
-    paginaActual = 1;
-    cargarTabla(true);
+// ======================= BOTONES =======================
+const btnNueva = document.getElementById("btnNuevaCita");
+if (btnNueva) {
+  btnNueva.addEventListener("click", () => {
+    abrirModalAgregar();
   });
+}
 
-  cargarClientes();
-  cargarVehiculos();
+// 🔹 Botón Ver Calendario
+const btnVerCalendario = document.getElementById("btnVerCalendario");
+if (btnVerCalendario) {
+  btnVerCalendario.addEventListener("click", () => {
+    window.location.href = "calendario.html";
+  });
+}
+
+selectPageSize.addEventListener("change", () => {
+  tamPagina = parseInt(selectPageSize.value, 10);
+  paginaActual = 1;
   cargarTabla(true);
 });
+
+// ======================= INIT =======================
+cargarClientes();
+cargarVehiculos();
+cargarTabla(true);

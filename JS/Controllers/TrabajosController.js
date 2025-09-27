@@ -1,297 +1,324 @@
+// ===============================
+// OrdenFacturaController.js FINAL FULL FUNCIONAL ✅
+// ===============================
+
 import { crearOrden, actualizarOrden } from "../Services/OrdenTrabajoService.js";
-import { agregarDetalle, eliminarDetalle } from "../Services/DetalleOrdenService.js";
+import { agregarDetalle } from "../Services/DetalleOrdenService.js";
 import { listarMantenimientos } from "../Services/MantenimientosService.js";
-import { buscarVehiculo } from "../Services/VehiculoService.js";
-import { obtenerFacturaPorOrden, crearActualizarFactura, anularFactura, listarEmpleados, listarMetodosPago } from "../Services/FacturaService.js";
+import { getVehiculos } from "../Services/VehiculosServices.js";
+import { createFactura, updateFactura, anularFactura } from "../Services/FacturasService.js";
+import { getEmpleados } from "../Services/EmpleadosService.js";
+import { getMetodosPago } from "../Services/MetodosPagoService.js";
 
-const $=(id)=>document.getElementById(id);
-const vehiculoBusqueda=$("vehiculoBusqueda");
-const btnBuscarVehiculo=$("btnBuscarVehiculo");
-const vehiculoSel=$("vehiculoSeleccionado");
-const fechaOrden=$("fechaOrden");
-const idOrden=$("idOrden");
-const btnNuevaOrden=$("btnNuevaOrden");
-const btnGuardarOrden=$("btnGuardarOrden");
-const btnCancelarOrden=$("btnCancelarOrden");
-const selMantenimiento=$("selMantenimiento");
-const precioMant=$("precioMant");
-const btnAgregarDetalle=$("btnAgregarDetalle");
-const tbodyDetalle=document.querySelector("#tablaDetalle tbody");
-const montoTotal=$("montoTotal");
-const idFactura=$("idFactura");
-const fechaFactura=$("fechaFactura");
-const selEmpleado=$("selEmpleado");
-const selMetodoPago=$("selMetodoPago");
-const estadoFactura=$("estadoFactura");
-const montoFactura=$("montoFactura");
-const descripcionFactura=$("descripcionFactura");
-const btnCargarFactura=$("btnCargarFactura");
-const btnGenerarFactura=$("btnGenerarFactura");
-const btnAnularFactura=$("btnAnularFactura");
+// ================== HELPERS ==================
+const $ = (id) => document.getElementById(id);
 
-let state={vehiculo:null,orden:null,detalles:[],total:0};
+const selVehiculo = $("selVehiculo");
+const fechaOrden = $("fechaOrden");
+const idOrden = $("idOrden");
+const btnNuevaOrden = $("btnNuevaOrden");
+const btnGuardarOrden = $("btnGuardarOrden");
+const btnCancelarOrden = $("btnCancelarOrden");
+const selMantenimiento = $("selMantenimiento");
+const precioMant = $("precioMant");
+const btnAgregarDetalle = $("btnAgregarDetalle");
+const tbodyDetalle = document.querySelector("#tablaDetalle tbody");
+const montoTotal = $("montoTotal");
+const idFactura = $("idFactura");
+const fechaFactura = $("fechaFactura");
+const selEmpleado = $("selEmpleado");
+const selMetodoPago = $("selMetodoPago");
+const estadoFactura = $("estadoFactura");
+const montoFactura = $("montoFactura");
+const descripcionFactura = $("descripcionFactura");
+const btnGenerarFactura = $("btnGenerarFactura");
+const btnAnularFactura = $("btnAnularFactura");
 
-function setVehiculoBadge(ok,text){
-  vehiculoSel.textContent=text||(ok?"Vehículo seleccionado":"Ninguno");
-  vehiculoSel.className="badge "+(ok?"bg-success":"bg-danger");
-}
-function todayISO(){const d=new Date();const z=d.getTimezoneOffset()*60000;return new Date(Date.now()-z).toISOString().slice(0,10)}
-function toast(msg,type="info"){Swal.fire({text:msg,icon:type==="error"?"error":"info",timer:1600,showConfirmButton:false})}
-function calcTotal(){
-  state.total=state.detalles.reduce((s,d)=>s+(Number(d.precio)||0),0);
-  montoTotal.textContent=state.total.toFixed(2);
-  if(!montoFactura.value||Number(montoFactura.value)===0){montoFactura.value=state.total.toFixed(2)}
-}
-function renderDetalles(){
-  if(!state.detalles.length){tbodyDetalle.innerHTML=`<tr><td colspan="4" class="text-center text-muted">Sin detalles</td></tr>`;calcTotal();return}
-  tbodyDetalle.innerHTML=state.detalles.map(d=>`
-    <tr>
-      <td>${d.idDetalle??"-"}</td>
-      <td>${d.nombre??("ID "+d.idMantenimiento)}</td>
-      <td><input type="number" class="form-control form-control-sm precio-input" step="0.01" min="0" max="5000" value="${Number(d.precio||0).toFixed(2)}"/></td>
-      <td><button class="btn btn-sm btn-outline-danger btn-del"><i class="fa fa-trash"></i></button></td>
-    </tr>`).join("");
-  calcTotal();
+let state = { vehiculo: null, orden: null, detalles: [], total: 0 };
+
+// Exponer state para debug
+window.state = state;
+
+function toast(msg, type = "info") {
+  Swal.fire({
+    text: msg,
+    icon: type,
+    timer: 2500,
+    showConfirmButton: false,
+  });
 }
 
-function validarFechaRango(input){
-  const v=input.value;
-  if(!v)return false;
-  if(v<todayISO()){toast("La fecha no puede ser pasada","error");input.value=todayISO();return false}
-  if(v>"2026-12-31"){toast("La fecha no puede superar 2026","error");input.value="2026-12-31";return false}
-  return true;
-}
-function validarOrden(){
-  const errs=[];
-  if(!state.vehiculo?.idVehiculo) errs.push("Debe seleccionar un vehículo");
-  if(!fechaOrden.value) errs.push("Debe seleccionar una fecha de orden");
-  if(state.detalles.length===0) errs.push("Agregue al menos un mantenimiento");
-  if(fechaOrden.value){if(fechaOrden.value<todayISO()) errs.push("La fecha de orden no puede ser pasada"); if(fechaOrden.value>"2026-12-31") errs.push("La fecha de orden no puede superar 2026")}
-  return errs;
-}
-function validarFactura(){
-  const errs=[];
-  if(!state.orden?.idOrden) errs.push("Debe guardar la orden antes de facturar");
-  if(!fechaFactura.value) errs.push("Seleccione fecha de factura");
-  const mt=Number(montoFactura.value);
-  if(isNaN(mt)||mt<0) errs.push("Monto total inválido");
-  if(mt>5000) errs.push("El monto de la factura no puede superar $5000");
-  if(!selEmpleado.value) errs.push("Seleccione empleado");
-  if(!selMetodoPago.value) errs.push("Seleccione método de pago");
-  if(!["Pendiente","Pagada","Cancelada"].includes(estadoFactura.value)) errs.push("Estado de factura inválido");
-  if(fechaFactura.value){if(fechaFactura.value<todayISO()) errs.push("La fecha de factura no puede ser pasada"); if(fechaFactura.value>"2026-12-31") errs.push("La fecha de factura no puede superar 2026")}
+// ================== VALIDACIONES ==================
+function validarOrden() {
+  const errs = [];
+  if (!state.vehiculo?.idVehiculo && !state.vehiculo?.id)
+    errs.push("Debe seleccionar un vehículo para la orden.");
+  if (!fechaOrden.value)
+    errs.push("Debe seleccionar la fecha de la orden.");
+  if (state.detalles.length === 0)
+    errs.push("Debe agregar al menos un mantenimiento.");
   return errs;
 }
 
-vehiculoBusqueda?.addEventListener("input",()=>{
-  let v=vehiculoBusqueda.value;
-  const looksLikePlaca=/^[a-zA-Z]{1,3}\d{0,6}$/.test(v.replace(/-/g,""))||/^[a-zA-Z]\d{0,3}-?\d{0,3}$/i.test(v);
-  if(!looksLikePlaca) return;
-  v=v.toUpperCase().replace(/[^A-Z0-9]/g,"");
-  const letras=v.match(/^[A-Z]{1,3}/)?.[0]||"";
-  const dig=v.slice(letras.length).replace(/\D/g,"").slice(0,6);
-  const d1=dig.slice(0,3);
-  const d2=dig.slice(3,6);
-  vehiculoBusqueda.value=letras+(d2?d1+"-"+d2:d1);
-});
-vehiculoBusqueda?.setAttribute("maxlength","10");
+function validarFactura() {
+  const errs = [];
+  if (!state.orden?.idOrden && !state.orden?.id)
+    errs.push("Debe guardar la orden antes de generar la factura.");
+  if (!fechaFactura.value)
+    errs.push("Debe seleccionar la fecha de la factura.");
 
-btnBuscarVehiculo?.addEventListener("click",async()=>{
-  const filtro=vehiculoBusqueda.value?.trim();
-  if(!filtro) return setVehiculoBadge(false,"Ingrese criterio de búsqueda");
-  try{
-    const {data=[]}=await buscarVehiculo(filtro);
-    if(!data.length) return setVehiculoBadge(false,"Sin resultados");
-    const v=data[0];
-    state.vehiculo={idVehiculo:v.idVehiculo,placa:v.placa,clienteNombre:v.clienteNombre};
-    setVehiculoBadge(true,`ID ${v.idVehiculo} · ${v.placa??""} · ${v.clienteNombre??""}`);
-  }catch(e){
-    setVehiculoBadge(false,"Error al buscar");
+  const mt = Number(montoFactura.value);
+  if (isNaN(mt) || mt <= 0)
+    errs.push("El monto total de la factura no puede ser 0 ni negativo.");
+
+  if (!selEmpleado.value)
+    errs.push("Debe seleccionar el empleado responsable.");
+  if (!selMetodoPago.value)
+    errs.push("Debe seleccionar un método de pago.");
+  return errs;
+}
+
+// ================== DETALLES ==================
+function calcTotal() {
+  state.total = state.detalles.reduce((s, d) => s + (Number(d.subtotal) || 0), 0);
+  montoTotal.textContent = state.total.toFixed(2);
+  montoFactura.value = state.total.toFixed(2);
+}
+
+function renderDetalles() {
+  if (!state.detalles.length) {
+    tbodyDetalle.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Sin detalles registrados</td></tr>`;
+    calcTotal();
+    return;
   }
-});
-
-selMantenimiento?.addEventListener("change",()=>{
-  const opt=selMantenimiento.options[selMantenimiento.selectedIndex];
-  const precioSugerido=opt?.dataset?.precio;
-  if(precioSugerido) precioMant.value=Number(precioSugerido).toFixed(2);
-});
-precioMant?.addEventListener("input",()=>{
-  let n=Number(precioMant.value);
-  if(isNaN(n)||n<0) n=0;
-  if(n>5000) n=5000;
-  precioMant.value=n.toFixed(2);
-});
-
-btnAgregarDetalle?.addEventListener("click",()=>{
-  const idM=Number(selMantenimiento.value);
-  if(!idM) return toast("Seleccione un mantenimiento","error");
-  const nombre=selMantenimiento.options[selMantenimiento.selectedIndex]?.textContent?.trim()||`ID ${idM}`;
-  const precio=Number(precioMant.value);
-  if(isNaN(precio)||precio<0) return toast("Precio inválido","error");
-  if(precio>5000) return toast("El precio por mantenimiento no puede superar $5000","error");
-  state.detalles.push({idMantenimiento:idM,nombre,precio});
-  renderDetalles();
-});
-
-tbodyDetalle?.addEventListener("input",(e)=>{
-  if(!e.target.classList.contains("precio-input")) return;
-  const tr=e.target.closest("tr");
-  const idx=Array.from(tbodyDetalle.children).indexOf(tr);
-  if(idx<0) return;
-  let v=Number(e.target.value);
-  if(isNaN(v)||v<0) v=0;
-  if(v>5000) v=5000;
-  e.target.value=v.toFixed(2);
-  state.detalles[idx].precio=v;
+  tbodyDetalle.innerHTML = state.detalles.map(
+    (d, i) => `
+      <tr data-index="${i}">
+        <td>${d.idDetalle ?? "-"}</td>
+        <td>${d.nombre ?? ("ID " + d.idMantenimiento)}</td>
+        <td><input type="number" class="form-control form-control-sm cantidad-input" min="1" value="${d.cantidad ?? 1}"/></td>
+        <td><input type="number" class="form-control form-control-sm precio-input" step="0.01" min="0" max="5000" value="${Number(
+          d.precioUnitario || 0
+        ).toFixed(2)}"/></td>
+        <td class="subtotal-cell">${(d.subtotal ?? (d.cantidad * d.precioUnitario)).toFixed(2)}</td>
+        <td><button class="btn btn-sm btn-outline-danger btn-del"><i class="fa fa-trash"></i></button></td>
+      </tr>`
+  ).join("");
   calcTotal();
-});
-tbodyDetalle?.addEventListener("click",async(e)=>{
-  const btn=e.target.closest(".btn-del");
-  if(!btn) return;
-  const tr=e.target.closest("tr");
-  const idx=Array.from(tbodyDetalle.children).indexOf(tr);
-  if(idx<0) return;
-  const det=state.detalles[idx];
-  if(det.idDetalle){try{await eliminarDetalle(det.idDetalle)}catch{}}
-  state.detalles.splice(idx,1);
-  renderDetalles();
-});
-
-function setDateLimits(){
-  const t=todayISO();
-  fechaOrden.setAttribute("min",t);
-  fechaOrden.setAttribute("max","2026-12-31");
-  fechaFactura.setAttribute("min",t);
-  fechaFactura.setAttribute("max","2026-12-31");
 }
-fechaOrden?.addEventListener("change",()=>validarFechaRango(fechaOrden));
-fechaFactura?.addEventListener("change",()=>validarFechaRango(fechaFactura));
 
-btnNuevaOrden?.addEventListener("click",()=>{
-  state={vehiculo:null,orden:null,detalles:[],total:0};
-  vehiculoBusqueda.value="";
-  vehiculoSel.className="badge bg-secondary";
-  vehiculoSel.textContent="Ninguno";
-  fechaOrden.value=todayISO();
-  idOrden.value="";
-  idFactura.value="";
-  fechaFactura.value=todayISO();
-  selEmpleado.value="";
-  selMetodoPago.value="";
-  estadoFactura.value="Pendiente";
-  montoFactura.value="";
-  descripcionFactura.value="";
+// ================== EVENTOS ==================
+selMantenimiento?.addEventListener("change", () => {
+  const opt = selMantenimiento.options[selMantenimiento.selectedIndex];
+  const precioSugerido = opt?.dataset?.precio ?? "0";
+  precioMant.value = parseFloat(precioSugerido).toFixed(2);
+});
+
+btnAgregarDetalle?.addEventListener("click", () => {
+  const idM = Number(selMantenimiento.value);
+  if (!idM) return toast("Debe seleccionar un mantenimiento antes de agregarlo.", "error");
+
+  const nombre = selMantenimiento.options[selMantenimiento.selectedIndex]?.textContent?.trim();
+  const precioUnitario = Number(precioMant.value);
+
+  if (isNaN(precioUnitario) || precioUnitario <= 0)
+    return toast("El precio unitario ingresado es inválido.", "error");
+
+  const cantidad = 1;
+  const subtotal = cantidad * precioUnitario;
+
+  state.detalles.push({ idMantenimiento: idM, nombre, cantidad, precioUnitario, subtotal });
   renderDetalles();
 });
 
-btnGuardarOrden?.addEventListener("click",async()=>{
-  const errs=validarOrden();
-  if(errs.length) return toast(errs[0],"error");
-  try{
+// ================== GUARDAR ORDEN ==================
+btnGuardarOrden?.addEventListener("click", async () => {
+  const errs = validarOrden();
+  if (errs.length) return toast(errs[0], "error");
+
+  try {
     let resp;
-    if(!state.orden?.idOrden){
-      resp=await crearOrden({idVehiculo:state.vehiculo.idVehiculo,fecha:fechaOrden.value});
-    }else{
-      resp=await actualizarOrden(state.orden.idOrden,{idVehiculo:state.vehiculo.idVehiculo,fecha:fechaOrden.value});
+    if (!state.orden?.idOrden && !state.orden?.id) {
+      resp = await crearOrden({
+        idVehiculo: Number(state.vehiculo.idVehiculo || state.vehiculo.id),
+        fecha: fechaOrden.value,
+      });
+    } else {
+      resp = await actualizarOrden(state.orden.idOrden || state.orden.id, {
+        idVehiculo: Number(state.vehiculo.idVehiculo || state.vehiculo.id),
+        fecha: fechaOrden.value,
+      });
     }
-    const orden=resp.data||resp;
-    state.orden=orden;
-    idOrden.value=orden.idOrden;
-    for(const d of state.detalles){
-      if(!d.idDetalle){
-        const r=await agregarDetalle({idOrden:orden.idOrden,idMantenimiento:d.idMantenimiento,precio:d.precio});
-        d.idDetalle=(r.data||r).idDetalle;
+    state.orden = resp.data || resp;
+    idOrden.value = state.orden.idOrden || state.orden.id;
+
+    // Guardar detalles
+    for (const d of state.detalles) {
+      if (!d.idDetalle) {
+        const payload = {
+          idOrden: Number(state.orden.idOrden || state.orden.id),
+          idMantenimiento: Number(d.idMantenimiento),
+          cantidad: d.cantidad,
+          precioUnitario: d.precioUnitario,
+          subtotal: d.subtotal,
+        };
+        const r = await agregarDetalle(payload);
+        d.idDetalle = (r.data || r).idDetalle;
       }
     }
-    toast("Orden guardada");
-  }catch(e){
-    toast("Error al guardar la orden","error");
+
+    toast("La orden de trabajo se guardó correctamente.", "success");
+  } catch (err) {
+    console.error(err);
+    toast("Error al guardar la orden. Verifique los datos ingresados.", "error");
   }
 });
-btnCancelarOrden?.addEventListener("click",()=>{btnNuevaOrden.click()});
 
-btnCargarFactura?.addEventListener("click",async()=>{
-  if(!state.orden?.idOrden) return toast("Primero guarde la orden","error");
-  try{
-    const r=await obtenerFacturaPorOrden(state.orden.idOrden);
-    const fac=r.data||r;
-    if(!fac||!fac.idFactura) return toast("La orden no tiene factura aún");
-    idFactura.value=fac.idFactura;
-    fechaFactura.value=(fac.fecha??todayISO()).slice(0,10);
-    montoFactura.value=Number(fac.montoTotal??state.total).toFixed(2);
-    selEmpleado.value=fac.idEmpleado??"";
-    selMetodoPago.value=fac.idMetodoPago??"";
-    estadoFactura.value=fac.estado??"Pendiente";
-    descripcionFactura.value=fac.descripcion??"";
-    toast("Factura cargada");
-  }catch(e){
-    toast("No se pudo cargar la factura","error");
-  }
-});
-montoFactura?.addEventListener("input",()=>{
-  let n=Number(montoFactura.value);
-  if(isNaN(n)||n<0) n=0;
-  if(n>5000) n=5000;
-  montoFactura.value=n.toFixed(2);
-});
+// ================== FACTURA ==================
+btnGenerarFactura?.addEventListener("click", async () => {
+  const errs = validarFactura();
+  if (errs.length) return toast(errs[0], "error");
 
-btnGenerarFactura?.addEventListener("click",async()=>{
-  const errs=validarFactura();
-  if(errs.length) return toast(errs[0],"error");
-  const payload={
-    idFactura:idFactura.value||undefined,
-    idOrden:state.orden.idOrden,
-    fecha:fechaFactura.value,
-    montoTotal:Number(montoFactura.value),
-    idEmpleado:Number(selEmpleado.value),
-    idMetodoPago:Number(selMetodoPago.value),
-    estado:estadoFactura.value,
-    descripcion:(descripcionFactura.value||"").trim()||null
+  const payload = {
+    idOrden: Number(state.orden.idOrden || state.orden.id),
+    fecha: fechaFactura.value,
+    montoTotal: Number(montoFactura.value),
+    idEmpleado: Number(selEmpleado.value),
+    idMetodoPago: Number(selMetodoPago.value),
+    estado: estadoFactura.value,
+    descripcion: (descripcionFactura.value || "").trim() || null,
   };
-  try{
-    const r=await crearActualizarFactura(payload);
-    const fac=r.data||r;
-    idFactura.value=fac.idFactura;
-    toast("Factura generada/actualizada");
-    window.location.href="../facturas/facturas.html";
-  }catch(e){
-    toast("Error al generar/actualizar la factura","error");
+
+  try {
+    if (!idFactura.value) {
+      const fac = await createFactura(payload);
+      idFactura.value = fac.idFactura;
+      toast("Factura creada correctamente.", "success");
+    } else {
+      await updateFactura(idFactura.value, payload);
+      toast("Factura actualizada correctamente.", "success");
+    }
+  } catch (err) {
+    console.error("❌ Error backend factura:", err);
+    try {
+      const data = JSON.parse(err.message.split("\n").pop());
+      if (data.errors) {
+        const msg = Object.values(data.errors).join(" | ");
+        toast(msg, "error");
+        return;
+      }
+    } catch {}
+    toast("Error al generar la factura. Revise la información proporcionada.", "error");
   }
 });
 
-btnAnularFactura?.addEventListener("click",async()=>{
-  if(!idFactura.value) return toast("No hay factura para anular","error");
-  try{
-    await anularFactura(idFactura.value);
-    estadoFactura.value="Cancelada";
-    toast("Factura anulada");
-  }catch(e){
-    toast("No se pudo anular la factura","error");
+// ================== ANULAR FACTURA ==================
+btnAnularFactura?.addEventListener("click", async () => {
+  if (!idFactura.value) return toast("No hay factura generada para anular.", "error");
+
+  try {
+    await anularFactura(Number(idFactura.value));
+    estadoFactura.value = "Cancelada";
+    toast("Factura anulada correctamente.", "success");
+  } catch (err) {
+    console.error(err);
+    toast("Error al anular la factura.", "error");
   }
 });
 
-$("gotoCliente")?.addEventListener("click",()=>window.location.href="../clientes/clientes.html");
-$("gotoVehiculo")?.addEventListener("click",()=>window.location.href="../vehiculos/vehiculos.html");
-$("gotoHistorial")?.addEventListener("click",()=>window.location.href="../historial/historial.html");
-$("gotoCitas")?.addEventListener("click",()=>window.location.href="../citas/citas.html");
+// ================== ELIMINAR DETALLE ==================
+tbodyDetalle?.addEventListener("click", (e) => {
+  if (e.target.closest(".btn-del")) {
+    const row = e.target.closest("tr");
+    const index = row.dataset.index;
+    state.detalles.splice(index, 1);
+    renderDetalles();
+    toast("Detalle eliminado.", "success");
+  }
+});
 
-async function cargarCombos(){
-  try{
-    const {data:mans=[]}=await listarMantenimientos();
-    selMantenimiento.innerHTML=`<option value="">Seleccione…</option>`+mans.map(m=>`<option value="${m.idMantenimiento}" data-precio="${m.precio??""}">${m.nombre??("ID "+m.idMantenimiento)}</option>`).join("");
-  }catch{selMantenimiento.innerHTML=`<option value="">(sin datos)</option>`}
-  try{
-    const {data:emps=[]}=await listarEmpleados();
-    selEmpleado.innerHTML=`<option value="">Seleccione…</option>`+emps.map(e=>`<option value="${e.idEmpleado}">${e.nombre??("ID "+e.idEmpleado)}</option>`).join("");
-  }catch{selEmpleado.innerHTML=`<option value="">(sin datos)</option>`}
-  try{
-    const {data:mps=[]}=await listarMetodosPago();
-    selMetodoPago.innerHTML=`<option value="">Seleccione…</option>`+mps.map(mp=>`<option value="${mp.idMetodoPago}">${mp.nombre??("ID "+mp.idMetodoPago)}</option>`).join("");
-  }catch{selMetodoPago.innerHTML=`<option value="">(sin datos)</option>`}
+// ================== NUEVA ORDEN ==================
+btnNuevaOrden?.addEventListener("click", () => {
+  state = { vehiculo: null, orden: null, detalles: [], total: 0 };
+  window.state = state;
+  selVehiculo.value = "";
+  fechaOrden.value = "";
+  idOrden.value = "";
+  selMantenimiento.value = "";
+  precioMant.value = "";
+  idFactura.value = "";
+  fechaFactura.value = "";
+  montoFactura.value = "";
+  selEmpleado.value = "";
+  selMetodoPago.value = "";
+  estadoFactura.value = "Pendiente";
+  descripcionFactura.value = "";
+  renderDetalles();
+  toast("Formulario listo para nueva orden.", "info");
+});
+
+// ================== CANCELAR ORDEN ==================
+btnCancelarOrden?.addEventListener("click", () => {
+  state.detalles = [];
+  renderDetalles();
+  toast("Se canceló la edición de la orden.", "warning");
+});
+
+// ================== COMBOS ==================
+async function cargarCombos() {
+  try {
+    const mansResp = await listarMantenimientos();
+    const mans = mansResp?.data?.content || mansResp?.content || mansResp || [];
+    selMantenimiento.innerHTML =
+      `<option value="">Seleccione…</option>` +
+      mans.map((m) => `<option value="${m.idMantenimiento ?? m.id}" data-precio="${m.precio ?? m.costo ?? 0}">
+        ${m.nombre ?? m.descripcion ?? m.tipoServicio ?? "Mantenimiento"}
+      </option>`).join("");
+  } catch {
+    selMantenimiento.innerHTML = `<option value="">(sin datos)</option>`;
+  }
+
+  try {
+    const empsResp = await getEmpleados(0, 100);
+    const emps = empsResp?.content || empsResp || [];
+    selEmpleado.innerHTML =
+      `<option value="">Seleccione…</option>` +
+      emps.map((e) => `<option value="${e.idEmpleado}">${e.nombres ?? e.nombre ?? "Empleado"}</option>`).join("");
+  } catch {
+    selEmpleado.innerHTML = `<option value="">(sin datos)</option>`;
+  }
+
+  try {
+    const mpResp = await getMetodosPago();
+    const mps = mpResp?.data || mpResp || [];
+    selMetodoPago.innerHTML =
+      `<option value="">Seleccione…</option>` +
+      mps.map((mp) => `<option value="${mp.idMetodoPago}">${mp.metodo ?? "Método"}</option>`).join("");
+  } catch {
+    selMetodoPago.innerHTML = `<option value="">(sin datos)</option>`;
+  }
+
+  try {
+    const vehsResp = await getVehiculos(0, 100);
+    const vehs = vehsResp?.content || vehsResp || [];
+    selVehiculo.innerHTML =
+      `<option value="">Seleccione…</option>` +
+      vehs.map((v) => {
+        return `<option value="${v.idVehiculo || v.id}">
+          ${v.placa} - ${v.marca} ${v.modelo}
+        </option>`;
+      }).join("");
+
+    selVehiculo.addEventListener("change", () => {
+      const id = selVehiculo.value;
+      state.vehiculo = vehs.find((x) => String(x.idVehiculo || x.id) === id) || null;
+    });
+  } catch {
+    selVehiculo.innerHTML = `<option value="">(sin datos)</option>`;
+  }
 }
 
-document.addEventListener("DOMContentLoaded",async()=>{
-  setDateLimits();
-  btnNuevaOrden.click();
+// ================== INIT ==================
+document.addEventListener("DOMContentLoaded", async () => {
   await cargarCombos();
 });

@@ -14,8 +14,8 @@
   <link rel="stylesheet" href="../CSS/usuario.css" />
 </head>
 <body>
-  <div id="sidebar">
-      <aside id="sidebar">
+  <!-- Sidebar -->
+  <aside id="sidebar">
     <!-- Header fijo del sidebar: logo + SASA + divisor -->
     <div class="sidebar-header">
       <div class="logo">
@@ -34,9 +34,9 @@
       <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
       <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
     </ul>
-  </div>
+  </aside>
 
-  <!-- Topbar (igual a las demás interfaces) -->
+  <!-- Topbar -->
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
@@ -119,7 +119,7 @@
                   <div class="col-md-4">
                     <label for="passActual" class="form-label">Contraseña actual</label>
                     <div class="input-group">
-                      <input type="password" id="passActual" class="form-control" autocomplete="current-password">
+                      <input type="password" id="passActual" class="form-control" autocomplete="current-password" required>
                       <button type="button" class="btn btn-outline-secondary toggle-pass" data-target="passActual">
                         <i class="fa-regular fa-eye"></i>
                       </button>
@@ -133,19 +133,19 @@
                         id="passNueva"
                         class="form-control"
                         autocomplete="new-password"
-                        pattern="^(?=.*[A-Za-z])(?=.*\\d).{8,}$"
-                        title="Mínimo 8 caracteres con al menos una letra y un número."
+                        required
                       >
                       <button type="button" class="btn btn-outline-secondary toggle-pass" data-target="passNueva">
                         <i class="fa-regular fa-eye"></i>
                       </button>
                     </div>
-                    <div class="form-text">Mínimo 8 caracteres con letra y número.</div>
+                 <div class="form-text">La contraseña debe tener al menos 8 caracteres, incluyendo letras y números.</div>
+
                   </div>
                   <div class="col-md-4">
                     <label for="passConfirm" class="form-label">Confirmar contraseña</label>
                     <div class="input-group">
-                      <input type="password" id="passConfirm" class="form-control" autocomplete="new-password">
+                      <input type="password" id="passConfirm" class="form-control" autocomplete="new-password" required>
                       <button type="button" class="btn btn-outline-secondary toggle-pass" data-target="passConfirm">
                         <i class="fa-regular fa-eye"></i>
                       </button>
@@ -170,6 +170,6 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../JS/usuario.js"></script>
+  <script type="module" src="../JS/usuario.js"></script>
 </body>
 </html>

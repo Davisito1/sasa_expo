@@ -26,7 +26,7 @@ export function clearUsuario(){ localStorage.removeItem(USER_KEY); }
 // ✅ Extra: obtener ID del usuario logueado
 export function getUserId(){
   const u = getUsuario();
-  return u?.idCliente ?? u?.id ?? null;
+  return u?.idUsuario ?? u?.id ?? null;
 }
 
 // ===============================
@@ -71,9 +71,20 @@ export async function login(userOrEmail, password){
   if (!r.ok) throw new Error(data?.message || "Credenciales inválidas");
 
   if (data?.token) setToken(data.token);
-  if (data?.user) setUsuario({ ...data.user, autenticado:true });
 
-  return { status:"success", data:data.user };
+  if (data?.user) {
+    // 🔥 Normalizamos el usuario para que siempre tenga idUsuario
+    const userNorm = {
+      idUsuario: data.user.idUsuario ?? data.user.id ?? null,
+      nombreUsuario: data.user.username ?? data.user.nombreUsuario ?? "",
+      correo: data.user.email ?? data.user.correo ?? "",
+      rol: data.user.rol ?? "USER",
+      estado: data.user.estado ?? "ACTIVO"
+    };
+    setUsuario({ ...userNorm, autenticado:true });
+  }
+
+  return { status:"success", data:data.user, token:data.token };
 }
 
 // ===============================
@@ -89,7 +100,7 @@ export async function checkAuth(){
 // ===============================
 // LOGOUT
 // ===============================
-export async function logout({ redirectTo="../Autenticacion/login.html" }={}){
+export async function logout({ redirectTo="../Autenticacion/login.html" }={}) {
   try { await fetch(LOGOUT_URL, { method:"POST", credentials:"include" }); } catch {}
   clearToken(); clearUsuario();
   if (redirectTo) window.location.href = redirectTo;

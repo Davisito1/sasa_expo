@@ -53,6 +53,9 @@ export async function getClienteById(id) {
   return json?.data ?? json;   // 👈 devuelve directo el objeto cliente
 }
 
+
+
+
 // -------- CREAR CLIENTE --------
 export async function createCliente(data) {
   const payload = {

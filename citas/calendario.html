@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calendario de Citas</title>
+  <title>Citas</title>
 
-  <!-- Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
+  <!-- SweetAlert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <!-- CSS -->
+  <!-- Estilos -->
   <link rel="stylesheet" href="../CSS/dashboard.css" />
-  <link rel="stylesheet" href="../CSS/calendario.css" />
+  <link rel="stylesheet" href="../CSS/citas.css" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
@@ -33,7 +34,7 @@
         <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
         <li><a class="active" href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
         <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
-        <li><a href="../OrdenDetalle/OrdenDetalle.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
+        <li><a href="../pagos/pagos.html"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
       </ul>
     </aside>
   </div>
@@ -42,7 +43,7 @@
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
-      <input type="text" class="search-input form-control" placeholder="Buscar..." />
+      <input type="text" id="buscar" class="search-input form-control" placeholder="Buscar..." />
     </div>
     <div class="topbar-right">
       <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
@@ -53,53 +54,131 @@
 
   <!-- Contenido -->
   <main class="content">
-    <section class="card p-3">
-      <h2 class="mb-4">Calendario de Citas</h2>
-
-      <div class="main">
-        <section class="calendar">
-          <header class="calendar__header">
-            <div class="header__container">
-              <button class="calendar__button" id="prev-month"><i class="ri-arrow-left-s-line"></i></button>
-              <h3 class="container__heading" id="calendar-date"></h3>
-              <button class="calendar__button" id="next-month"><i class="ri-arrow-right-s-line"></i></button>
-            </div>
-          </header>
-
-          <!-- Días de la semana -->
-          <section class="calendar__weekdays">
-            <div class="calendar__weekday"><abbr>Lun</abbr></div>
-            <div class="calendar__weekday"><abbr>Mar</abbr></div>
-            <div class="calendar__weekday"><abbr>Mié</abbr></div>
-            <div class="calendar__weekday"><abbr>Jue</abbr></div>
-            <div class="calendar__weekday"><abbr>Vie</abbr></div>
-            <div class="calendar__weekday"><abbr>Sáb</abbr></div>
-            <div class="calendar__weekday"><abbr>Dom</abbr></div>
-          </section>
-
-          <!-- Días -->
-          <ol class="calendar__days" id="calendar-days">
-            <!-- Se genera dinámicamente con JS -->
-          </ol>
-        </section>
+    <section class="card">
+      <h2 class="mb-4">Citas</h2>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <button class="btn btn-primary" onclick="abrirModalAgregar()">
+          <i class="fas fa-plus me-2"></i> Nueva Cita
+        </button>
+        <button class="btn btn-danger" onclick="window.location.href = 'calendario.html'">
+          <i class="fas fa-calendar-alt me-2"></i> Ver Calendario
+        </button>
+        <div class="d-flex align-items-center">
+          <label for="registrosPorPagina" class="me-2 fw-semibold">Mostrar:</label>
+          <select id="registrosPorPagina" class="form-select" style="width:auto;">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
       </div>
+
+      <!-- Tabla -->
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead class="table-light text-center">
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Estado</th>
+              <th>Cliente</th>
+              <th>Vehículo</th>
+              <th>Tipo Servicio</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaCitas"></tbody>
+        </table>
+      </div>
+      <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2"></div>
     </section>
   </main>
 
+  <!-- Modal Cita -->
+  <div class="modal fade" id="citaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="citaForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="citaModalLabel">Agregar Cita</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body d-flex flex-column gap-3">
+            <input type="hidden" id="citaId" />
+
+            <div>
+              <label for="fecha" class="form-label">Fecha</label>
+              <input type="date" id="fecha" class="form-control" required />
+            </div>
+
+            <div>
+              <label for="hora" class="form-label">Hora</label>
+              <input type="time" id="hora" class="form-control" required min="07:00" max="16:00" />
+            </div>
+
+            <div>
+              <label for="estado" class="form-label">Estado</label>
+              <select id="estado" class="form-select" required>
+                <option disabled selected value="">Seleccione estado</option>
+                <option>Pendiente</option>
+                <option>Confirmada</option>
+                <option>Cancelada</option>
+                <option>Completada</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="cliente" class="form-label">Cliente</label>
+              <select id="cliente" class="form-select" required></select>
+            </div>
+
+            <div>
+              <label for="vehiculo" class="form-label">Vehículo</label>
+              <select id="vehiculo" class="form-select" required></select>
+            </div>
+
+            <div>
+              <label for="tipoServicio" class="form-label">Tipo de Servicio</label>
+              <select id="tipoServicio" class="form-select" required>
+                <option disabled selected value="">Seleccione tipo de servicio</option>
+                <option value="Mantenimiento preventivo">Mantenimiento preventivo</option>
+                <option value="Mantenimiento correctivo">Mantenimiento correctivo</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="descripcion" class="form-label">Descripción</label>
+              <textarea id="descripcion" class="form-control" maxlength="255" placeholder="Opcional"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+<script>
+  const items = document.querySelectorAll('#sidebar ul li a');
+  const here = location.pathname.split('/').pop().toLowerCase();
+
+  items.forEach(a=>{
+    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+    if(file && file === here){
+      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
+    }
+    a.addEventListener('click', ()=>{
+      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
+      a.parentElement.classList.add('is-active');
+    });
+  });
+</script>
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script  type="module" src="../JS/calendario.js"></script>
-
-  <script>
-    // Script para resaltar el item activo en el sidebar
-    const items = document.querySelectorAll('#sidebar ul li a');
-    const here = location.pathname.split('/').pop().toLowerCase();
-    items.forEach(a => {
-      const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
-      if (file && file === here) {
-        a.parentElement.classList.add('is-active');
-      }
-    });
-  </script>
+  <script type="module" src="../JS/Controllers/CitasController.js"></script>
 </body>
 </html>

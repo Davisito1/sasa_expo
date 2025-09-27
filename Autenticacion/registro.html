@@ -5,12 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registro - SASA</title>
 
-  <!-- Estilos base del sistema (paleta/botones/tarjeta) -->
   <link rel="stylesheet" href="../CSS/login.css" />
-  <!-- Ajustes y alineación de registro -->
   <link rel="stylesheet" href="../CSS/registro.css" />
 
-  <!-- Iconos solo para botones secundarios -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body class="auth-bg">
@@ -22,72 +19,97 @@
       </div>
 
       <form id="registroForm" novalidate>
-        <!-- GRID: 2 columnas en desktop -->
         <div class="form-grid tight">
           <div class="field">
             <label for="nombre" class="form-label">Nombre</label>
             <input id="nombre" class="form-control input-plain" placeholder="Nombre" required minlength="2" maxlength="100" />
-            <div class="invalid-feedback">Ingresa tu nombre (mín. 2 caracteres).</div>
           </div>
 
           <div class="field">
             <label for="apellido" class="form-label">Apellido</label>
             <input id="apellido" class="form-control input-plain" placeholder="Apellido" required minlength="2" maxlength="100" />
-            <div class="invalid-feedback">Ingresa tu apellido (mín. 2 caracteres).</div>
           </div>
 
           <div class="field">
             <label for="dui" class="form-label">DUI</label>
-            <input id="dui" class="form-control input-plain" placeholder="00000000-0" required pattern="^\d{8}-\d$" maxlength="10" />
-            <div class="invalid-feedback">Formato válido: 00000000-0</div>
+            <input id="dui" class="form-control input-plain" placeholder="00000000-0" required pattern="^\d{8}-\d{1}$" maxlength="10" />
           </div>
 
           <div class="field">
             <label for="fecha" class="form-label">Fecha de nacimiento</label>
             <input type="date" id="fecha" class="form-control input-plain" required />
-            <div class="invalid-feedback">Selecciona una fecha válida.</div>
           </div>
 
           <div class="field col-span-2">
             <label for="correo" class="form-label">Correo</label>
             <input type="email" id="correo" class="form-control input-plain" placeholder="tu@correo.com" required maxlength="150" />
-            <div class="invalid-feedback">Correo no válido.</div>
           </div>
 
           <div class="field col-span-2">
             <label for="password" class="form-label">Contraseña</label>
             <div class="plain-with-action">
               <input type="password" id="password" class="form-control input-plain" placeholder="Mínimo 6 caracteres" required minlength="6" maxlength="100" />
-              <button type="button" id="btnTogglePwd" class="ghost-action" aria-label="Mostrar/ocultar">Mostrar</button>
+              <button type="button" id="btnTogglePwd" class="ghost-action" aria-label="Mostrar/ocultar">
+                <i class="fa-solid fa-eye"></i>
+              </button>
             </div>
-            <div class="invalid-feedback">Mínimo 6 caracteres.</div>
+          </div>
+
+          <!-- 🔒 Campos para empleados -->
+          <div class="field">
+            <label for="cargo" class="form-label">Cargo</label>
+            <input id="cargo" class="form-control input-plain" value="Empleado" readonly />
+          </div>
+
+          <div class="field">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input 
+              id="telefono" 
+              class="form-control input-plain" 
+              placeholder="0000-0000" 
+              pattern="^\d{4}-\d{4}$" 
+              title="Debe tener el formato ####-####" 
+              required
+            />
+          </div>
+
+          <div class="field col-span-2">
+            <label for="direccion" class="form-label">Dirección</label>
+            <input id="direccion" class="form-control input-plain" placeholder="Ej: San Salvador, El Salvador" required />
+          </div>
+
+          <div class="field col-span-2">
+            <label for="fechaContratacion" class="form-label">Fecha de contratación</label>
+            <input type="date" id="fechaContratacion" class="form-control input-plain" readonly />
           </div>
         </div>
-<!-- Acción principal -->
-<div class="primary-action">
-  <button type="submit" class="btn btn-sasa btn-main w-100" id="btnRegistrar">
-    <span class="btn-label">Registrarse</span>
-    <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-  </button>
-</div>
 
-<!-- Acciones secundarias -->
-<div class="secondary-actions">
-  <a class="btn btn-link-outline btn-sm-custom" href="../Autenticacion/login.html">
-    <i class="fa-solid fa-right-to-bracket me-2"></i>Ya tengo cuenta
-  </a>
-  <a class="btn btn-link-outline btn-sm-custom" href="../Autenticacion/index.html">
-    <i class="fa-solid fa-arrow-left me-2"></i>Menú Principal
-  </a>
-</div>
+        <div class="primary-action">
+          <button type="submit" class="btn btn-sasa btn-main w-100" id="btnRegistrar">
+            <span class="btn-label">Registrarse</span>
+            <span class="btn-spinner spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          </button>
+        </div>
 
+        <div class="secondary-actions">
+          <a class="btn btn-link-outline btn-sm-custom" href="../Autenticacion/login.html">
+            <i class="fa-solid fa-right-to-bracket me-2"></i>Ya tengo cuenta
+          </a>
+          <a class="btn btn-link-outline btn-sm-custom" href="../Autenticacion/index.html">
+            <i class="fa-solid fa-arrow-left me-2"></i>Menú Principal
+          </a>
         </div>
       </form>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Tu controlador actual (no necesitas tocarlo) -->
   <script type="module" src="../JS/Controllers/RegistroController.js"></script>
+  <script>
+    // 📌 Poner la fecha actual en "fechaContratacion"
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("fechaContratacion").value = new Date().toISOString().split("T")[0];
+    });
+  </script>
 </body>
 </html>

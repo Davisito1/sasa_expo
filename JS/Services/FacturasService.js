@@ -1,24 +1,27 @@
 // ===============================
-// FacturasService.js
+// FacturasService.js FINAL ✅
 // ===============================
 
-// URL base de la API de facturas
-const API_BASE = "http://localhost:8080/apiFactura";
+const BASE = "http://localhost:8080/apiFactura";
+const EMPLEADOS_API = "http://localhost:8080/apiEmpleados";      // plural correcto
+const METODOS_PAGO_API = "http://localhost:8080/api/metodoPago"; // correcto con /listar
 
-// ===============================
-// FUNCIONES AUXILIARES
-// ===============================
-
-// -------- Utilidad base para fetch --------
-// Hace la llamada a la API, valida errores y devuelve JSON o texto
+// -------------------------------
+// Utilidad base para fetch
+// -------------------------------
 async function fetchJsonOrThrow(url, options = {}) {
-  const res = await fetch(url, options);
+  const res = await fetch(url, { credentials: "include", ...options });
   const text = await res.text();
 
-  // Si la respuesta es error HTTP lanza excepción con detalles
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
+  // ⚠️ Si falla, devolver el error real del backend
+  if (!res.ok) {
+    try {
+      return Promise.reject(JSON.parse(text));
+    } catch {
+      throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
+    }
+  }
 
-  // Intenta parsear JSON, si falla devuelve texto plano
   try {
     return text ? JSON.parse(text) : null;
   } catch {
@@ -26,108 +29,96 @@ async function fetchJsonOrThrow(url, options = {}) {
   }
 }
 
-// -------- Normalización de paginación --------
-// Asegura que todas las respuestas tengan la misma estructura {content, totalPages}
+// -------------------------------
+// Normalización de paginación
+// -------------------------------
 function normalizePage(json) {
   if (json?.data?.content) {
     return {
       content: json.data.content,
-      totalPages: json.data.totalPages ?? 1
+      totalPages: json.data.totalPages ?? 1,
+      number: json.data.number ?? 0,
     };
   }
   if (json?.content) {
     return {
       content: json.content,
-      totalPages: json.totalPages ?? 1
+      totalPages: json.totalPages ?? 1,
+      number: json.number ?? 0,
     };
   }
   if (Array.isArray(json)) {
-    return { content: json, totalPages: 1 };
+    return { content: json, totalPages: 1, number: 0 };
   }
-  return { content: [], totalPages: 0 };
+  return { content: [], totalPages: 0, number: 0 };
 }
 
 // ===============================
-// SERVICIOS FACTURA (CRUD)
+// Servicios Factura (CRUD + extras)
 // ===============================
+export async function getFacturas({ page = 0, size = 10, archivada = false, onlyWithOrder = false } = {}) {
+  const url = new URL(`${BASE}/consultar`);
+  url.searchParams.set("page", page);
+  url.searchParams.set("size", size);
+  url.searchParams.set("archivada", archivada ? "true" : "false");
+  if (onlyWithOrder) url.searchParams.set("onlyWithOrder", "true");
 
-// -------- LISTAR PAGINADO --------
-export async function getFacturas(page = 0, size = 10) {
-  const json = await fetchJsonOrThrow(`${API_BASE}/consultar?page=${page}&size=${size}`);
+  const json = await fetchJsonOrThrow(url.toString());
   return normalizePage(json);
 }
 
-// -------- OBTENER FACTURA POR ID --------
 export async function getFacturaById(id) {
-  const json = await fetchJsonOrThrow(`${API_BASE}/${id}`);
+  const json = await fetchJsonOrThrow(`${BASE}/${id}`);
   return json?.data ?? json;
 }
-
 
 export async function createFactura(data) {
-  const payload = {
-    fecha: data.fecha,
-    montoTotal: data.montoTotal,
-    idEmpleado: data.idEmpleado,
-    idMantenimiento: data.idMantenimiento,
-  };
-
-  const body = {
+  return fetchJsonOrThrow(`${BASE}/registrar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  };
-
-  const json = await fetchJsonOrThrow(`${API_BASE}/registrar`, body);
-  return json?.data ?? json;
+    body: JSON.stringify(data),
+  });
 }
-
 
 export async function updateFactura(id, data) {
-  const payload = {
-    fecha: data.fecha,
-    montoTotal: data.montoTotal,
-    idEmpleado: data.idEmpleado,
-    idMantenimiento: data.idMantenimiento,
-  };
-
-  const body = {
+  return fetchJsonOrThrow(`${BASE}/actualizar/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  };
-
-  const json = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, body);
-  return json?.data ?? json;
+    body: JSON.stringify(data),
+  });
 }
-
 
 export async function deleteFactura(id) {
-  const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
-  return json?.data ?? json;
+  return fetchJsonOrThrow(`${BASE}/eliminar/${id}`, { method: "DELETE" });
 }
 
-const BASE="http://localhost:8080";
-
-export async function getFacturas({page=0,size=10,archivada=false,onlyWithOrder=false}={}){
-  const url=new URL(`${BASE}/apiFactura/consultar`);
-  url.searchParams.set("page",page);
-  url.searchParams.set("size",size);
-  url.searchParams.set("archivada",archivada?"true":"false");
-  if(onlyWithOrder) url.searchParams.set("onlyWithOrder","true");
-  const r=await fetch(url.toString(),{credentials:"include"});
-  if(!r.ok) return {content:[],totalPages:0,number:0};
-  return r.json();
+export async function archiveFactura(id) {
+  return fetchJsonOrThrow(`${BASE}/${id}/archivar`, { method: "PUT" });
 }
 
-export async function archiveFactura(id){
-  const r=await fetch(`${BASE}/apiFactura/${id}/archivar`,{method:"PUT",credentials:"include"});
-  if(!r.ok) throw new Error("archivar");
-  return r.json().catch(()=>({}));
+export async function unarchiveFactura(id) {
+  return fetchJsonOrThrow(`${BASE}/${id}/restaurar`, { method: "PUT" });
 }
 
-export async function unarchiveFactura(id){
-  const r=await fetch(`${BASE}/apiFactura/${id}/restaurar`,{method:"PUT",credentials:"include"});
-  if(!r.ok) throw new Error("restaurar");
-  return r.json().catch(()=>({}));
+export async function payFactura(id) {
+  return fetchJsonOrThrow(`${BASE}/${id}/pagar`, { method: "PUT" });
+}
+
+export async function anularFactura(id) {
+  return fetchJsonOrThrow(`${BASE}/anular/${id}`, { method: "PUT" });
+}
+
+// ===============================
+// 🔹 Nuevos servicios: empleados y métodos de pago
+// ===============================
+export async function listarEmpleados() {
+  // Backend usa /apiEmpleados/consultar
+  const json = await fetchJsonOrThrow(`${EMPLEADOS_API}/consultar?page=0&size=100`);
+  return json?.data?.content || json?.content || json || [];
+}
+
+export async function listarMetodosPago() {
+  // Backend usa /api/metodoPago/listar
+  const json = await fetchJsonOrThrow(`${METODOS_PAGO_API}/listar`);
+  return json?.data || json || [];
 }

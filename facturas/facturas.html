@@ -4,14 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Facturas</title>
+
+  <!-- Estilos -->
   <link rel="stylesheet" href="../CSS/dashboard.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   <link rel="stylesheet" href="../CSS/facturas.css" />
-    <link rel="stylesheet" href="../CSS/theme-red.css" />
+  <link rel="stylesheet" href="../CSS/theme-red.css" />
 </head>
 <body>
+  <!-- Sidebar -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
@@ -21,18 +24,19 @@
       <div class="logo-divider"></div>
     </div>
     <ul>
-<li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+      <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
       <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
       <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
       <li><a href="../citas/citas.html"><i class="fas fa-calendar"></i><span>Citas</span></a></li>
-      <li><a href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
+      <li><a class="active" href="../facturas/facturas.html"><i class="fas fa-receipt"></i><span>Facturas</span></a></li>
       <li><a href="../OrdenDetalle/OrdenDetalle.html"><i class="fas fa-table"></i><span>Tabla de Ordenes</span></a></li>
       <li><a href="../Trabajos/trabajos.html"><i class="fas fa-clipboard-list"></i><span>Trabajos</span></a></li>
     </ul>
   </aside>
 
+  <!-- Topbar -->
   <div class="topbar shadow-sm">
     <div class="search-bar">
       <i class="fas fa-search"></i>
@@ -45,15 +49,19 @@
     </div>
   </div>
 
+  <!-- Main content -->
   <main class="content">
     <section class="card">
       <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
         <h2 class="m-0">Facturas</h2>
         <div class="d-flex align-items-center gap-2">
+          <!-- Tabs -->
           <ul class="nav nav-pills" id="tabsFacturas">
             <li class="nav-item"><button class="nav-link active" data-tab="activas">Activas</button></li>
             <li class="nav-item"><button class="nav-link" data-tab="archivadas">Archivadas</button></li>
           </ul>
+
+          <!-- Selector de página -->
           <div class="d-flex align-items-center ms-2">
             <label for="registrosPorPagina" class="me-2 fw-semibold">Mostrar:</label>
             <select id="registrosPorPagina" class="form-select form-select-sm" style="width:auto;">
@@ -66,6 +74,7 @@
         </div>
       </div>
 
+      <!-- Tabla -->
       <div class="table-responsive">
         <table class="table table-bordered table-striped align-middle">
           <thead>
@@ -82,15 +91,33 @@
         </table>
       </div>
 
+      <!-- Paginación -->
       <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2"></div>
     </section>
   </main>
 
+
+<script>
+  const items = document.querySelectorAll('#sidebar ul li a');
+  const here = location.pathname.split('/').pop().toLowerCase();
+
+  items.forEach(a=>{
+    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+    if(file && file === here){
+      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
+    }
+    a.addEventListener('click', ()=>{
+      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
+      a.parentElement.classList.add('is-active');
+    });
+  });
+</script>
+
+
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../JS/utils/activeMenu.js"></script>
   <script type="module" src="../JS/Controllers/FacturasController.js"></script>
-  <script src="../JS/utils/activeMenu.js"></script>
-
 </body>
 </html>
