@@ -11,6 +11,7 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="dashboard">
+  <!-- ============ SIDEBAR ============ -->
   <aside id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
@@ -20,7 +21,7 @@
       <div class="logo-divider"></div>
     </div>
     <ul>
-<li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+      <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
       <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
@@ -32,6 +33,7 @@
     </ul>
   </aside>
 
+  <!-- ============ TOPBAR ============ -->
   <div class="topbar shadow-sm">
     <div class="topbar-right">
       <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
@@ -44,8 +46,10 @@
     <span id="fechaActual"></span> - <span id="horaActual"></span>
   </div>
 
+  <!-- ============ CONTENIDO PRINCIPAL ============ -->
   <main class="content">
     <div class="container mt-4">
+      <!-- Encabezado -->
       <div class="card glass-card p-4 mb-4 shadow card-in">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
           <div class="d-flex align-items-center gap-2">
@@ -59,40 +63,30 @@
         </div>
       </div>
 
+      <!-- Filtros -->
       <div class="card glass-card p-3 mb-4 shadow card-in">
         <div class="row g-2 align-items-end">
-          <div class="col-12 col-md-4">
+          <div class="col-12 col-md-6">
             <label class="form-label">Buscar</label>
             <div class="input-group">
               <span class="input-group-text"><i class="fa fa-search"></i></span>
-              <input id="filtroTexto" class="form-control" placeholder="ID orden, placa, cliente, vehículo"/>
+              <input id="filtroTexto" class="form-control" placeholder="ID orden, placa, vehículo"/>
             </div>
           </div>
-          <div class="col-6 col-md-2">
+          <div class="col-6 col-md-3">
             <label class="form-label">Desde</label>
             <input id="fDesde" type="date" class="form-control"/>
           </div>
-          <div class="col-6 col-md-2">
+          <div class="col-6 col-md-3">
             <label class="form-label">Hasta</label>
             <input id="fHasta" type="date" class="form-control"/>
-          </div>
-          <div class="col-6 col-md-2">
-            <label class="form-label">Estado factura</label>
-            <select id="fEstado" class="form-select">
-              <option value="">Todas</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Pagada">Pagada</option>
-              <option value="Cancelada">Cancelada</option>
-            </select>
-          </div>
-          <div class="col-6 col-md-2 d-flex gap-2">
-            <button id="btnAplicar" class="btn btn-primary flex-fill"><i class="fa fa-filter me-1"></i>Aplicar</button>
-            <button id="btnLimpiar" class="btn btn-outline-secondary"><i class="fa fa-rotate me-1"></i></button>
           </div>
         </div>
       </div>
 
+      <!-- Listado de órdenes y detalle -->
       <div class="row g-3">
+        <!-- Listado -->
         <div class="col-12 col-lg-7">
           <div class="card shadow h-100 card-pop">
             <div class="card-header d-flex align-items-center justify-content-between">
@@ -116,9 +110,6 @@
                     <th>ID</th>
                     <th>Fecha</th>
                     <th>Vehículo</th>
-                    <th>Cliente</th>
-                    <th class="text-end">Total</th>
-                    <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
@@ -133,14 +124,11 @@
           </div>
         </div>
 
+        <!-- Detalle -->
         <div class="col-12 col-lg-5">
           <div class="card shadow h-100 card-pop">
             <div class="card-header d-flex align-items-center justify-content-between">
               <span class="fw-semibold">Detalle seleccionado</span>
-              <div class="d-flex gap-2">
-                <a id="btnAbrirEdicion" href="../Trabajos/trabajos.html" class="btn btn-sm btn-outline-primary disabled"><i class="fa fa-pen-to-square me-1"></i>Abrir</a>
-                <button id="btnVerFactura" class="btn btn-sm btn-outline-dark disabled"><i class="fa fa-receipt me-1"></i>Factura</button>
-              </div>
             </div>
             <div class="p-3 border-bottom">
               <div class="row g-2 small">
@@ -152,13 +140,9 @@
                   <div class="muted">Fecha</div>
                   <div id="detFecha">—</div>
                 </div>
-                <div class="col-6">
+                <div class="col-12">
                   <div class="muted">Vehículo</div>
                   <div id="detVehiculo">—</div>
-                </div>
-                <div class="col-6">
-                  <div class="muted">Cliente</div>
-                  <div id="detCliente">—</div>
                 </div>
               </div>
             </div>
@@ -189,62 +173,26 @@
         </div>
       </div>
 
-      <div class="modal fade" id="modalFactura" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h6 class="modal-title">Factura</h6>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <div class="row g-2">
-                <div class="col-6">
-                  <div class="muted">ID</div>
-                  <div id="facId">—</div>
-                </div>
-                <div class="col-6">
-                  <div class="muted">Fecha</div>
-                  <div id="facFecha">—</div>
-                </div>
-                <div class="col-6">
-                  <div class="muted">Empleado</div>
-                  <div id="facEmpleado">—</div>
-                </div>
-                <div class="col-6">
-                  <div class="muted">Método de pago</div>
-                  <div id="facMetodo">—</div>
-                </div>
-                <div class="col-12">
-                  <div class="muted">Descripción</div>
-                  <div id="facDesc">—</div>
-                </div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <span class="me-auto"><span class="muted">Estado</span> <span id="facEstado" class="badge rounded-pill">—</span></span>
-              <span class="muted me-1">Monto</span><strong id="facMonto">0.00</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </main>
-<script>
-  const items = document.querySelectorAll('#sidebar ul li a');
-  const here = location.pathname.split('/').pop().toLowerCase();
 
-  items.forEach(a=>{
-    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
-    if(file && file === here){
-      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
-    }
-    a.addEventListener('click', ()=>{
-      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
-      a.parentElement.classList.add('is-active');
+  <!-- Sidebar activo -->
+  <script>
+    const items = document.querySelectorAll('#sidebar ul li a');
+    const here = location.pathname.split('/').pop().toLowerCase();
+
+    items.forEach(a=>{
+      const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+      if(file && file === here){
+        a.parentElement.classList.add('is-active');
+      }
+      a.addEventListener('click', ()=>{
+        document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
+        a.parentElement.classList.add('is-active');
+      });
     });
-  });
-</script>
+  </script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../JS/Controllers/OrdenDetalle.js"></script>
 

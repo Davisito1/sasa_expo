@@ -1,11 +1,10 @@
 // ===============================
-// DetalleOrdenService.js FINAL ✅
+// DetalleOrdenService.js ✅ Corregido
 // ===============================
 
 const API_BASE = "http://localhost:8080";
 const BASE = `${API_BASE}/apiDetalleOrden`;
 
-// Utilidad HTTP genérica
 async function http(url, { method = "GET", headers = {}, body, credentials } = {}) {
   const isForm = body instanceof FormData;
   const baseHeaders = isForm ? {} : { "Content-Type": "application/json" };
@@ -30,7 +29,6 @@ async function http(url, { method = "GET", headers = {}, body, credentials } = {
   }
 }
 
-// Normalización de datos
 function normalizeResponse(json) {
   if (json?.data) return json.data;
   if (json?.content) return json.content;
@@ -62,6 +60,9 @@ export async function eliminarDetalle(idDetalle) {
 // Listar detalles por orden
 export async function getDetallesByOrden(idOrden) {
   if (!idOrden) throw new Error("Debe proporcionar un ID de orden válido.");
-  const json = await http(`${BASE}/consultar/${encodeURIComponent(idOrden)}`);
+  // ✅ Corrige aquí según el backend
+  // Si tu controller tiene @GetMapping("/porOrden/{idOrden}") → usa /porOrden
+  // Si lo tienes como @GetMapping("/consultar/{idOrden}") → cambia aquí:
+  const json = await http(`${BASE}/porOrden/${encodeURIComponent(idOrden)}`);
   return normalizeResponse(json);
 }

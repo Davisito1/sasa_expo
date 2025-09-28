@@ -278,25 +278,43 @@ async function cargarCombos() {
     selMantenimiento.innerHTML = `<option value="">(sin datos)</option>`;
   }
 
-  try {
-    const empsResp = await getEmpleados(0, 100);
-    const emps = empsResp?.content || empsResp || [];
-    selEmpleado.innerHTML =
-      `<option value="">Seleccione…</option>` +
-      emps.map((e) => `<option value="${e.idEmpleado}">${e.nombres ?? e.nombre ?? "Empleado"}</option>`).join("");
-  } catch {
-    selEmpleado.innerHTML = `<option value="">(sin datos)</option>`;
-  }
+// ================== CARGAR EMPLEADOS ==================
+try {
+  const empsResp = await getEmpleados(0, 100);
+  // la API puede devolver {data:{content:[]}} o {content:[]} o []
+  const emps = empsResp?.data?.content || empsResp?.content || empsResp || [];
 
-  try {
-    const mpResp = await getMetodosPago();
-    const mps = mpResp?.data || mpResp || [];
-    selMetodoPago.innerHTML =
-      `<option value="">Seleccione…</option>` +
-      mps.map((mp) => `<option value="${mp.idMetodoPago}">${mp.metodo ?? "Método"}</option>`).join("");
-  } catch {
-    selMetodoPago.innerHTML = `<option value="">(sin datos)</option>`;
-  }
+  selEmpleado.innerHTML =
+    `<option value="">Seleccione…</option>` +
+    emps.map((e) => {
+      const id = e.idEmpleado || e.id || 0;   // 👈 siempre saca un id válido
+      const nombre = e.nombres || e.nombre || e.apellidos || "Empleado";
+      return `<option value="${id}">${nombre}</option>`;
+    }).join("");
+} catch (err) {
+  console.error("❌ Error cargando empleados:", err);
+  selEmpleado.innerHTML = `<option value="">(sin datos)</option>`;
+}
+
+// ================== CARGAR MÉTODOS DE PAGO ==================
+try {
+  const mpResp = await getMetodosPago();
+  // puede venir como {data:[]} o []
+  const mps = mpResp?.data || mpResp || [];
+
+  selMetodoPago.innerHTML =
+    `<option value="">Seleccione…</option>` +
+    mps.map((mp) => {
+      const id = mp.idMetodoPago || mp.id || 0; // 👈 id válido
+      const nombre = mp.metodo || mp.nombre || "Método";
+      return `<option value="${id}">${nombre}</option>`;
+    }).join("");
+} catch (err) {
+  console.error("❌ Error cargando métodos de pago:", err);
+  selMetodoPago.innerHTML = `<option value="">(sin datos)</option>`;
+}
+
+
 
   try {
     const vehsResp = await getVehiculos(0, 100);

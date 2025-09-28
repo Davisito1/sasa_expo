@@ -13,7 +13,6 @@ async function fetchJsonOrThrow(url, options = {}) {
   const res = await fetch(url, { credentials: "include", ...options });
   const text = await res.text();
 
-  // ⚠️ Si falla, devolver el error real del backend
   if (!res.ok) {
     try {
       return Promise.reject(JSON.parse(text));
@@ -109,16 +108,14 @@ export async function anularFactura(id) {
 }
 
 // ===============================
-// 🔹 Nuevos servicios: empleados y métodos de pago
+// 🔹 Servicios extra: empleados y métodos de pago
 // ===============================
 export async function listarEmpleados() {
-  // Backend usa /apiEmpleados/consultar
   const json = await fetchJsonOrThrow(`${EMPLEADOS_API}/consultar?page=0&size=100`);
   return json?.data?.content || json?.content || json || [];
 }
 
 export async function listarMetodosPago() {
-  // Backend usa /api/metodoPago/listar
   const json = await fetchJsonOrThrow(`${METODOS_PAGO_API}/listar`);
   return json?.data || json || [];
 }

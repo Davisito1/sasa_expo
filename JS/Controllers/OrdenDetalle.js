@@ -1,9 +1,11 @@
 // ===============================
-// OrdenDetalle.js FINAL ✅
+// OrdenDetalle.js ✅ Completo
 // ===============================
+
 import { listarOrdenes, eliminarOrden } from "../Services/OrdenTrabajoService.js";
 import { getDetallesByOrden } from "../Services/DetalleOrdenService.js";
 
+// DOM ===========================
 const tablaOrdenes = document.querySelector("#tablaOrdenes tbody");
 const vacioOrdenes = document.getElementById("vacioOrdenes");
 const spinOrdenes = document.getElementById("spinOrdenes");
@@ -17,9 +19,17 @@ const spinDetalle = document.getElementById("spinDetalle");
 const detId = document.getElementById("detId");
 const detFecha = document.getElementById("detFecha");
 const detVehiculo = document.getElementById("detVehiculo");
-const detCliente = document.getElementById("detCliente");
-const estadoBadge = document.getElementById("estadoBadge");
 const totalOrden = document.getElementById("totalOrden");
+
+// Filtros y KPIs
+const filtroTexto = document.getElementById("filtroTexto");
+const fDesde = document.getElementById("fDesde");
+const fHasta = document.getElementById("fHasta");
+const kpiTotalOrdenes = document.getElementById("kpiTotalOrdenes");
+
+const pageSizeSelect = document.getElementById("pageSize");
+const prevPageBtn = document.getElementById("prevPage");
+const nextPageBtn = document.getElementById("nextPage");
 
 let state = {
   page: 0,
@@ -27,6 +37,11 @@ let state = {
   total: 0,
   ordenes: [],
   seleccionada: null,
+  filtros: {
+    texto: "",
+    desde: null,
+    hasta: null,
+  },
 };
 
 // ===============================
@@ -42,22 +57,16 @@ function renderTablaOrdenes() {
 
   tablaOrdenes.innerHTML = state.ordenes
     .map((o) => {
-      const id = o.idOrden ?? o.id ?? "-";
+      const id = o.id ?? o.idOrden ?? "-";
       const fecha = o.fecha ?? o.fechaOrden ?? null;
-      const placa = o.vehiculo?.placa ?? o.placa ?? o.vehiculoPlaca ?? "-";
-      const marca = o.vehiculo?.marca ?? o.marca ?? o.vehiculoMarca ?? "";
-      const cliente = o.cliente?.nombres ?? o.nombreCliente ?? o.clienteNombre ?? "-";
-      const total = o.total ?? o.montoTotal ?? 0;
-      const estado = o.estado ?? o.estadoFactura ?? "-";
+      const placa = o.placaVehiculo ?? "-";
+      const marca = o.marcaVehiculo ?? "";
 
       return `
       <tr data-id="${id}">
         <td>${id}</td>
         <td>${fecha ? fecha.substring(0, 10) : "-"}</td>
         <td>${placa} ${marca}</td>
-        <td>${cliente}</td>
-        <td class="text-end">${Number(total).toFixed(2)}</td>
-        <td>${estado}</td>
         <td class="text-center">
           <button class="btn btn-sm btn-outline-danger btn-del">
             <i class="fa fa-trash"></i>
@@ -72,28 +81,39 @@ function renderTablaOrdenes() {
 }
 
 // ===============================
-// Cargar órdenes
+// Cargar órdenes desde API
 // ===============================
 async function cargarOrdenes() {
   try {
     spinOrdenes.style.display = "block";
-    const resp = await listarOrdenes({ page: state.page, size: state.size });
 
-    console.log("📥 Órdenes recibidas:", resp);
+    // 📌 Filtros
+    const params = {
+      page: state.page,
+      size: state.size,
+      texto: state.filtros.texto,
+      desde: state.filtros.desde,
+      hasta: state.filtros.hasta,
+    };
 
-    state.ordenes = resp.content;
-    state.total = resp.totalElements;
+    const resp = await listarOrdenes(params);
+    state.ordenes = resp.content ?? resp.data ?? [];
+    state.total = resp.totalElements ?? state.ordenes.length;
+
     renderTablaOrdenes();
+
+    // ✅ Actualizar KPI
+    kpiTotalOrdenes.textContent = `${state.total} órdenes`;
   } catch (err) {
-    console.error("❌ Error cargando órdenes:", err);
-    tablaOrdenes.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error al cargar órdenes</td></tr>`;
+    console.error("Error cargando órdenes:", err);
+    tablaOrdenes.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error al cargar órdenes</td></tr>`;
   } finally {
     spinOrdenes.style.display = "none";
   }
 }
 
 // ===============================
-// Render detalle de orden
+// Cargar detalle por orden
 // ===============================
 async function cargarDetalle(idOrden) {
   try {
@@ -101,33 +121,31 @@ async function cargarDetalle(idOrden) {
     spinDetalle.style.display = "block";
 
     const detalles = await getDetallesByOrden(idOrden);
-    console.log("📥 Detalles recibidos para orden", idOrden, ":", detalles);
 
     if (!detalles.length) {
       tablaDetalle.innerHTML = "";
       vacioDetalle.style.display = "block";
+      totalOrden.textContent = "0.00";
       return;
     }
 
+    let total = 0;
     tablaDetalle.innerHTML = detalles
-      .map(
-        (d) => `
-      <tr>
-        <td>${d.idDetalle ?? d.id ?? "-"}</td>
-        <td>${
-          d.mantenimiento?.nombre ??
-          d.tipoServicio ??
-          d.descripcion ??
-          d.nombreMantenimiento ??
-          d.servicio ??
-          "—"
-        }</td>
-        <td class="text-end">${(d.subtotal ?? d.precio ?? d.monto ?? d.costo ?? 0).toFixed(2)}</td>
-      </tr>`
-      )
+      .map((d) => {
+        const precio = d.subtotal ?? d.precioUnitario ?? 0;
+        total += precio;
+        return `
+        <tr>
+          <td>${d.id ?? d.idDetalle ?? "-"}</td>
+          <td>${d.mantenimientoNombre ?? "—"}</td>
+          <td class="text-end">${precio.toFixed(2)}</td>
+        </tr>`;
+      })
       .join("");
+
+    totalOrden.textContent = total.toFixed(2);
   } catch (err) {
-    console.error("❌ Error cargando detalle:", err);
+    console.error("Error cargando detalle:", err);
     tablaDetalle.innerHTML = `<tr><td colspan="3" class="text-center text-danger">Error al cargar detalle</td></tr>`;
   } finally {
     spinDetalle.style.display = "none";
@@ -135,13 +153,13 @@ async function cargarDetalle(idOrden) {
 }
 
 // ===============================
-// Eventos
+// Eventos tabla
 // ===============================
 tablaOrdenes.addEventListener("click", async (e) => {
   const row = e.target.closest("tr");
   if (!row) return;
 
-  // 🔹 Eliminar orden
+  // Eliminar
   if (e.target.closest(".btn-del")) {
     const id = row.dataset.id;
     const confirm = await Swal.fire({
@@ -159,36 +177,74 @@ tablaOrdenes.addEventListener("click", async (e) => {
         Swal.fire("Eliminada", "La orden fue eliminada con éxito", "success");
         await cargarOrdenes();
       } catch (err) {
-        console.error("❌ Error al eliminar orden:", err);
+        console.error("Error al eliminar orden:", err);
         Swal.fire("Error", "No se pudo eliminar la orden", "error");
       }
     }
     return;
   }
 
-  // 🔹 Seleccionar orden
+  // Seleccionar orden
   const id = row.dataset.id;
-  const orden = state.ordenes.find((o) => String(o.idOrden ?? o.id) === id);
+  const orden = state.ordenes.find((o) => String(o.id ?? o.idOrden) === id);
   if (!orden) return;
 
   state.seleccionada = orden;
 
-  detId.textContent = orden.idOrden ?? orden.id;
+  detId.textContent = orden.id ?? orden.idOrden;
   detFecha.textContent = (orden.fecha ?? orden.fechaOrden ?? "").substring(0, 10) || "—";
   detVehiculo.textContent =
-    (orden.vehiculo?.placa ?? orden.placa ?? orden.vehiculoPlaca ?? "-") +
-    " " +
-    (orden.vehiculo?.marca ?? orden.marca ?? orden.vehiculoMarca ?? "");
-  detCliente.textContent =
-    orden.cliente?.nombres ?? orden.nombreCliente ?? orden.clienteNombre ?? "—";
-  estadoBadge.textContent = orden.estado ?? orden.estadoFactura ?? "—";
-  totalOrden.textContent = (orden.total ?? orden.montoTotal ?? 0).toFixed(2);
+    (orden.placaVehiculo ?? "-") + " " + (orden.marcaVehiculo ?? "");
 
-  cargarDetalle(orden.idOrden ?? orden.id);
+  cargarDetalle(orden.id ?? orden.idOrden);
 });
 
 // ===============================
-// INIT
+// Eventos de filtros
+// ===============================
+filtroTexto.addEventListener("input", (e) => {
+  state.filtros.texto = e.target.value.trim();
+  state.page = 0;
+  cargarOrdenes();
+});
+
+fDesde.addEventListener("change", (e) => {
+  state.filtros.desde = e.target.value || null;
+  state.page = 0;
+  cargarOrdenes();
+});
+
+fHasta.addEventListener("change", (e) => {
+  state.filtros.hasta = e.target.value || null;
+  state.page = 0;
+  cargarOrdenes();
+});
+
+// ===============================
+// Paginación
+// ===============================
+pageSizeSelect.addEventListener("change", (e) => {
+  state.size = parseInt(e.target.value, 10);
+  state.page = 0;
+  cargarOrdenes();
+});
+
+prevPageBtn.addEventListener("click", () => {
+  if (state.page > 0) {
+    state.page--;
+    cargarOrdenes();
+  }
+});
+
+nextPageBtn.addEventListener("click", () => {
+  if ((state.page + 1) * state.size < state.total) {
+    state.page++;
+    cargarOrdenes();
+  }
+});
+
+// ===============================
+// Init
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   cargarOrdenes();
