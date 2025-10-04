@@ -6,9 +6,9 @@ import {
 } from "../JS/Services/LoginService.js";
 
 // ======================= CONFIG =======================
-const USU_API_URL = "http://localhost:8080/apiUsuario"; // Backend
-const INDEX_URL   = "../Autenticacion/index.html";      // cerrar sesión
-const USUARIO_URL = "../Usuario/usuario.html";          // enlace Usuario
+const USU_API_URL = "http://localhost:8080/apiUsuario";
+const INDEX_URL   = "../Autenticacion/login.html";
+const USUARIO_URL = "../Usuario/usuario.html";
 
 // ======================= DOM =======================
 const infoIdUsuario    = document.getElementById("infoIdUsuario");
@@ -34,7 +34,6 @@ const userLinks        = document.querySelectorAll(".usuario-link");
 
 // ======================= HELPERS =======================
 function setInfo(user) {
-  // Normaliza claves (por si backend devuelve diferente)
   const id     = user.idUsuario ?? user.id ?? user.IDUSUARIO;
   const rol    = user.rol ?? user.ROL;
   const estado = user.estado ?? user.ESTADO;
@@ -44,11 +43,8 @@ function setInfo(user) {
   infoRol.value       = rol ?? "";
   infoEstado.value    = estado ?? "";
   nombreUsuario.value = nombre ?? "";
-  
-  // Guarda de nuevo en localStorage (consistencia)
-  if (id) {
-    localStorage.setItem("userId", id);
-  }
+
+  if (id) localStorage.setItem("userId", id);
 }
 
 function validarNombre() {
@@ -78,12 +74,26 @@ function validarPassword() {
   return true;
 }
 
+// ======================= FETCH JSON =======================
 async function fetchJson(url, opts = {}) {
-  const res = await fetch(url, opts);
+  const headers = new Headers(opts.headers || {});
+  const token = localStorage.getItem("authToken");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const res = await fetch(url, { ...opts, headers, credentials: "include" });
+
+  if (res.status === 401) {
+    localStorage.clear();
+    Swal.fire("Sesión expirada", "Por favor inicia sesión de nuevo", "warning")
+      .then(() => window.location.href = INDEX_URL);
+    throw new Error("401 Unauthorized");
+  }
+
   if (!res.ok) {
     const t = await res.text().catch(()=> "");
     throw new Error(`${res.status} ${res.statusText} - ${t}`);
   }
+
   const ct = res.headers.get("content-type") || "";
   return ct.includes("application/json") ? res.json() : {};
 }
@@ -105,7 +115,7 @@ async function cargarUsuario() {
   } catch (err) {
     console.error(err);
     Swal.fire("Error", "No se pudo cargar el usuario. Inicia sesión de nuevo.", "error")
-      .then(()=> window.location.href = INDEX_URL);
+      .then(() => window.location.href = INDEX_URL);
   }
 }
 
@@ -122,7 +132,6 @@ function cerrarSeccionPwd() {
 btnMostrarPwd?.addEventListener("click", abrirSeccionPwd);
 btnCancelarPwd?.addEventListener("click", cerrarSeccionPwd);
 
-// 👁️ Toggle ver/ocultar inputs de password
 document.querySelectorAll(".toggle-pass").forEach(btn => {
   btn.addEventListener("click", () => {
     const id = btn.dataset.target;

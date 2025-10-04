@@ -23,7 +23,6 @@ export function getUsuario(){
 }
 export function clearUsuario(){ localStorage.removeItem(USER_KEY); }
 
-// ✅ Extra: obtener ID del usuario logueado
 export function getUserId(){
   const u = getUsuario();
   return u?.idUsuario ?? u?.id ?? null;
