@@ -2,9 +2,21 @@
 // FacturasService.js FINAL ✅
 // ===============================
 
-const BASE = "http://localhost:8080/apiFactura";
-const EMPLEADOS_API = "http://localhost:8080/apiEmpleados";      // plural correcto
-const METODOS_PAGO_API = "http://localhost:8080/api/metodoPago"; // correcto con /listar
+// Detectar entorno
+const isProd = typeof window !== "undefined" && window.location.hostname.includes("vercel.app");
+
+// Bases dinámicas
+const BASE = isProd
+  ? "https://sasa-expo-j7n5lcpcp-david-guardados-projects.vercel.app/apiFactura"
+  : "http://localhost:8080/apiFactura";
+
+const EMPLEADOS_API = isProd
+  ? "https://sasa-expo-j7n5lcpcp-david-guardados-projects.vercel.app/apiEmpleados"
+  : "http://localhost:8080/apiEmpleados";
+
+const METODOS_PAGO_API = isProd
+  ? "https://sasa-expo-j7n5lcpcp-david-guardados-projects.vercel.app/api/metodoPago"
+  : "http://localhost:8080/api/metodoPago";
 
 // -------------------------------
 // Utilidad base para fetch

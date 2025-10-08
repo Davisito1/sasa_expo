@@ -1,11 +1,15 @@
 // ==================== IMPORTAR SERVICIOS ====================
 // CRUD de mantenimientos desde el servicio
 import {
+  
   getMantenimientos,   // obtiene mantenimientos paginados
   createMantenimiento, // crea un mantenimiento
   updateMantenimiento, // actualiza un mantenimiento
   deleteMantenimiento  // elimina un mantenimiento
 } from "../Services/MantenimientoService.js";
+
+import { crearNotificacion } from "../Services/NotificacionesService.js";
+
 
 // Importar loginService para el token
 import { getToken } from "../Services/LoginService.js";

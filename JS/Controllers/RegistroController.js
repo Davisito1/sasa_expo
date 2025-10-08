@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
           title: "Registro exitoso",
           text: data.message || "Empleado creado correctamente",
         }).then(() => {
-          window.location.href = "login.html";
+          window.location.href = "index.html";
         });
       } catch (err) {
         Swal.fire({

@@ -9,6 +9,7 @@ import {
   deleteCita
 } from "../Services/CitasService.js";
 
+
 import { getClientes } from "../Services/ClientesService.js";
 import { getVehiculos } from "../Services/VehiculosServices.js";
 
@@ -20,7 +21,7 @@ const selectPageSize = document.getElementById("registrosPorPagina");
 const citaModal = new bootstrap.Modal(document.getElementById("citaModal"));
 const modalLabel = document.getElementById("citaModalLabel");
 
-const citaForm = document.getElementById("citaForm"); // ✅ formulario global
+const citaForm = document.getElementById("citaForm");
 
 const inputId = document.getElementById("citaId");
 const inputFecha = document.getElementById("fecha");
@@ -93,7 +94,7 @@ async function cargarVehiculos(selectedId = null) {
   });
 }
 
-// ======================= TABLA =======================
+// ======================= RENDER TABLA =======================
 function renderTabla(citas) {
   tablaCitas.innerHTML = "";
   if (!citas || citas.length === 0) {
@@ -112,11 +113,11 @@ function renderTabla(citas) {
       <td>${cita.vehiculoNombre ?? "—"}</td>
       <td>${cita.tipoServicio}</td>
       <td>${cita.descripcion ?? "—"}</td>
-      <td class="text-center">
-        <button class="btn btn-outline-primary btn-sm me-2" onclick="editarCita(${cita.id})">
+      <td class="acciones">
+        <button class="icon-btn btn-primary" onclick="editarCita(${cita.id})">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <button class="btn btn-outline-danger btn-sm" onclick="eliminarCita(${cita.id})">
+        <button class="icon-btn btn-danger" onclick="eliminarCita(${cita.id})">
           <i class="bi bi-trash"></i>
         </button>
       </td>
@@ -151,13 +152,18 @@ async function cargarTabla(reset = false) {
 window.abrirModalAgregar = async function () {
   inputId.value = "";
   modalLabel.textContent = "Agregar Cita";
-  if (citaForm) citaForm.reset();
+  citaForm.reset();
 
   const hoy = new Date().toISOString().split("T")[0];
   inputFecha.setAttribute("min", hoy);
 
   await cargarClientes();
   await cargarVehiculos();
+
+  // 🔹 Estado forzado a PENDIENTE y bloqueado
+  selectEstado.innerHTML = `<option value="Pendiente" selected>Pendiente</option>`;
+  selectEstado.disabled = true;
+
   citaModal.show();
 };
 
@@ -168,7 +174,7 @@ window.editarCita = async function (id) {
     if (!cita) return Swal.fire("Error", "No se encontró la cita", "error");
 
     modalLabel.textContent = "Editar Cita";
-    if (citaForm) citaForm.reset();
+    citaForm.reset();
     inputId.value = cita.id;
 
     const hoy = new Date().toISOString().split("T")[0];
@@ -179,9 +185,18 @@ window.editarCita = async function (id) {
 
     inputFecha.value = cita.fecha ?? "";
     inputHora.value = to24h(cita.hora) || cita.hora || "";
-    selectEstado.value = cita.estado ?? "";
-    selectServicio.value = cita.tipoServicio ?? "";
     inputDescripcion.value = cita.descripcion ?? "";
+    selectServicio.value = cita.tipoServicio ?? "";
+
+    // 🔹 En editar: todos los estados disponibles
+    selectEstado.innerHTML = `
+      <option value="Pendiente">Pendiente</option>
+      <option value="Confirmada">Confirmada</option>
+      <option value="Cancelada">Cancelada</option>
+      <option value="Completada">Completada</option>
+    `;
+    selectEstado.disabled = false;
+    selectEstado.value = cita.estado ?? "Pendiente";
 
     citaModal.show();
   } catch (err) {
@@ -216,6 +231,15 @@ if (citaForm) {
 
     if (!inputHora.value)
       return Swal.fire("Error", "Seleccione una hora", "error");
+
+    if (!selectCliente.value)
+      return Swal.fire("Error", "Seleccione un cliente", "error");
+
+    if (!selectVehiculo.value)
+      return Swal.fire("Error", "Seleccione un vehículo", "error");
+
+    if (!selectServicio.value)
+      return Swal.fire("Error", "Seleccione un tipo de servicio", "error");
 
     const dto = {
       fecha: inputFecha.value,
@@ -252,7 +276,6 @@ if (btnNueva) {
   });
 }
 
-// 🔹 Botón Ver Calendario
 const btnVerCalendario = document.getElementById("btnVerCalendario");
 if (btnVerCalendario) {
   btnVerCalendario.addEventListener("click", () => {

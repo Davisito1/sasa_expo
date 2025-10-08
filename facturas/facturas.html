@@ -24,7 +24,7 @@
       <div class="logo-divider"></div>
     </div>
     <ul>
-      <li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+      <li><a href="../dashboard/dashboard.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
       <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
       <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
@@ -43,6 +43,7 @@
       <input type="text" id="buscar" class="search-input form-control" placeholder="Buscar..." />
     </div>
     <div class="topbar-right">
+      <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
       <span class="ms-2">Usuario</span>
       <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
     </div>
@@ -74,48 +75,48 @@
       </div>
 
       <!-- Tabla -->
-     <div class="table-responsive">
-  <table class="table table-bordered table-striped align-middle">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Orden</th>
-        <th>Empleado</th>
-        <th>Método de Pago</th>
-        <th>Fecha</th>
-        <th>Monto Total</th>
-        <th>Estado</th>
-        <th>Descripción</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody id="tbodyFacturas"></tbody>
-  </table>
-</div>
-
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Orden</th>
+              <th>Empleado</th>
+              <th>Método de Pago</th>
+              <th>Fecha</th>
+              <th>Monto Total</th>
+              <th>Estado</th>
+              <th>Descripción</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyFacturas">
+            <!-- Facturas dinámicas desde FacturasController.js -->
+          </tbody>
+        </table>
+      </div>
 
       <!-- Paginación -->
       <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2"></div>
     </section>
   </main>
 
+  <!-- Script para activar sidebar -->
+  <script>
+    const items = document.querySelectorAll('#sidebar ul li a');
+    const here = location.pathname.split('/').pop().toLowerCase();
 
-<script>
-  const items = document.querySelectorAll('#sidebar ul li a');
-  const here = location.pathname.split('/').pop().toLowerCase();
-
-  items.forEach(a=>{
-    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
-    if(file && file === here){
-      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
-    }
-    a.addEventListener('click', ()=>{
-      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
-      a.parentElement.classList.add('is-active');
+    items.forEach(a=>{
+      const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+      if(file && file === here){
+        a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
+      }
+      a.addEventListener('click', ()=>{
+        document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
+        a.parentElement.classList.add('is-active');
+      });
     });
-  });
-</script>
-
+  </script>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

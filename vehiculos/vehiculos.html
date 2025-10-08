@@ -5,22 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehículos</title>
 
+  <!-- Librerías -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<link rel="stylesheet" href="../CSS/dashboard.css"/>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-<link rel="stylesheet" href="../CSS/vehiculos.css"/>
-
-
-
+  <link rel="stylesheet" href="../CSS/dashboard.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/vehiculos.css"/>
 </head>
 <body>
 
-  <div id="sidebar">
-      <aside id="sidebar">
-    <!-- Header fijo del sidebar: logo + SASA + divisor -->
+  <!-- Sidebar -->
+  <aside id="sidebar">
     <div class="sidebar-header">
       <div class="logo">
         <img src="../IMG/logo sasa.jpg" alt="Logo SASA" />
@@ -29,8 +25,8 @@
       <div class="logo-divider"></div>
     </div>
     <ul>
-<li><a href="../dashboard/index.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
-      <li><a href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
+      <li><a href="../dashboard/dashboard.html"><i class="fas fa-home"></i><span>Inicio</span></a></li>
+      <li><a class="active" href="../vehiculos/vehiculos.html"><i class="fas fa-car"></i><span>Vehículos</span></a></li>
       <li><a href="../mantenimiento/mantenimiento.html"><i class="fas fa-wrench"></i><span>Mantenimiento</span></a></li>
       <li><a href="../empleados/empleados.html"><i class="fas fa-user"></i><span>Empleados</span></a></li>
       <li><a href="../clientes/clientes.html"><i class="fas fa-users"></i><span>Clientes</span></a></li>
@@ -39,20 +35,21 @@
       <li><a href="../OrdenDetalle/OrdenDetalle.html"><i class="fas fa-table"></i><span>Tabla de Ordenes</span></a></li>
       <li><a href="../Trabajos/trabajos.html"><i class="fas fa-clipboard-list"></i><span>Trabajos</span></a></li>
     </ul>
-  </div>
+  </aside>
 
   <!-- Topbar -->
   <div class="topbar shadow-sm">
+    <!-- Botón hamburguesa (solo visible en móvil) -->
+    <div class="menu-toggle" id="menuToggle">
+      <i class="fas fa-bars"></i>
+    </div>
+
     <div class="search-bar">
       <i class="fas fa-search"></i>
-      <input
-        type="text"
-        id="buscar"
-        class="search-input form-control"
-        placeholder="Buscar..."
-      />
+      <input type="text" id="buscar" class="search-input form-control" placeholder="Buscar..." />
     </div>
     <div class="topbar-right">
+      <a href="../notificaciones/notificaciones.html"><i class="fas fa-bell fa-lg"></i></a>
       <span class="ms-2">Usuario</span>
       <a href="../Ajustes/usuario.html"><i class="fas fa-user-circle fa-lg" id="userIcon"></i></a>
     </div>
@@ -63,7 +60,7 @@
     <section class="card">
       <h2 class="mb-4">Vehículos</h2>
 
-      <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <button id="btnAddVehiculo" class="btn btn-primary">
           <i class="fas fa-plus me-2"></i> Nuevo Vehículo
         </button>
@@ -83,7 +80,7 @@
       <!-- Tabla de vehículos -->
       <div class="table-responsive">
         <table class="table table-bordered table-striped align-middle">
-          <thead class="tabla-encabezado">
+          <thead class="tabla-encabezado text-center">
             <tr>
               <th>ID</th>
               <th>Marca</th>
@@ -97,15 +94,13 @@
             </tr>
           </thead>
           <tbody id="vehiculosTable">
-            <!-- Datos dinámicos -->
+            <!-- Filas dinámicas -->
           </tbody>
         </table>
       </div>
 
       <!-- Controles de paginación -->
-      <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2">
-        <!-- Aquí se generan los botones dinámicamente -->
-      </div>
+      <div id="paginacion" class="d-flex justify-content-center align-items-center mt-3 gap-2"></div>
     </section>
   </main>
 
@@ -144,25 +139,39 @@
       </div>
     </div>
   </div>
-  <script>
-  const items = document.querySelectorAll('#sidebar ul li a');
-  const here = location.pathname.split('/').pop().toLowerCase();
 
-  items.forEach(a=>{
-    const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
-    if(file && file === here){
-      a.parentElement.classList.add('is-active'); // añade la banda roja al <li>
-    }
-    a.addEventListener('click', ()=>{
-      document.querySelectorAll('#sidebar ul li').forEach(li=>li.classList.remove('is-active'));
-      a.parentElement.classList.add('is-active');
+  <!-- Script para marcar activo el menú -->
+  <script>
+    const items = document.querySelectorAll('#sidebar ul li a');
+    const here = location.pathname.split('/').pop().toLowerCase();
+    items.forEach(a => {
+      const file = a.getAttribute('href')?.split('/').pop().toLowerCase();
+      if (file && file === here) {
+        a.parentElement.classList.add('is-active');
+      }
+      a.addEventListener('click', () => {
+        document.querySelectorAll('#sidebar ul li').forEach(li => li.classList.remove('is-active'));
+        a.parentElement.classList.add('is-active');
+      });
     });
-  });
-</script>
+  </script>
+
+  <!-- Script responsive: abrir/cerrar menú en móvil -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const sidebar = document.getElementById("sidebar");
+      const menuToggle = document.getElementById("menuToggle");
+      if(menuToggle){
+        menuToggle.addEventListener("click", () => {
+          sidebar.classList.toggle("open");
+        });
+      }
+    });
+  </script>
+
   <!-- Bootstrap + JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="../JS/Controllers/VehiculosController.js"></script>
-  <script src="../JS/utils/activeMenu.js"></script>
 
 </body>
 </html>

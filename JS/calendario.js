@@ -4,19 +4,43 @@ const prevBtn = document.getElementById("prev-month");
 const nextBtn = document.getElementById("next-month");
 
 let currentDate = new Date();
+const today = new Date();
+
+// ===== LÍMITES =====
+const minDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+const maxDate = new Date(2025, 11, 31);
 
 // ===== API CITAS =====
-const API_CITAS = "http://localhost:8080/apiCitas/listar";
+// Detectar entorno (local o Vercel)
+const isProd = typeof window !== "undefined" && window.location.hostname.includes("vercel.app");
 
-// Función para cargar citas desde API
+const API_CITAS = isProd
+  ? "https://sasa-expo-j7n5lcpcp-david-guardados-projects.vercel.app/apiCitas/listar"
+  : "http://localhost:8080/apiCitas/listar";
+
+// ===== FERIADOS EL SALVADOR =====
+const feriadosES = [
+  "2025-01-01", // Año Nuevo
+  "2025-04-17", // Jueves Santo
+  "2025-04-18", // Viernes Santo
+  "2025-05-01", // Día del Trabajo
+  "2025-05-10", // Día de las Madres
+  "2025-06-17", // Día del Padre
+  "2025-08-06", // Divino Salvador del Mundo
+  "2025-09-15", // Independencia
+  "2025-11-02", // Día de los Difuntos
+  "2025-12-25", // Navidad
+];
+
+// ===== API FETCH CITAS =====
 async function fetchCitas() {
   try {
-    const token = localStorage.getItem("authToken"); // ✅ usa tu token de login
+    const token = localStorage.getItem("authToken");
     const res = await fetch(API_CITAS, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     });
 
     if (!res.ok) {
@@ -25,75 +49,91 @@ async function fetchCitas() {
     }
 
     const data = await res.json();
-    console.log("Respuesta API citas:", data);
 
-    // ✅ Detecta la forma de los datos
     if (Array.isArray(data)) return data;
     if (data.content && Array.isArray(data.content)) return data.content;
     if (data.data && Array.isArray(data.data)) return data.data;
 
-    return []; // fallback
+    return [];
   } catch (err) {
     console.error("Error al cargar citas:", err);
     return [];
   }
 }
 
-// Generar calendario dinámico
+// ===== RENDER CALENDARIO =====
 async function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  const lastDate = new Date(year, month + 1, 0).getDate(); // total días mes
+  const lastDate = new Date(year, month + 1, 0).getDate();
 
-  // Título mes
   const monthNames = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
   ];
   calendarDate.textContent = `${monthNames[month]} ${year}`;
 
-  // Reset
   calendarDays.innerHTML = "";
 
-  // Obtener citas
   const citas = await fetchCitas();
 
-  // Crear días
   for (let i = 1; i <= lastDate; i++) {
     const day = document.createElement("li");
     day.classList.add("calendar__day");
 
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(i).padStart(2, "0")}`;
 
+    // 📌 Verificar si es feriado
+    const esFeriado = feriadosES.includes(dateStr);
+
     day.innerHTML = `
-      <div class="day__info"><h5>${i}</h5></div>
+      <div class="day__info">
+        <h5>${i}</h5>
+        ${esFeriado ? '<span class="badge badge-feriado">Feriado</span>' : ""}
+      </div>
       <ul class="calendar__appointments"></ul>
     `;
 
     const ul = day.querySelector(".calendar__appointments");
 
-    // Filtrar citas del día
-    const citasDia = Array.isArray(citas) ? citas.filter(c => c.fecha === dateStr) : [];
-    citasDia.forEach(cita => {
+    const citasDia = Array.isArray(citas) ? citas.filter((c) => c.fecha === dateStr) : [];
+    citasDia.forEach((cita) => {
       const li = document.createElement("li");
       li.classList.add(`appointment__${cita.estado?.toLowerCase() || "pendiente"}`);
       li.textContent = `${cita.hora} - ${cita.estado}`;
       ul.appendChild(li);
     });
 
+    if (esFeriado) {
+      day.classList.add("calendar__feriado");
+    }
+
     calendarDays.appendChild(day);
   }
+
+  // ===== Validaciones de navegación =====
+  prevBtn.disabled = new Date(year, month, 1) <= minDate;
+  nextBtn.disabled = new Date(year, month, 1) >= new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
 }
 
-// Navegación meses
+// ===== NAVEGACIÓN =====
 prevBtn.addEventListener("click", () => {
-  currentDate.setMonth(currentDate.getMonth() - 1);
-  renderCalendar();
+  const prevDate = new Date(currentDate);
+  prevDate.setMonth(prevDate.getMonth() - 1);
+  if (prevDate >= minDate) {
+    currentDate = prevDate;
+    renderCalendar();
+  }
 });
+
 nextBtn.addEventListener("click", () => {
-  currentDate.setMonth(currentDate.getMonth() + 1);
-  renderCalendar();
+  const nextDate = new Date(currentDate);
+  nextDate.setMonth(nextDate.getMonth() + 1);
+  if (nextDate <= maxDate) {
+    currentDate = nextDate;
+    renderCalendar();
+  }
 });
 
 // Inicial
