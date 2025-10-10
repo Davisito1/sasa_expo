@@ -1,32 +1,43 @@
-const API_EMPLEADOS = "http://localhost:8080/apiEmpleados"; // Ajusta a tu backend
+// ===============================
+// RegistroService.js (Final)
+// ===============================
 
+const API_EMPLEADOS = "https://sasaapi-73d5de493985.herokuapp.com/apiEmpleados";
+// Si usas Heroku, reemplaza arriba por:
+// const API_EMPLEADOS = "https://sasaapi-73d5de493985.herokuapp.com/apiEmpleados";
+
+// ===============================
 // Registrar empleado + usuario
+// ===============================
 export async function register(user) {
   try {
     const res = await fetch(`${API_EMPLEADOS}/registrar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(user),
+      credentials: "include",
     });
 
-    let data;
+    const text = await res.text();
+    let data = {};
     try {
-      data = await res.json(); // intenta parsear la respuesta
+      data = text ? JSON.parse(text) : {};
     } catch {
-      throw new Error("Error inesperado en el servidor");
+      console.warn("No se pudo parsear la respuesta del servidor.");
     }
 
     if (!res.ok) {
-      // Captura validaciones del backend (ej: DTO o restricciones únicas)
       const msg =
         data.message ||
-        (data.errors ? Object.values(data.errors).join(", ") : "Error en el registro");
+        (data.errors
+          ? Object.values(data.errors).join(" | ")
+          : `Error ${res.status} al registrar el usuario`);
       throw new Error(msg);
     }
 
-    return data;
+    return data?.data ?? data;
   } catch (err) {
-    // Si falla la conexión o el servidor no responde
+    console.error("Error en registro:", err);
     throw new Error(err.message || "No se pudo conectar con el servidor");
   }
 }

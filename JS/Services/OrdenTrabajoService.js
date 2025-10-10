@@ -1,11 +1,25 @@
 // ===============================
-// OrdenTrabajoService.js FINAL ✅
+// OrdenTrabajoService.js ✅ FINAL FUNCIONAL (Local + Heroku)
 // ===============================
 
-const API_BASE = import.meta.env?.VITE_API_URL || "http://localhost:8080";
+// Detectar entorno actual
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname.includes("herokuapp.com") ||
+   window.location.hostname !== "localhost");
+
+// Base dinámica
+const API_BASE = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com"
+  : "http://localhost:8080";
+
 const BASE = `${API_BASE}/apiOrdenTrabajo`;
 
-async function http(url, { method = "GET", headers = {}, body, credentials } = {}) {
+// ===============================
+// Helper HTTP universal
+// ===============================
+async function http(url, { method = "GET", headers = {}, body } = {}) {
   const isForm = body instanceof FormData;
   const baseHeaders = isForm ? {} : { "Content-Type": "application/json" };
 
@@ -16,11 +30,15 @@ async function http(url, { method = "GET", headers = {}, body, credentials } = {
     method,
     headers: { ...baseHeaders, ...auth, ...headers },
     body,
-    credentials,
+    credentials: "include",
   });
 
   const text = await res.text();
-  if (!res.ok) throw new Error(`HTTP ${res.status} -> ${url}\n${text}`);
+
+  if (!res.ok) {
+    console.error(`❌ Error HTTP ${res.status} en: ${url}`);
+    throw new Error(`HTTP ${res.status} -> ${url}\n${text}`);
+  }
 
   try {
     return text ? JSON.parse(text) : null;
@@ -29,65 +47,66 @@ async function http(url, { method = "GET", headers = {}, body, credentials } = {
   }
 }
 
+// ===============================
+// Normalizador de respuesta
+// ===============================
 function normalizePage(json) {
-  if (json?.data?.content) {
-    return {
-      content: json.data.content,
-      totalPages: json.data.totalPages ?? 1,
-      totalElements: json.data.totalElements ?? json.data.content.length,
-      number: json.data.number ?? 0,
-    };
-  }
-  if (json?.content) {
-    return {
-      content: json.content,
-      totalPages: json.totalPages ?? 1,
-      totalElements: json.totalElements ?? json.content.length,
-      number: json.number ?? 0,
-    };
-  }
-  if (Array.isArray(json?.data)) {
-    return {
-      content: json.data,
-      totalPages: 1,
-      totalElements: json.data.length,
-      number: 0,
-    };
-  }
-  if (Array.isArray(json)) {
-    return { content: json, totalPages: 1, totalElements: json.length, number: 0 };
-  }
-  return { content: [], totalPages: 0, totalElements: 0, number: 0 };
+  if (json?.data?.content)
+    return json.data;
+  if (json?.content)
+    return json;
+  if (Array.isArray(json?.data))
+    return { content: json.data, totalPages: 1, totalElements: json.data.length };
+  if (Array.isArray(json))
+    return { content: json, totalPages: 1, totalElements: json.length };
+  return { content: [], totalPages: 0, totalElements: 0 };
 }
 
-export async function listarOrdenes({ page = 0, size = 10, filtro = "", estado = "" } = {}) {
-  const q = new URLSearchParams({ page, size });
-  if (filtro) q.set("filtro", filtro);
-  if (estado) q.set("estado", estado);
+// ===============================
+// MÉTODOS CRUD
+// ===============================
 
-  const url = `${BASE}/consultar?${q.toString()}`;
+// 🔹 Listar órdenes (con paginación y filtros)
+export async function listarOrdenes({ page = 0, size = 10, filtro = "", estado = "" } = {}) {
+  const params = new URLSearchParams({ page, size });
+  if (filtro) params.append("filtro", filtro);
+  if (estado) params.append("estado", estado);
+
+  const url = `${BASE}/consultar?${params.toString()}`;
   const json = await http(url);
   return normalizePage(json);
 }
 
+// 🔹 Crear nueva orden
 export async function crearOrden({ idVehiculo, fecha }) {
-  return http(`${BASE}/crear`, {
+  const payload = { idVehiculo, fecha };
+  const json = await http(`${BASE}/crear`, {
     method: "POST",
-    body: JSON.stringify({ idVehiculo, fecha }),
+    body: JSON.stringify(payload),
   });
+  return json?.data ?? json;
 }
 
+// 🔹 Actualizar orden existente
 export async function actualizarOrden(idOrden, { idVehiculo, fecha }) {
-  return http(`${BASE}/actualizar/${encodeURIComponent(idOrden)}`, {
+  const payload = { idVehiculo, fecha };
+  const json = await http(`${BASE}/actualizar/${encodeURIComponent(idOrden)}`, {
     method: "PUT",
-    body: JSON.stringify({ idVehiculo, fecha }),
+    body: JSON.stringify(payload),
   });
+  return json?.data ?? json;
 }
 
+// 🔹 Obtener orden por ID
 export async function obtenerOrden(idOrden) {
-  return http(`${BASE}/consultar/${encodeURIComponent(idOrden)}`);
+  const json = await http(`${BASE}/consultar/${encodeURIComponent(idOrden)}`);
+  return json?.data ?? json;
 }
 
+// 🔹 Eliminar orden
 export async function eliminarOrden(idOrden) {
-  return http(`${BASE}/eliminar/${encodeURIComponent(idOrden)}`, { method: "DELETE" });
+  const json = await http(`${BASE}/eliminar/${encodeURIComponent(idOrden)}`, {
+    method: "DELETE",
+  });
+  return json?.data ?? json;
 }

@@ -8,11 +8,21 @@ import {
   getAuthToken
 } from "../Services/VehiculosServices.js";
 
-import { crearNotificacion } from "../Services/NotificacionesService.js";
+// 🔥 Detección universal del entorno (Heroku / local / Vercel)
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0");
 
-// Endpoints auxiliares
-const CLIENTES_API = (import.meta?.env?.VITE_API_CLIENTE) || "http://localhost:8080/apiCliente";
-const ESTADOS_API  = (import.meta?.env?.VITE_API_ESTADO_VEHICULO) || "http://localhost:8080/api/estadoVehiculo";
+// Endpoints auxiliares dinámicos
+const CLIENTES_API = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com/apiCliente"
+  : "http://localhost:8080/apiCliente";
+
+const ESTADOS_API = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com/api/estadoVehiculo"
+  : "http://localhost:8080/api/estadoVehiculo";
 
 // ==================== DOM ====================
 const tablaVehiculos  = document.getElementById("vehiculosTable");
@@ -126,25 +136,13 @@ vehiculoForm.addEventListener("submit", async (e) => {
   };
 
   try {
-    const idUsuario = localStorage.getItem("userId"); // 👈 usuario logueado
+    const idUsuario = localStorage.getItem("userId");
 
     if (id) {
       await updateVehiculo(id, vehiculo);
-      await crearNotificacion(
-        `El vehículo con placa ${placa} fue actualizado.`,
-        "VEHICULO",
-        "Normal",
-        idUsuario
-      );
       Swal.fire("Éxito", "Vehículo actualizado correctamente", "success");
     } else {
       await createVehiculo(vehiculo);
-      await crearNotificacion(
-        `Se agregó un nuevo vehículo con placa ${placa}.`,
-        "VEHICULO",
-        "Alta",
-        idUsuario
-      );
       Swal.fire("Éxito", "Vehículo agregado correctamente", "success");
     }
     modalVehiculo.hide();
@@ -214,8 +212,7 @@ function renderVehiculos(lista) {
         <i class="bi bi-trash"></i>
       </button>
     </td>
-  </tr>
-`;
+  </tr>`;
     tablaVehiculos.insertAdjacentHTML("beforeend", row);
   });
 }
@@ -267,15 +264,6 @@ window.removeVehiculo = async (id) => {
       try {
         const vehiculo = vehiculosCache.find(v => (v.id || v.idVehiculo) === id);
         await deleteVehiculo(id);
-
-        const idUsuario = localStorage.getItem("userId"); // 👈 usuario logueado
-        await crearNotificacion(
-          `El vehículo con placa ${vehiculo?.placa || ""} fue eliminado.`,
-          "VEHICULO",
-          "Normal",
-          idUsuario
-        );
-
         Swal.fire("Eliminado", "Vehículo eliminado correctamente", "success");
         loadVehiculos();
       } catch (error) {

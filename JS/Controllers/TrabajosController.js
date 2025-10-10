@@ -4,7 +4,7 @@
 
 import { crearOrden, actualizarOrden } from "../Services/OrdenTrabajoService.js";
 import { agregarDetalle } from "../Services/DetalleOrdenService.js";
-import { listarMantenimientos } from "../Services/MantenimientosService.js";
+import { listarMantenimientosCombo } from "../Services/MantenimientoService.js";
 import { getVehiculos } from "../Services/VehiculosServices.js";
 import { createFactura, updateFactura, anularFactura } from "../Services/FacturasService.js";
 import { getEmpleados } from "../Services/EmpleadosService.js";
@@ -266,72 +266,85 @@ btnCancelarOrden?.addEventListener("click", () => {
 
 // ================== COMBOS ==================
 async function cargarCombos() {
+  // ======== MANTENIMIENTOS ========
   try {
-    const mansResp = await listarMantenimientos();
-    const mans = mansResp?.data?.content || mansResp?.content || mansResp || [];
+    const mans = await listarMantenimientosCombo(); // ✅ corregido
     selMantenimiento.innerHTML =
       `<option value="">Seleccione…</option>` +
-      mans.map((m) => `<option value="${m.idMantenimiento ?? m.id}" data-precio="${m.precio ?? m.costo ?? 0}">
-        ${m.nombre ?? m.descripcion ?? m.tipoServicio ?? "Mantenimiento"}
-      </option>`).join("");
-  } catch {
+      mans
+        .map(
+          (m) => `
+          <option value="${m.idMantenimiento ?? m.id}" data-precio="${m.precio ?? m.costo ?? 0}">
+            ${m.nombre ?? m.descripcion ?? m.tipoServicio ?? "Mantenimiento"}
+          </option>`
+        )
+        .join("");
+
+    if (!mans.length) selMantenimiento.innerHTML = `<option value="">(sin datos)</option>`;
+  } catch (err) {
+    console.error("❌ Error cargando mantenimientos:", err);
     selMantenimiento.innerHTML = `<option value="">(sin datos)</option>`;
   }
 
-// ================== CARGAR EMPLEADOS ==================
-try {
-  const empsResp = await getEmpleados(0, 100);
-  // la API puede devolver {data:{content:[]}} o {content:[]} o []
-  const emps = empsResp?.data?.content || empsResp?.content || empsResp || [];
+  // ======== EMPLEADOS ========
+  try {
+    const empsResp = await getEmpleados(0, 100);
+    const emps = empsResp?.data?.content || empsResp?.content || empsResp || [];
 
-  selEmpleado.innerHTML =
-    `<option value="">Seleccione…</option>` +
-    emps.map((e) => {
-      const id = e.idEmpleado || e.id || 0;   // 👈 siempre saca un id válido
-      const nombre = e.nombres || e.nombre || e.apellidos || "Empleado";
-      return `<option value="${id}">${nombre}</option>`;
-    }).join("");
-} catch (err) {
-  console.error("❌ Error cargando empleados:", err);
-  selEmpleado.innerHTML = `<option value="">(sin datos)</option>`;
-}
+    selEmpleado.innerHTML =
+      `<option value="">Seleccione…</option>` +
+      emps
+        .map((e) => {
+          const id = e.idEmpleado || e.id || 0;
+          const nombre = e.nombres || e.nombre || e.apellidos || "Empleado";
+          return `<option value="${id}">${nombre}</option>`;
+        })
+        .join("");
+  } catch (err) {
+    console.error("❌ Error cargando empleados:", err);
+    selEmpleado.innerHTML = `<option value="">(sin datos)</option>`;
+  }
 
-// ================== CARGAR MÉTODOS DE PAGO ==================
-try {
-  const mpResp = await getMetodosPago();
-  // puede venir como {data:[]} o []
-  const mps = mpResp?.data || mpResp || [];
+  // ======== MÉTODOS DE PAGO ========
+  try {
+    const mpResp = await getMetodosPago();
+    const mps = mpResp?.data || mpResp || [];
 
-  selMetodoPago.innerHTML =
-    `<option value="">Seleccione…</option>` +
-    mps.map((mp) => {
-      const id = mp.idMetodoPago || mp.id || 0; // 👈 id válido
-      const nombre = mp.metodo || mp.nombre || "Método";
-      return `<option value="${id}">${nombre}</option>`;
-    }).join("");
-} catch (err) {
-  console.error("❌ Error cargando métodos de pago:", err);
-  selMetodoPago.innerHTML = `<option value="">(sin datos)</option>`;
-}
+    selMetodoPago.innerHTML =
+      `<option value="">Seleccione…</option>` +
+      mps
+        .map((mp) => {
+          const id = mp.idMetodoPago || mp.id || 0;
+          const nombre = mp.metodo || mp.nombre || "Método";
+          return `<option value="${id}">${nombre}</option>`;
+        })
+        .join("");
+  } catch (err) {
+    console.error("❌ Error cargando métodos de pago:", err);
+    selMetodoPago.innerHTML = `<option value="">(sin datos)</option>`;
+  }
 
-
-
+  // ======== VEHÍCULOS ========
   try {
     const vehsResp = await getVehiculos(0, 100);
     const vehs = vehsResp?.content || vehsResp || [];
     selVehiculo.innerHTML =
       `<option value="">Seleccione…</option>` +
-      vehs.map((v) => {
-        return `<option value="${v.idVehiculo || v.id}">
-          ${v.placa} - ${v.marca} ${v.modelo}
-        </option>`;
-      }).join("");
+      vehs
+        .map(
+          (v) => `
+          <option value="${v.idVehiculo || v.id}">
+            ${v.placa} - ${v.marca} ${v.modelo}
+          </option>`
+        )
+        .join("");
 
     selVehiculo.addEventListener("change", () => {
       const id = selVehiculo.value;
       state.vehiculo = vehs.find((x) => String(x.idVehiculo || x.id) === id) || null;
     });
-  } catch {
+  } catch (err) {
+    console.error("❌ Error cargando vehículos:", err);
     selVehiculo.innerHTML = `<option value="">(sin datos)</option>`;
   }
 }

@@ -2,22 +2,26 @@
 // EmpleadosService.js
 // ===============================
 
-const API_BASE = "http://localhost:8080/apiEmpleados";
+// 🔥 URL actualizada para Heroku
+const API_BASE = "https://sasaapi-73d5de493985.herokuapp.com/apiEmpleados";
 
+// Importar el interceptor que agrega automáticamente el token JWT
 import { attachAuthInterceptor } from "../services/loginService.js";
 attachAuthInterceptor();
 
-
+// ===============================
+// Función fetch con manejo de errores
+// ===============================
 async function fetchJsonOrThrow(url, options = {}) {
   const res = await fetch(url, options); // 👈 el token lo agrega el interceptor
   const text = await res.text();
 
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
 
-  try { 
-    return text ? JSON.parse(text) : null; 
-  } catch { 
-    return text; 
+  try {
+    return text ? JSON.parse(text) : null;
+  } catch {
+    return text;
   }
 }
 

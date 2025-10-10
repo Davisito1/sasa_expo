@@ -1,34 +1,33 @@
 // ==================== IMPORTAR SERVICIOS ====================
-// CRUD de mantenimientos desde el servicio
 import {
-  
-  getMantenimientos,   // obtiene mantenimientos paginados
-  createMantenimiento, // crea un mantenimiento
-  updateMantenimiento, // actualiza un mantenimiento
-  deleteMantenimiento  // elimina un mantenimiento
+  getMantenimientos,
+  createMantenimiento,
+  updateMantenimiento,
+  deleteMantenimiento
 } from "../Services/MantenimientoService.js";
 
-import { crearNotificacion } from "../Services/NotificacionesService.js";
-
-
-// Importar loginService para el token
 import { getToken } from "../Services/LoginService.js";
 
-// Endpoint directo para vehículos (se usa en combo)
-const VEHICULOS_API = "http://localhost:8080/apiVehiculo/consultar";
+// 🔥 Base dinámica para vehículos (Heroku / local)
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0");
+
+const VEHICULOS_API = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com/apiVehiculo/consultar"
+  : "http://localhost:8080/apiVehiculo/consultar";
 
 // ==================== DOM ====================
-// Tabla, paginación, búsqueda y select tamaño
 const tabla       = document.getElementById("tablaMantenimiento");
 const pagWrap     = document.getElementById("paginacion");
 const inputBuscar = document.getElementById("buscar");
 const selectSize  = document.getElementById("registrosPorPagina");
 
-// Modal y formulario
 const mantenimientoModal = new bootstrap.Modal(document.getElementById("mantenimientoModal"));
 const form = document.getElementById("mantenimientoForm");
 
-// Campos del formulario
 const txtId     = document.getElementById("mantenimientoId");
 const txtDesc   = document.getElementById("descripcionTrabajo");
 const txtFecha  = document.getElementById("fechaRealizacion");
@@ -36,7 +35,6 @@ const txtCodigo = document.getElementById("codigoMantenimiento");
 const selVeh    = document.getElementById("idVehiculo");
 
 // ==================== VARIABLES GLOBALES ====================
-// Caches y control de paginación
 let vehiculosCache      = [];
 let mantenimientosCache = [];
 let paginaActual        = 1;
@@ -44,19 +42,16 @@ let tamPagina           = parseInt(selectSize?.value ?? "10", 10);
 let totalPaginas        = 1;
 
 // ==================== HELPERS ====================
-// Devuelve un texto legible para mostrar vehículo en la tabla
 function getVehiculoTexto(idVehiculo) {
   const v = vehiculosCache.find(v => v.id === idVehiculo || v.idVehiculo === idVehiculo);
   return v ? `${v.marca} - ${v.modelo} (${v.anio})` : "—";
 }
 
-// Devuelve texto válido para descripción
 function getDescripcionTexto(desc) {
   return desc && desc.trim() !== "" ? desc : "Sin descripción";
 }
 
 // ==================== CARGAR VEHÍCULOS ====================
-// Trae vehículos de la API y llena el select
 async function cargarVehiculos() {
   try {
     const token = getToken();
@@ -64,12 +59,15 @@ async function cargarVehiculos() {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
-      }
+      },
+      credentials: "include"
     });
 
     if (!res.ok) throw new Error(`Error ${res.status}`);
     const json = await res.json();
-    vehiculosCache = Array.isArray(json?.data?.content) ? json.data.content : [];
+    vehiculosCache = Array.isArray(json?.data?.content)
+      ? json.data.content
+      : json?.content || [];
 
     selVeh.innerHTML = '<option value="" disabled selected>Seleccione vehículo</option>';
     vehiculosCache.forEach(v => {
@@ -85,7 +83,6 @@ async function cargarVehiculos() {
 }
 
 // ==================== RENDERIZAR TABLA ====================
-// Construye filas de la tabla de mantenimientos
 function renderTabla(data) {
   tabla.innerHTML = "";
   if (!data || data.length === 0) {
@@ -116,7 +113,6 @@ function renderTabla(data) {
 }
 
 // ==================== RENDERIZAR PAGINACIÓN ====================
-// Dibuja botones para cambiar página
 function renderPaginacion() {
   pagWrap.innerHTML = "";
   for (let p = 1; p <= totalPaginas; p++) {
@@ -132,7 +128,6 @@ function renderPaginacion() {
 }
 
 // ==================== CARGAR MANTENIMIENTOS ====================
-// Llama al servicio y actualiza tabla + paginación
 async function loadMantenimientos(reset = false) {
   try {
     const res = await getMantenimientos(paginaActual - 1, tamPagina, inputBuscar.value);
@@ -154,7 +149,7 @@ async function loadMantenimientos(reset = false) {
 // ==================== ABRIR MODAL AGREGAR ====================
 window.abrirModalAgregar = async () => {
   form.reset();
-  txtId.value    = "";
+  txtId.value = "";
   txtCodigo.value = "MTN-" + new Date().getFullYear() + "-" + Math.floor(Math.random() * 1000);
   await cargarVehiculos();
   mantenimientoModal.show();
@@ -208,11 +203,9 @@ window.eliminarMantenimiento = async (id) => {
 };
 
 // ==================== GUARDAR MANTENIMIENTO ====================
-// Se usa tanto para agregar como para actualizar
 form.addEventListener("submit", async e => {
   e.preventDefault();
 
-  // --------- Validaciones ---------
   if (!txtDesc.value || txtDesc.value.trim().length < 5) {
     return Swal.fire("Error", "La descripción debe tener al menos 5 caracteres", "error");
   }
@@ -233,7 +226,6 @@ form.addEventListener("submit", async e => {
     return Swal.fire("Error", "Debe seleccionar un vehículo", "error");
   }
 
-  // DTO a enviar
   const dto = {
     descripcion: txtDesc.value.trim(),
     fechaRealizacion: txtFecha.value,
@@ -258,13 +250,11 @@ form.addEventListener("submit", async e => {
 });
 
 // ==================== EVENTOS EXTRA ====================
-// Búsqueda
 inputBuscar.addEventListener("input", () => {
   paginaActual = 1;
   loadMantenimientos(true);
 });
 
-// Cambio de tamaño de página
 selectSize.addEventListener("change", () => {
   tamPagina = parseInt(selectSize.value, 10);
   paginaActual = 1;
@@ -272,7 +262,6 @@ selectSize.addEventListener("change", () => {
 });
 
 // ==================== INICIO ====================
-// Se ejecuta al cargar la página
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarVehiculos();
   await loadMantenimientos(true);

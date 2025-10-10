@@ -1,7 +1,10 @@
 // ===============================
 // LoginService.js
 // ===============================
-const API_BASE   = "http://localhost:8080";
+// ======================= CONFIGURACIÓN API =======================
+const API_BASE   = "https://sasaapi-73d5de493985.herokuapp.com";
+
+// ======================= ENDPOINTS DE AUTENTICACIÓN =======================
 const LOGIN_URL  = `${API_BASE}/auth/login`;
 const LOGOUT_URL = `${API_BASE}/auth/logout`;
 const ME_URL     = `${API_BASE}/auth/me`;

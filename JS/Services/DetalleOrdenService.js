@@ -1,10 +1,26 @@
 // ===============================
-// DetalleOrdenService.js ✅ Corregido
+// DetalleOrdenService.js ✅ FINAL (Heroku + JWT + Local + Vercel)
 // ===============================
 
-const API_BASE = "http://localhost:8080";
+// 🔥 Detectar entorno actual
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0");
+
+// ===============================
+// Base dinámica según entorno
+// ===============================
+const API_BASE = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com"
+  : "http://localhost:8080";
+
 const BASE = `${API_BASE}/apiDetalleOrden`;
 
+// ===============================
+// Helper universal de fetch
+// ===============================
 async function http(url, { method = "GET", headers = {}, body, credentials } = {}) {
   const isForm = body instanceof FormData;
   const baseHeaders = isForm ? {} : { "Content-Type": "application/json" };
@@ -16,11 +32,14 @@ async function http(url, { method = "GET", headers = {}, body, credentials } = {
     method,
     headers: { ...baseHeaders, ...auth, ...headers },
     body,
-    credentials,
+    credentials: "include",
   });
 
   const text = await res.text();
-  if (!res.ok) throw new Error(`HTTP ${res.status} -> ${url}\n${text}`);
+  if (!res.ok) {
+    console.error(`❌ Error HTTP ${res.status} -> ${url}`);
+    throw new Error(`HTTP ${res.status} -> ${url}\n${text}`);
+  }
 
   try {
     return text ? JSON.parse(text) : null;
@@ -29,6 +48,9 @@ async function http(url, { method = "GET", headers = {}, body, credentials } = {
   }
 }
 
+// ===============================
+// Normalización de respuesta
+// ===============================
 function normalizeResponse(json) {
   if (json?.data) return json.data;
   if (json?.content) return json.content;
@@ -36,7 +58,11 @@ function normalizeResponse(json) {
   return json ? [json] : [];
 }
 
-// Crear detalle
+// ===============================
+// ENDPOINTS
+// ===============================
+
+// -------- Crear detalle --------
 export async function agregarDetalle({ idOrden, idMantenimiento, cantidad, precioUnitario, subtotal }) {
   if (!idOrden) throw new Error("Debe seleccionar una orden válida.");
   if (!idMantenimiento) throw new Error("Debe seleccionar un mantenimiento válido.");
@@ -51,18 +77,16 @@ export async function agregarDetalle({ idOrden, idMantenimiento, cantidad, preci
   });
 }
 
-// Eliminar detalle
+// -------- Eliminar detalle --------
 export async function eliminarDetalle(idDetalle) {
   if (!idDetalle) throw new Error("Debe proporcionar un ID de detalle válido.");
   return http(`${BASE}/eliminar/${encodeURIComponent(idDetalle)}`, { method: "DELETE" });
 }
 
-// Listar detalles por orden
+// -------- Listar detalles por orden --------
+// ⚠️ Usa /porOrden/{idOrden} si así está en tu backend.
 export async function getDetallesByOrden(idOrden) {
   if (!idOrden) throw new Error("Debe proporcionar un ID de orden válido.");
-  // ✅ Corrige aquí según el backend
-  // Si tu controller tiene @GetMapping("/porOrden/{idOrden}") → usa /porOrden
-  // Si lo tienes como @GetMapping("/consultar/{idOrden}") → cambia aquí:
   const json = await http(`${BASE}/porOrden/${encodeURIComponent(idOrden)}`);
   return normalizeResponse(json);
 }

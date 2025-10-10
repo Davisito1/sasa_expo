@@ -1,25 +1,31 @@
 // ===============================
-// FacturasService.js FINAL ✅
+// FacturasService.js FINAL ✅ (Heroku + Local + Vercel)
 // ===============================
 
-// Detectar entorno
-const isProd = typeof window !== "undefined" && window.location.hostname.includes("vercel.app");
+// 🔥 Detectar entorno (funciona en 127.0.0.1, localhost y Vercel)
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0");
 
+// ===============================
 // Bases dinámicas
+// ===============================
 const BASE = isProd
-  ? "https://sasa-expo-j7n5lcpcp-david-guardados-projects.vercel.app/apiFactura"
+  ? "https://sasaapi-73d5de493985.herokuapp.com/apiFactura"        // Heroku API base
   : "http://localhost:8080/apiFactura";
 
 const EMPLEADOS_API = isProd
-  ? "https://sasa-expo-j7n5lcpcp-david-guardados-projects.vercel.app/apiEmpleados"
+  ? "https://sasaapi-73d5de493985.herokuapp.com/apiEmpleados"      // Heroku API empleados
   : "http://localhost:8080/apiEmpleados";
 
 const METODOS_PAGO_API = isProd
-  ? "https://sasa-expo-j7n5lcpcp-david-guardados-projects.vercel.app/api/metodoPago"
+  ? "https://sasaapi-73d5de493985.herokuapp.com/api/metodoPago"    // Heroku API métodos de pago
   : "http://localhost:8080/api/metodoPago";
 
 // -------------------------------
-// Utilidad base para fetch
+// Fetch con manejo de errores
 // -------------------------------
 async function fetchJsonOrThrow(url, options = {}) {
   const res = await fetch(url, { credentials: "include", ...options });
@@ -67,6 +73,8 @@ function normalizePage(json) {
 // ===============================
 // Servicios Factura (CRUD + extras)
 // ===============================
+
+// -------- Listar facturas (paginado) --------
 export async function getFacturas({ page = 0, size = 10, archivada = false, onlyWithOrder = false } = {}) {
   const url = new URL(`${BASE}/consultar`);
   url.searchParams.set("page", page);
@@ -78,11 +86,13 @@ export async function getFacturas({ page = 0, size = 10, archivada = false, only
   return normalizePage(json);
 }
 
+// -------- Obtener factura por ID --------
 export async function getFacturaById(id) {
   const json = await fetchJsonOrThrow(`${BASE}/${id}`);
   return json?.data ?? json;
 }
 
+// -------- Crear factura --------
 export async function createFactura(data) {
   return fetchJsonOrThrow(`${BASE}/registrar`, {
     method: "POST",
@@ -91,6 +101,7 @@ export async function createFactura(data) {
   });
 }
 
+// -------- Actualizar factura --------
 export async function updateFactura(id, data) {
   return fetchJsonOrThrow(`${BASE}/actualizar/${id}`, {
     method: "PUT",
@@ -99,24 +110,29 @@ export async function updateFactura(id, data) {
   });
 }
 
+// -------- Eliminar factura --------
 export async function deleteFactura(id) {
   return fetchJsonOrThrow(`${BASE}/eliminar/${id}`, { method: "DELETE" });
 }
 
+// -------- Archivar factura --------
 export async function archiveFactura(id) {
   return fetchJsonOrThrow(`${BASE}/${id}/archivar`, { method: "PUT" });
 }
 
+// -------- Desarchivar factura --------
 export async function unarchiveFactura(id) {
   return fetchJsonOrThrow(`${BASE}/${id}/restaurar`, { method: "PUT" });
 }
 
+// -------- Marcar factura como pagada --------
 export async function payFactura(id) {
   return fetchJsonOrThrow(`${BASE}/${id}/pagar`, { method: "PUT" });
 }
 
+// -------- Anular factura --------
 export async function anularFactura(id) {
-  return fetchJsonOrThrow(`${BASE}/anular/${id}`, { method: "PUT" });
+  return fetchJsonOrThrow(`${BASE}/${id}/anular`, { method: "PUT" });
 }
 
 // ===============================

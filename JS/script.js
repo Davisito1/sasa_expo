@@ -1,5 +1,5 @@
 // ===============================
-// Dashboard Init.js
+// Dashboard Init.js (FINAL ✅ Heroku + Local + JWT)
 // ===============================
 
 // ✅ Verificación de sesión antes de inicializar
@@ -22,13 +22,23 @@ async function init() {
   tickDateTime(fechaEl, horaEl, saludoEl);
   setInterval(() => tickDateTime(fechaEl, horaEl, saludoEl), 60000);
 
+  // 🌐 Detectar entorno (Heroku o Local)
+  const isProd =
+    typeof window !== "undefined" &&
+    (window.location.hostname.includes("vercel.app") ||
+     window.location.hostname === "127.0.0.1" ||
+     window.location.hostname === "0.0.0.0");
+
+  const BASE = isProd
+    ? "https://sasaapi-73d5de493985.herokuapp.com"
+    : "http://localhost:8080";
+
   // APIs base
-  const BASE = "http://localhost:8080";
-  const API_VEHICULOS = `${BASE}/apiVehiculo/consultar`;
+  const API_VEHICULOS = `${BASE}/apiVehiculo/consultar?page=0&size=100`;
   const API_CLIENTES  = `${BASE}/apiCliente/consultar?page=0&size=100`;
   const API_CITAS     = `${BASE}/apiCitas/listar`;
   const API_HISTORIAL = `${BASE}/api/historial/consultar?page=0&size=100`;
-  const API_ORDENES   = `${BASE}/apiOrdenTrabajo/consultar`;
+  const API_ORDENES   = `${BASE}/apiOrdenTrabajo/consultar?page=0&size=100`;
 
   // Cargar totales
   const vehiculos = await totalizar(API_VEHICULOS, "vehiculosTotal");
@@ -71,7 +81,7 @@ function fetchWithTimeout(resource, options = {}) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
 
-  const token = localStorage.getItem("authToken"); // 👈 coherente con LoginService
+  const token = localStorage.getItem("authToken");
 
   const headers = new Headers(options.headers || {});
   headers.set("Accept", "application/json");
@@ -173,33 +183,24 @@ function hydrateClienteSelect(clientes, vehiculos, citas) {
 // ===============================
 // Graficas (Chart.js)
 // ===============================
-function buildCharts(vehiculos) {
-  // ... (igual que tenías, sin cambios)
-}
-
-// ===============================
-// Plugin sombra gráficas
-// ===============================
-function shadowPlugin() {
-  return {
-    id:"shadow",
-    beforeDraw(c) {
-      const ctx = c.ctx;
-      ctx.save();
-      ctx.shadowColor = "rgba(0,0,0,.18)";
-      ctx.shadowBlur = 16;
-      ctx.shadowOffsetY = 6;
-    },
-    afterDraw(c) { c.ctx.restore(); }
-  };
-}
+// (Tu buildCharts() y shadowPlugin() siguen igual)
 
 // ===============================
 // Ver citas de hoy
 // ===============================
 window.verCitasHoy = async () => {
-  const BASE = "http://localhost:8080";
+  const isProd =
+    typeof window !== "undefined" &&
+    (window.location.hostname.includes("vercel.app") ||
+     window.location.hostname === "127.0.0.1" ||
+     window.location.hostname === "0.0.0.0");
+
+  const BASE = isProd
+    ? "https://sasaapi-73d5de493985.herokuapp.com"
+    : "http://localhost:8080";
+
   const API_CITAS = `${BASE}/apiCitas/listar`;
+
   try {
     const res = await fetchWithTimeout(API_CITAS, { timeout: 9000 });
     if (!res.ok) throw new Error();
@@ -219,24 +220,6 @@ window.verCitasHoy = async () => {
 };
 
 // ===============================
-// Animación al hacer scroll
-// ===============================
-function revealOnScroll(selector, offset=80) {
-  const els = document.querySelectorAll(selector);
-  els.forEach(el => el.style.opacity = 0);
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.style.opacity = 1;
-        e.target.style.transform = "none";
-        io.unobserve(e.target);
-      }
-    });
-  }, { rootMargin: `0px 0px -${offset}px 0px`, threshold: .15 });
-  els.forEach(el => io.observe(el));
-}
-
-// ===============================
 // Logout
 // ===============================
 window.logout = () => {
@@ -251,3 +234,103 @@ window.logout = () => {
     window.location.href = "../Autenticacion/login.html";
   });
 };
+// ===============================
+// Gráficas del Dashboard (SASA)
+// ===============================
+function buildCharts(vehiculos = []) {
+  const ctxVehiculos = document.getElementById("graficaVehiculosMarca");
+  const ctxIngresos = document.getElementById("graficaIngresosMensuales");
+
+  if (!ctxVehiculos || !ctxIngresos) {
+    console.warn("⚠️ No se encontraron los canvas de las gráficas.");
+    return;
+  }
+
+  // ====== VEHÍCULOS POR MARCA ======
+  const marcas = {};
+  vehiculos.forEach(v => {
+    const marca = v.marca || "Sin marca";
+    marcas[marca] = (marcas[marca] || 0) + 1;
+  });
+
+  const labelsMarcas = Object.keys(marcas);
+  const dataMarcas = Object.values(marcas);
+
+  if (labelsMarcas.length === 0) {
+    ctxVehiculos.parentElement.innerHTML = "<p class='text-muted text-center mt-4'>No hay datos disponibles</p>";
+  } else {
+    new Chart(ctxVehiculos, {
+      type: "doughnut",
+      data: {
+        labels: labelsMarcas,
+        datasets: [{
+          data: dataMarcas,
+          backgroundColor: ["#C91A1A","#E94F4F","#F37C7C","#FAC5C5","#FFDCDC","#F9AFAF"],
+          borderWidth: 1,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        plugins: {
+          legend: { position: "bottom", labels: { color: "#333", font: { size: 13 } } }
+        },
+        animation: { animateScale: true, animateRotate: true },
+        responsive: true,
+        maintainAspectRatio: false
+      },
+      plugins: [shadowPlugin()]
+    });
+  }
+
+  // ====== INGRESOS MENSUALES (demo o real) ======
+  const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+  const ingresos = Array.from({ length: 12 }, () => Math.floor(Math.random() * 3000) + 500);
+
+  new Chart(ctxIngresos, {
+    type: "line",
+    data: {
+      labels: meses,
+      datasets: [{
+        label: "Ingresos $",
+        data: ingresos,
+        borderColor: "#C91A1A",
+        backgroundColor: "rgba(201,26,26,0.15)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: "#C91A1A"
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true, ticks: { color: "#333" }, grid: { color: "rgba(0,0,0,0.05)" } },
+        x: { ticks: { color: "#333" }, grid: { display: false } }
+      },
+      plugins: { legend: { display: false } },
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 1200, easing: "easeOutQuart" }
+    },
+    plugins: [shadowPlugin()]
+  });
+}
+
+// ===============================
+// Sombra para gráficas
+// ===============================
+function shadowPlugin() {
+  return {
+    id: "shadow",
+    beforeDraw(chart) {
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.18)";
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 6;
+    },
+    afterDraw(chart) {
+      chart.ctx.restore();
+    }
+  };
+}

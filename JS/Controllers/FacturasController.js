@@ -1,7 +1,11 @@
-import { 
-  getFacturas, 
-  payFactura, 
-  archiveFactura 
+// ===============================
+// facturas.js (FINAL para Heroku)
+// ===============================
+
+import {
+  getFacturas,
+  payFactura,
+  archiveFactura
 } from "../Services/FacturasService.js";
 import { getEmpleados } from "../Services/EmpleadosService.js";
 import { getMetodosPago } from "../Services/MetodosPagoService.js";
@@ -12,6 +16,17 @@ const tbodyFacturas = $("tbodyFacturas");
 let empleadosCache = [];
 let metodosPagoCache = [];
 
+// ===============================
+// Detectar entorno dinámicamente
+// ===============================
+const isProd = typeof window !== "undefined" && window.location.hostname.includes("vercel.app");
+const API_BASE = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com" // 🔥 Heroku backend
+  : "http://localhost:8080";
+
+// ===============================
+// Cargar empleados y métodos de pago
+// ===============================
 async function cargarDatosAuxiliares() {
   try {
     const empsResp = await getEmpleados(0, 100);
@@ -28,6 +43,9 @@ async function cargarDatosAuxiliares() {
   }
 }
 
+// ===============================
+// Renderizar botones de acción
+// ===============================
 function renderAcciones(factura) {
   let acciones = `
     <button class="btn btn-sm btn-secondary" onclick="descargarPDF(${factura.id})">
@@ -54,6 +72,9 @@ function renderAcciones(factura) {
   return acciones;
 }
 
+// ===============================
+// Cargar lista de facturas
+// ===============================
 async function cargarFacturas(page = 0, size = 10, archivada = false) {
   try {
     const res = await getFacturas({ page, size, archivada });
@@ -105,6 +126,9 @@ async function cargarFacturas(page = 0, size = 10, archivada = false) {
   }
 }
 
+// ===============================
+// Inicialización
+// ===============================
 document.addEventListener("DOMContentLoaded", async () => {
   await cargarDatosAuxiliares();
   await cargarFacturas(0, 10, false);
@@ -123,8 +147,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
+// ===============================
+// Funciones globales
+// ===============================
+
 window.descargarPDF = (idFactura) => {
-  window.open(`http://localhost:8080/apiFactura/${idFactura}/pdf`, "_blank");
+  const url = `${API_BASE}/apiFactura/${idFactura}/pdf`; // 🔥 Heroku o local dinámico
+  window.open(url, "_blank");
 };
 
 window.marcarPagada = async (idFactura) => {
@@ -147,4 +176,4 @@ window.archivarFactura = async (idFactura) => {
     console.error("Error al archivar:", err);
     Swal.fire("Error", "No se pudo archivar la factura", "error");
   }
-}; 
+};

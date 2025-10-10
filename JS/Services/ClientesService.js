@@ -1,17 +1,29 @@
 // ===============================
-// ClienteService.js
+// ClienteService.js (FINAL ✅ Heroku + Local + Vercel)
 // ===============================
-import { attachAuthInterceptor } from "../services/loginService.js";
 
+import { attachAuthInterceptor } from "../services/loginService.js";
 attachAuthInterceptor();
 
-const API_BASE = "http://localhost:8080/apiCliente";
+// 🔥 Detección universal de entorno
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0");
+
+// ===============================
+// Base API dinámica
+// ===============================
+const API_BASE = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com/apiCliente" // Heroku ✅
+  : "http://localhost:8080/apiCliente";                     // Local dev
 
 // ===============================
 // Helpers
 // ===============================
 async function fetchJsonOrThrow(url, options = {}) {
-  const res = await fetch(url, options);
+  const res = await fetch(url, { credentials: "include", ...options });
   const text = await res.text();
 
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
@@ -50,11 +62,8 @@ export async function getClientes(page = 0, size = 10, query = "", sortDir = "as
 // -------- OBTENER CLIENTE POR ID --------
 export async function getClienteById(id) {
   const json = await fetchJsonOrThrow(`${API_BASE}/${id}`);
-  return json?.data ?? json;   // 👈 devuelve directo el objeto cliente
+  return json?.data ?? json;
 }
-
-
-
 
 // -------- CREAR CLIENTE --------
 export async function createCliente(data) {

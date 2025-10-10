@@ -1,4 +1,4 @@
-// VehiculosServices.js
+// VehiculosService.js
 // ===============================================
 // Servicio con soporte de autenticación (cookie JWT o header Bearer),
 // manejo de 401, timeout y base URL por ENV.
@@ -7,7 +7,7 @@
 const API_BASE =
   (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_VEHICULO) ||
   (typeof process !== "undefined" && process.env && process.env.API_VEHICULO) ||
-  "http://localhost:8080/apiVehiculo";
+  "https://sasaapi-73d5de493985.herokuapp.com/apiVehiculo"; // 🔥 ← URL actualizada
 
 // ------- Utilidades de auth -------
 const TOKEN_KEYS = ["authToken", "token", "jwt"];
@@ -21,7 +21,6 @@ export function getAuthToken() {
 }
 
 export function setAuthToken(token, { persist = true } = {}) {
-  // Por si quieres guardar al iniciar sesión
   const store = persist ? localStorage : sessionStorage;
   store.setItem("authToken", token);
 }
@@ -51,13 +50,12 @@ async function fetchJsonOrThrow(url, options = {}, { timeoutMs = 15000 } = {}) {
   const headers = new Headers(options.headers || {});
   headers.set("Accept", "application/json");
 
-  // Si tienes token, lo envías por header
   if (token && !headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
   const res = await fetch(url, {
-    credentials: "include", // importante si usas JWT por cookie
+    credentials: "include",
     ...options,
     headers,
     signal: controller.signal,
@@ -77,8 +75,7 @@ async function fetchJsonOrThrow(url, options = {}, { timeoutMs = 15000 } = {}) {
   }
 
   if (res.status === 401) {
-    // Deja listo para que tu UI capture y redirija al login
-    throw new UnauthorizedError(typeof body === "string" ? body : (body?.message || "No autorizado"));
+    throw new UnauthorizedError(typeof body === "string" ? body : body?.message || "No autorizado");
   }
 
   if (!res.ok) {
@@ -92,8 +89,8 @@ async function fetchJsonOrThrow(url, options = {}, { timeoutMs = 15000 } = {}) {
 // -------- Normalización de páginas --------
 function normalizePage(json) {
   if (!json) return { content: [], totalPages: 0, totalElements: 0 };
-  if (json.data && json.data.content) return json.data;   // {status, data: Page}
-  if (json.content) return json;                          // Page directo
+  if (json.data && json.data.content) return json.data;
+  if (json.content) return json;
   if (Array.isArray(json?.data)) return { content: json.data, totalPages: 1, totalElements: json.data.length };
   if (Array.isArray(json)) return { content: json, totalPages: 1, totalElements: json.length };
   return { content: [], totalPages: 0, totalElements: 0 };
@@ -108,7 +105,6 @@ export async function getVehiculos(page = 0, size = 10, sortBy = "idVehiculo", s
 
 // =============== CREATE ===============
 export async function createVehiculo(data) {
-  // Asegura únicamente los campos que backend espera
   const payload = {
     ...data,
     idCliente: data.idCliente,
@@ -150,7 +146,6 @@ export async function deleteVehiculo(id) {
 }
 
 // =============== BÚSQUEDA (opcional) ===============
-// Si luego agregas endpoint /buscar?term=...
 export async function searchVehiculos(term = "", page = 0, size = 10) {
   const url = `${API_BASE}/buscar?term=${encodeURIComponent(term)}&page=${encodeURIComponent(page)}&size=${encodeURIComponent(size)}`;
   const json = await fetchJsonOrThrow(url);

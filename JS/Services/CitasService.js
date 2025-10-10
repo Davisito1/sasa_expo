@@ -1,7 +1,7 @@
 // ===============================
 // CitasService.js
 // ===============================
-const API_BASE = "http://localhost:8080/apiCitas";
+const API_BASE = "https://sasaapi-73d5de493985.herokuapp.com/apiCitas";
 
 // -------------------------------
 // Fetch con manejo de errores
@@ -10,7 +10,11 @@ async function fetchJsonOrThrow(url, options = {}) {
   const isGet = !options.method || options.method === "GET";
   const headers = isGet
     ? { ...(options.headers || {}) } // GET sin content-type
-    : { "Content-Type": "application/json", Accept: "application/json", ...(options.headers || {}) };
+    : {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(options.headers || {}),
+      };
 
   const res = await fetch(url, { ...options, headers });
 
@@ -23,9 +27,7 @@ async function fetchJsonOrThrow(url, options = {}) {
     throw new Error(msg);
   }
 
-  // Si no hay contenido (ej. DELETE con 204)
-  if (res.status === 204) return null;
-
+  if (res.status === 204) return null; // sin contenido (ej. DELETE)
   return res.json();
 }
 
@@ -66,7 +68,7 @@ export async function createCita(data) {
   const url = `${API_BASE}/registrar`;
   const json = await fetchJsonOrThrow(url, {
     method: "POST",
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
   return json?.data ?? json;
 }
@@ -78,7 +80,7 @@ export async function updateCita(id, data) {
   const url = `${API_BASE}/actualizar/${id}`;
   const json = await fetchJsonOrThrow(url, {
     method: "PUT",
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
   return json?.data ?? json;
 }
@@ -88,6 +90,6 @@ export async function updateCita(id, data) {
 // -------------------------------
 export async function deleteCita(id) {
   const url = `${API_BASE}/eliminar/${id}`;
-  await fetchJsonOrThrow(url, { method: "DELETE" }); // sin return porque backend puede dar 204
+  await fetchJsonOrThrow(url, { method: "DELETE" });
   return true;
 }

@@ -1,3 +1,4 @@
+// ==================== ELEMENTOS DOM ====================
 const calendarDays = document.getElementById("calendar-days");
 const calendarDate = document.getElementById("calendar-date");
 const prevBtn = document.getElementById("prev-month");
@@ -11,11 +12,15 @@ const minDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
 const maxDate = new Date(2025, 11, 31);
 
 // ===== API CITAS =====
-// Detectar entorno (local o Vercel)
-const isProd = typeof window !== "undefined" && window.location.hostname.includes("vercel.app");
+// Detección universal (Heroku / local / Vercel)
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0");
 
 const API_CITAS = isProd
-  ? "https://sasa-expo-j7n5lcpcp-david-guardados-projects.vercel.app/apiCitas/listar"
+  ? "https://sasaapi-73d5de493985.herokuapp.com/apiCitas/listar"
   : "http://localhost:8080/apiCitas/listar";
 
 // ===== FERIADOS EL SALVADOR =====
@@ -32,15 +37,21 @@ const feriadosES = [
   "2025-12-25", // Navidad
 ];
 
-// ===== API FETCH CITAS =====
+// ===== OBTENER CITAS DESDE API =====
 async function fetchCitas() {
   try {
     const token = localStorage.getItem("authToken");
+    if (!token) {
+      console.warn("⚠️ No hay token JWT, inicia sesión primero.");
+      return [];
+    }
+
     const res = await fetch(API_CITAS, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
+      credentials: "include",
     });
 
     if (!res.ok) {
@@ -50,6 +61,7 @@ async function fetchCitas() {
 
     const data = await res.json();
 
+    // Normalizar respuesta de backend
     if (Array.isArray(data)) return data;
     if (data.content && Array.isArray(data.content)) return data.content;
     if (data.data && Array.isArray(data.data)) return data.data;
@@ -61,21 +73,21 @@ async function fetchCitas() {
   }
 }
 
-// ===== RENDER CALENDARIO =====
+// ===== RENDERIZAR CALENDARIO =====
 async function renderCalendar() {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
   const lastDate = new Date(year, month + 1, 0).getDate();
-
   const monthNames = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
   ];
-  calendarDate.textContent = `${monthNames[month]} ${year}`;
 
+  calendarDate.textContent = `${monthNames[month]} ${year}`;
   calendarDays.innerHTML = "";
 
+  // Cargar citas del mes
   const citas = await fetchCitas();
 
   for (let i = 1; i <= lastDate; i++) {
@@ -84,7 +96,6 @@ async function renderCalendar() {
 
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(i).padStart(2, "0")}`;
 
-    // 📌 Verificar si es feriado
     const esFeriado = feriadosES.includes(dateStr);
 
     day.innerHTML = `
@@ -97,7 +108,11 @@ async function renderCalendar() {
 
     const ul = day.querySelector(".calendar__appointments");
 
-    const citasDia = Array.isArray(citas) ? citas.filter((c) => c.fecha === dateStr) : [];
+    // Filtrar citas del día
+    const citasDia = Array.isArray(citas)
+      ? citas.filter((c) => c.fecha === dateStr)
+      : [];
+
     citasDia.forEach((cita) => {
       const li = document.createElement("li");
       li.classList.add(`appointment__${cita.estado?.toLowerCase() || "pendiente"}`);
@@ -105,9 +120,7 @@ async function renderCalendar() {
       ul.appendChild(li);
     });
 
-    if (esFeriado) {
-      day.classList.add("calendar__feriado");
-    }
+    if (esFeriado) day.classList.add("calendar__feriado");
 
     calendarDays.appendChild(day);
   }
@@ -136,5 +149,5 @@ nextBtn.addEventListener("click", () => {
   }
 });
 
-// Inicial
+// ===== INICIALIZAR =====
 renderCalendar();

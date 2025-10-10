@@ -2,11 +2,24 @@
 import { 
   getUsuarioLogueado, 
   getUserId, 
-  logout 
+  logout,
+  getToken
 } from "../JS/Services/LoginService.js";
 
 // ======================= CONFIG =======================
-const USU_API_URL = "http://localhost:8080/apiUsuario";
+// 🔥 Detectar entorno
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0");
+
+// 🔹 Base dinámica
+const API_BASE = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com"
+  : "http://localhost:8080";
+
+const USU_API_URL = `${API_BASE}/apiUsuario`;
 const INDEX_URL   = "../Autenticacion/login.html";
 const USUARIO_URL = "../Usuario/usuario.html";
 
@@ -77,7 +90,7 @@ function validarPassword() {
 // ======================= FETCH JSON =======================
 async function fetchJson(url, opts = {}) {
   const headers = new Headers(opts.headers || {});
-  const token = localStorage.getItem("authToken");
+  const token = getToken() || localStorage.getItem("authToken");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const res = await fetch(url, { ...opts, headers, credentials: "include" });

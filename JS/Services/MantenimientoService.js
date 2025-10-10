@@ -1,8 +1,38 @@
-const API_BASE = "http://localhost:8080/apiMantenimiento";
+// ===============================
+// MantenimientosService.js (FINAL ✅ Heroku + Token + Local + Vercel)
+// ===============================
+
+import { getToken } from "../Services/LoginService.js"; // 🔥 importa el token
+
+// 🔥 Detección universal del entorno
+const isProd =
+  typeof window !== "undefined" &&
+  (window.location.hostname.includes("vercel.app") ||
+   window.location.hostname === "127.0.0.1" ||
+   window.location.hostname === "0.0.0.0");
+
+// ===============================
+// Base dinámica según entorno
+// ===============================
+const API_BASE = isProd
+  ? "https://sasaapi-73d5de493985.herokuapp.com/apiMantenimiento" // Heroku
+  : "http://localhost:8080/apiMantenimiento";                     // Local
 
 // -------- Utilidad base para fetch --------
 async function fetchJsonOrThrow(url, options = {}) {
-  const res = await fetch(url, options);
+  const token = getToken(); // 👈 agrega el token JWT al header
+  const headers = {
+    ...(options.headers || {}),
+    "Content-Type": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(url, {
+    credentials: "include",
+    ...options,
+    headers,
+  });
+
   const text = await res.text();
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} -> ${url}\n${text}`);
   try {
@@ -32,55 +62,66 @@ export async function getMantenimientos(page = 0, size = 10, query = "") {
   return normalizeResponse(json);
 }
 
-// OBTENER POR ID
+// ===============================
+// LISTAR TODOS (para combos sin paginación)
+// ===============================
+export async function listarMantenimientosCombo() {
+  const json = await fetchJsonOrThrow(`${API_BASE}/listar`);
+  return json?.data || json || [];
+}
 
+// ===============================
+// OBTENER POR ID
+// ===============================
 export async function getMantenimientoById(id) {
   const json = await fetchJsonOrThrow(`${API_BASE}/${id}`);
   return json?.data ?? json;
 }
 
+// ===============================
 // CREAR MANTENIMIENTO
-
+// ===============================
 export async function createMantenimiento(data) {
   const payload = {
-    descripcion: data.descripcion,                   
+    descripcion: data.descripcion,
     fechaRealizacion: data.fechaRealizacion,
     codigoMantenimiento: data.codigoMantenimiento,
-    idVehiculo: data.idVehiculo                      
+    idVehiculo: data.idVehiculo,
   };
 
-  const body = {
+  const json = await fetchJsonOrThrow(`${API_BASE}/registrar`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  };
+    body: JSON.stringify(payload),
+  });
 
-  const json = await fetchJsonOrThrow(`${API_BASE}/registrar`, body);
   return json?.data ?? json;
 }
 
-
+// ===============================
 // ACTUALIZAR MANTENIMIENTO
+// ===============================
 export async function updateMantenimiento(id, data) {
   const payload = {
     descripcion: data.descripcion,
     fechaRealizacion: data.fechaRealizacion,
     codigoMantenimiento: data.codigoMantenimiento,
-    idVehiculo: data.idVehiculo
+    idVehiculo: data.idVehiculo,
   };
 
-  const body = {
+  const json = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  };
+    body: JSON.stringify(payload),
+  });
 
-  const json = await fetchJsonOrThrow(`${API_BASE}/actualizar/${id}`, body);
   return json?.data ?? json;
 }
 
+// ===============================
 // ELIMINAR MANTENIMIENTO
+// ===============================
 export async function deleteMantenimiento(id) {
-  const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, { method: "DELETE" });
+  const json = await fetchJsonOrThrow(`${API_BASE}/eliminar/${id}`, {
+    method: "DELETE",
+  });
   return json?.data ?? json;
 }
