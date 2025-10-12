@@ -1,17 +1,15 @@
 // ===============================
-// DetalleOrdenService.js ✅ FINAL (Heroku + JWT + Local + Vercel)
+// DetalleOrdenService.js ✅ FINAL DEFINITIVO (Heroku + JWT + Local + Vercel)
 // ===============================
 
-// 🔥 Detectar entorno actual
+// 🔹 Detectar entorno actual
 const isProd =
   typeof window !== "undefined" &&
   (window.location.hostname.includes("vercel.app") ||
-   window.location.hostname === "127.0.0.1" ||
-   window.location.hostname === "0.0.0.0");
+   window.location.hostname.includes("herokuapp.com") ||
+   window.location.hostname === "10.0.2.2");
 
-// ===============================
-// Base dinámica según entorno
-// ===============================
+// 🔹 Base dinámica según entorno
 const API_BASE = isProd
   ? "https://sasaapi-73d5de493985.herokuapp.com"
   : "http://localhost:8080";
@@ -38,6 +36,7 @@ async function http(url, { method = "GET", headers = {}, body, credentials } = {
   const text = await res.text();
   if (!res.ok) {
     console.error(`❌ Error HTTP ${res.status} -> ${url}`);
+    console.error("🧾 Respuesta:", text);
     throw new Error(`HTTP ${res.status} -> ${url}\n${text}`);
   }
 
@@ -52,10 +51,11 @@ async function http(url, { method = "GET", headers = {}, body, credentials } = {
 // Normalización de respuesta
 // ===============================
 function normalizeResponse(json) {
+  if (!json) return [];
   if (json?.data) return json.data;
   if (json?.content) return json.content;
   if (Array.isArray(json)) return json;
-  return json ? [json] : [];
+  return [json];
 }
 
 // ===============================
@@ -84,7 +84,6 @@ export async function eliminarDetalle(idDetalle) {
 }
 
 // -------- Listar detalles por orden --------
-// ⚠️ Usa /porOrden/{idOrden} si así está en tu backend.
 export async function getDetallesByOrden(idOrden) {
   if (!idOrden) throw new Error("Debe proporcionar un ID de orden válido.");
   const json = await http(`${BASE}/porOrden/${encodeURIComponent(idOrden)}`);
