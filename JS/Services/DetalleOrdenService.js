@@ -1,49 +1,62 @@
 // ===============================
-// DetalleOrdenService.js ✅ FINAL DEFINITIVO (Heroku + JWT + Local + Vercel)
+// DetalleOrdenService.js ✅ FINAL (Solo Heroku + JWT + Seguridad 401)
 // ===============================
 
-// 🔹 Detectar entorno actual
-const isProd =
-  typeof window !== "undefined" &&
-  (window.location.hostname.includes("vercel.app") ||
-   window.location.hostname.includes("herokuapp.com") ||
-   window.location.hostname === "10.0.2.2");
-
-// 🔹 Base dinámica según entorno
-const API_BASE = isProd
-  ? "https://sasaapi-73d5de493985.herokuapp.com"
-  : "http://localhost:8080";
-
+// 🔹 URL fija a Heroku
+const API_BASE = "https://sasaapi-73d5de493985.herokuapp.com";
 const BASE = `${API_BASE}/apiDetalleOrden`;
 
 // ===============================
-// Helper universal de fetch
+// Helper universal de fetch con JWT y control de sesión
 // ===============================
-async function http(url, { method = "GET", headers = {}, body, credentials } = {}) {
+async function http(url, { method = "GET", headers = {}, body } = {}) {
   const isForm = body instanceof FormData;
   const baseHeaders = isForm ? {} : { "Content-Type": "application/json" };
 
   const token = localStorage.getItem("authToken");
   const auth = token ? { Authorization: `Bearer ${token}` } : {};
 
-  const res = await fetch(url, {
-    method,
-    headers: { ...baseHeaders, ...auth, ...headers },
-    body,
-    credentials: "include",
-  });
-
-  const text = await res.text();
-  if (!res.ok) {
-    console.error(`❌ Error HTTP ${res.status} -> ${url}`);
-    console.error("🧾 Respuesta:", text);
-    throw new Error(`HTTP ${res.status} -> ${url}\n${text}`);
-  }
-
   try {
-    return text ? JSON.parse(text) : null;
-  } catch {
-    return text;
+    const res = await fetch(url, {
+      method,
+      headers: { ...baseHeaders, ...auth, ...headers },
+      body,
+      credentials: "include",
+    });
+
+    // 🔒 Manejo de sesión expirada
+    if (res.status === 401) {
+      localStorage.clear();
+      Swal.fire({
+        icon: "warning",
+        title: "Sesión expirada",
+        text: "Por favor inicia sesión nuevamente.",
+        confirmButtonColor: "#C91A1A",
+      }).then(() => (window.location.href = "../Autenticacion/login.html"));
+      throw new Error("401 Unauthorized");
+    }
+
+    const text = await res.text();
+    if (!res.ok) {
+      console.error(`❌ Error HTTP ${res.status} -> ${url}`);
+      console.error("🧾 Respuesta:", text);
+      throw new Error(`HTTP ${res.status} -> ${url}\n${text}`);
+    }
+
+    try {
+      return text ? JSON.parse(text) : null;
+    } catch {
+      return text;
+    }
+  } catch (err) {
+    console.error("❌ Error de conexión o servidor:", err);
+    Swal.fire({
+      icon: "error",
+      title: "Error de conexión",
+      text: "No se pudo conectar con el servidor SASA en Heroku.",
+      confirmButtonColor: "#C91A1A",
+    });
+    throw err;
   }
 }
 

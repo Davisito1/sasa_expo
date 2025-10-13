@@ -205,11 +205,11 @@ function renderVehiculos(lista) {
     <td>${nombreCliente.trim() || (v.idCliente ?? "")}</td>
     <td>${nombreEstado || (v.idEstado ?? "")}</td>
     <td class="text-center">
-      <button class="btn btn-sm btn-primary icon-btn me-2" onclick="editVehiculo(${v.id || v.idVehiculo})">
-        <i class="bi bi-pencil-square"></i>
+      <button class="btn btn-sm btn-primary icon-btn" onclick="editVehiculo(${v.id || v.idVehiculo})">
+          <i class="bi bi-pencil-square"></i>
       </button>
       <button class="btn btn-sm btn-danger icon-btn" onclick="removeVehiculo(${v.id || v.idVehiculo})">
-        <i class="bi bi-trash"></i>
+          <i class="bi bi-trash"></i>
       </button>
     </td>
   </tr>`;

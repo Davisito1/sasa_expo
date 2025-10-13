@@ -1,5 +1,6 @@
 // ===============================
-// OrdenFacturaController.js FINAL FULL FUNCIONAL ✅
+// OrdenFacturaController.js ✅ FINAL FULL FUNCIONAL
+// Con Heroku fijo, JWT y cálculos dinámicos
 // ===============================
 
 import { crearOrden, actualizarOrden } from "../Services/OrdenTrabajoService.js";
@@ -9,6 +10,42 @@ import { getVehiculos } from "../Services/VehiculosServices.js";
 import { createFactura, updateFactura, anularFactura } from "../Services/FacturasService.js";
 import { getEmpleados } from "../Services/EmpleadosService.js";
 import { getMetodosPago } from "../Services/MetodosPagoService.js";
+
+// ================== CONFIGURACIÓN BASE ==================
+// 🔐 URL base de Heroku (solo producción)
+export const API_BASE = "https://sasaapi-73d5de493985.herokuapp.com";
+
+// Helper para peticiones seguras con JWT
+export async function http(url, options = {}) {
+  const token = localStorage.getItem("authToken");
+  const headers = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    ...(options.headers || {}),
+  };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  try {
+    const res = await fetch(url, { ...options, headers, credentials: "include" });
+
+    if (res.status === 401) {
+      localStorage.clear();
+      Swal.fire({
+        icon: "warning",
+        title: "Sesión expirada",
+        text: "Por favor inicia sesión nuevamente.",
+        confirmButtonColor: "#C91A1A",
+      }).then(() => (window.location.href = "../Autenticacion/login.html"));
+      throw new Error("401 Unauthorized");
+    }
+
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error("❌ Error en petición HTTP:", err);
+    throw err;
+  }
+}
 
 // ================== HELPERS ==================
 const $ = (id) => document.getElementById(id);
@@ -35,8 +72,6 @@ const btnGenerarFactura = $("btnGenerarFactura");
 const btnAnularFactura = $("btnAnularFactura");
 
 let state = { vehiculo: null, orden: null, detalles: [], total: 0 };
-
-// Exponer state para debug
 window.state = state;
 
 function toast(msg, type = "info") {
@@ -66,11 +101,9 @@ function validarFactura() {
     errs.push("Debe guardar la orden antes de generar la factura.");
   if (!fechaFactura.value)
     errs.push("Debe seleccionar la fecha de la factura.");
-
   const mt = Number(montoFactura.value);
   if (isNaN(mt) || mt <= 0)
     errs.push("El monto total de la factura no puede ser 0 ni negativo.");
-
   if (!selEmpleado.value)
     errs.push("Debe seleccionar el empleado responsable.");
   if (!selMetodoPago.value)
@@ -91,21 +124,51 @@ function renderDetalles() {
     calcTotal();
     return;
   }
-  tbodyDetalle.innerHTML = state.detalles.map(
-    (d, i) => `
+
+  tbodyDetalle.innerHTML = state.detalles
+    .map(
+      (d, i) => `
       <tr data-index="${i}">
         <td>${d.idDetalle ?? "-"}</td>
         <td>${d.nombre ?? ("ID " + d.idMantenimiento)}</td>
-        <td><input type="number" class="form-control form-control-sm cantidad-input" min="1" value="${d.cantidad ?? 1}"/></td>
-        <td><input type="number" class="form-control form-control-sm precio-input" step="0.01" min="0" max="5000" value="${Number(
-          d.precioUnitario || 0
-        ).toFixed(2)}"/></td>
+        <td>
+          <input type="number" class="form-control form-control-sm cantidad-input"
+                 min="1" value="${d.cantidad ?? 1}">
+        </td>
+        <td>
+          <input type="number" class="form-control form-control-sm precio-input"
+                 step="0.01" min="0" max="5000"
+                 value="${Number(d.precioUnitario || 0).toFixed(2)}">
+        </td>
         <td class="subtotal-cell">${(d.subtotal ?? (d.cantidad * d.precioUnitario)).toFixed(2)}</td>
         <td><button class="btn btn-sm btn-outline-danger btn-del"><i class="fa fa-trash"></i></button></td>
       </tr>`
-  ).join("");
+    )
+    .join("");
   calcTotal();
 }
+
+// 🎯 Cálculo dinámico en cambios de cantidad o precio
+tbodyDetalle?.addEventListener("input", (e) => {
+  const row = e.target.closest("tr");
+  if (!row) return;
+
+  const index = parseInt(row.dataset.index);
+  const detalle = state.detalles[index];
+  const cantidadInput = row.querySelector(".cantidad-input");
+  const precioInput = row.querySelector(".precio-input");
+  const subtotalCell = row.querySelector(".subtotal-cell");
+
+  const cantidad = Math.max(1, Number(cantidadInput.value) || 1);
+  const precio = Math.max(0, Number(precioInput.value) || 0);
+
+  detalle.cantidad = cantidad;
+  detalle.precioUnitario = precio;
+  detalle.subtotal = cantidad * precio;
+
+  subtotalCell.textContent = detalle.subtotal.toFixed(2);
+  calcTotal();
+});
 
 // ================== EVENTOS ==================
 selMantenimiento?.addEventListener("change", () => {
@@ -149,10 +212,10 @@ btnGuardarOrden?.addEventListener("click", async () => {
         fecha: fechaOrden.value,
       });
     }
+
     state.orden = resp.data || resp;
     idOrden.value = state.orden.idOrden || state.orden.id;
 
-    // Guardar detalles
     for (const d of state.detalles) {
       if (!d.idDetalle) {
         const payload = {
@@ -200,15 +263,7 @@ btnGenerarFactura?.addEventListener("click", async () => {
     }
   } catch (err) {
     console.error("❌ Error backend factura:", err);
-    try {
-      const data = JSON.parse(err.message.split("\n").pop());
-      if (data.errors) {
-        const msg = Object.values(data.errors).join(" | ");
-        toast(msg, "error");
-        return;
-      }
-    } catch {}
-    toast("Error al generar la factura. Revise la información proporcionada.", "error");
+    toast("Error al generar la factura.", "error");
   }
 });
 
@@ -266,85 +321,52 @@ btnCancelarOrden?.addEventListener("click", () => {
 
 // ================== COMBOS ==================
 async function cargarCombos() {
-  // ======== MANTENIMIENTOS ========
   try {
-    const mans = await listarMantenimientosCombo(); // ✅ corregido
+    const mans = await listarMantenimientosCombo();
     selMantenimiento.innerHTML =
       `<option value="">Seleccione…</option>` +
-      mans
-        .map(
-          (m) => `
+      mans.map(
+        (m) => `
           <option value="${m.idMantenimiento ?? m.id}" data-precio="${m.precio ?? m.costo ?? 0}">
             ${m.nombre ?? m.descripcion ?? m.tipoServicio ?? "Mantenimiento"}
           </option>`
-        )
-        .join("");
-
-    if (!mans.length) selMantenimiento.innerHTML = `<option value="">(sin datos)</option>`;
-  } catch (err) {
-    console.error("❌ Error cargando mantenimientos:", err);
+      ).join("");
+  } catch {
     selMantenimiento.innerHTML = `<option value="">(sin datos)</option>`;
   }
 
-  // ======== EMPLEADOS ========
   try {
     const empsResp = await getEmpleados(0, 100);
     const emps = empsResp?.data?.content || empsResp?.content || empsResp || [];
-
     selEmpleado.innerHTML =
       `<option value="">Seleccione…</option>` +
-      emps
-        .map((e) => {
-          const id = e.idEmpleado || e.id || 0;
-          const nombre = e.nombres || e.nombre || e.apellidos || "Empleado";
-          return `<option value="${id}">${nombre}</option>`;
-        })
-        .join("");
-  } catch (err) {
-    console.error("❌ Error cargando empleados:", err);
+      emps.map((e) => `<option value="${e.idEmpleado || e.id}">${e.nombres || e.nombre}</option>`).join("");
+  } catch {
     selEmpleado.innerHTML = `<option value="">(sin datos)</option>`;
   }
 
-  // ======== MÉTODOS DE PAGO ========
   try {
     const mpResp = await getMetodosPago();
     const mps = mpResp?.data || mpResp || [];
-
     selMetodoPago.innerHTML =
       `<option value="">Seleccione…</option>` +
-      mps
-        .map((mp) => {
-          const id = mp.idMetodoPago || mp.id || 0;
-          const nombre = mp.metodo || mp.nombre || "Método";
-          return `<option value="${id}">${nombre}</option>`;
-        })
-        .join("");
-  } catch (err) {
-    console.error("❌ Error cargando métodos de pago:", err);
+      mps.map((mp) => `<option value="${mp.idMetodoPago || mp.id}">${mp.metodo || mp.nombre}</option>`).join("");
+  } catch {
     selMetodoPago.innerHTML = `<option value="">(sin datos)</option>`;
   }
 
-  // ======== VEHÍCULOS ========
   try {
     const vehsResp = await getVehiculos(0, 100);
     const vehs = vehsResp?.content || vehsResp || [];
     selVehiculo.innerHTML =
       `<option value="">Seleccione…</option>` +
-      vehs
-        .map(
-          (v) => `
-          <option value="${v.idVehiculo || v.id}">
-            ${v.placa} - ${v.marca} ${v.modelo}
-          </option>`
-        )
-        .join("");
+      vehs.map((v) => `<option value="${v.idVehiculo || v.id}">${v.placa} - ${v.marca} ${v.modelo}</option>`).join("");
 
     selVehiculo.addEventListener("change", () => {
       const id = selVehiculo.value;
       state.vehiculo = vehs.find((x) => String(x.idVehiculo || x.id) === id) || null;
     });
-  } catch (err) {
-    console.error("❌ Error cargando vehículos:", err);
+  } catch {
     selVehiculo.innerHTML = `<option value="">(sin datos)</option>`;
   }
 }

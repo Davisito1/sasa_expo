@@ -1,18 +1,68 @@
 // ===============================
-// Dashboard Init.js (FINAL ✅ Heroku + Local + JWT)
+// Dashboard Init.js (FINAL ✅ Heroku + Local + JWT + Seguridad Token)
 // ===============================
 
 // ✅ Verificación de sesión antes de inicializar
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const token = localStorage.getItem("authToken");
+
+  // Si no hay token → redirigir al login
   if (!token) {
-    // No hay sesión → redirigir al login
     window.location.href = "../Autenticacion/login.html";
     return;
   }
+
+  // ✅ Verificar con el backend si el token sigue siendo válido
+  const ok = await verificarSesion(token);
+  if (!ok) {
+    localStorage.clear();
+    Swal.fire({
+      icon: "warning",
+      title: "Sesión expirada",
+      text: "Por favor inicia sesión de nuevo.",
+      confirmButtonColor: "#C91A1A"
+    }).then(() => (window.location.href = "../Autenticacion/login.html"));
+    return;
+  }
+
+  // Si todo bien → iniciar el dashboard
   init();
 });
 
+// ===============================
+// 🧠 Verificar sesión con backend
+// ===============================
+async function verificarSesion(token) {
+  try {
+    const isProd =
+      typeof window !== "undefined" &&
+      (window.location.hostname.includes("vercel.app") ||
+        window.location.hostname.includes("herokuapp.com"));
+
+    const BASE = isProd
+      ? "https://sasaapi-73d5de493985.herokuapp.com"
+      : "http://localhost:8080";
+
+    const res = await fetch(`${BASE}/api/Auth/me`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    if (res.ok) return true;        // ✅ Sesión válida
+    if (res.status === 401) return false; // ❌ Token expirado o inválido
+    return true;                    // ⚠️ Otros errores (CORS, red) no cortan la sesión
+  } catch {
+    return true;
+  }
+}
+
+// ===============================
+// Inicialización del Dashboard
+// ===============================
 async function init() {
   const fechaEl = byId("fechaActual");
   const horaEl  = byId("horaActual");
@@ -181,11 +231,6 @@ function hydrateClienteSelect(clientes, vehiculos, citas) {
 }
 
 // ===============================
-// Graficas (Chart.js)
-// ===============================
-// (Tu buildCharts() y shadowPlugin() siguen igual)
-
-// ===============================
 // Ver citas de hoy
 // ===============================
 window.verCitasHoy = async () => {
@@ -234,6 +279,7 @@ window.logout = () => {
     window.location.href = "../Autenticacion/login.html";
   });
 };
+
 // ===============================
 // Gráficas del Dashboard (SASA)
 // ===============================

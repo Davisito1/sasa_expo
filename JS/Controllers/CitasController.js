@@ -114,10 +114,10 @@ function renderTabla(citas) {
       <td>${cita.tipoServicio}</td>
       <td>${cita.descripcion ?? "—"}</td>
       <td class="acciones">
-        <button class="icon-btn btn-primary" onclick="editarCita(${cita.id})">
+        <button class="icon-btn btn-primary me-2 icon-btn " onclick="editarCita(${cita.id})">
           <i class="bi bi-pencil-square"></i>
         </button>
-        <button class="icon-btn btn-danger" onclick="eliminarCita(${cita.id})">
+        <button class="btn btn-sm btn-danger icon-btn" onclick="eliminarCita(${cita.id})">
           <i class="bi bi-trash"></i>
         </button>
       </td>
